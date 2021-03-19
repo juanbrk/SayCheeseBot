@@ -3,14 +3,14 @@ const admin = require("firebase-admin");
 admin.initializeApp();
 
 const functions = require("firebase-functions");
-const {Telegraf, Markup} = require('telegraf');
+const {Telegraf} = require('telegraf');
 const bot = new Telegraf("1679863001:AAGaNKtMl6tFhDZ_LfH3uZlafwx_GA8uDms");
 
-const ABOUT_MESSAGE = `Podés utilizar este bot para 
-  - Registrar nuevos cobros a clientes
-  - Generar resumenes contables
-  - Chatear con tu socia
-Para comenzar a utilizarlo, escribí */nuevoCobro* en tu teclado`;
+// const ABOUT_MESSAGE = `Podés utilizar este bot para
+//   - Registrar nuevos cobros a clientes
+//   - Generar resumenes contables
+//   - Chatear con tu socia
+// Para comenzar a utilizarlo, escribí */nuevoCobro* en tu teclado`;
 const MESSAGE_RECEIVED= 'Mensaje recibido';
 
 // error handling
@@ -24,22 +24,14 @@ bot.catch((err, ctx) => {
 bot.command("/start", (ctx) => ctx.reply("Hola Chicas, en que puedo ayudarlas hoy?"));
 
 bot.command('custom', (ctx) => {
-  return ctx.reply(
+  bot.telegram.sendMessage(
+    '1183288911',
     'Custom buttons keyboard',
-    JSON.stringify(
-      {
-        "chat_id": "",
-        "reply_markup": Markup.keyboard([
-          ['🔍 Search', '😎 Popular'], // Row1 with 2 buttons
-          ['☸ Setting', '📞 Feedback'], // Row2 with 2 buttons
-          ['📢 Ads', '⭐️ Rate us', '👥 Share'], // Row3 with 3 buttons,
-        ])
-        .oneTime()
-        .resize()
-        .extra(),
+    {
+      reply_markup: {
+        inline_keyboard: [[{text: "Custom1", url: "https://core.telegram.org/bots/api#sendmessage"}]],
       },
-    )
-  );
+    });
 });
 // copy every message and send to the user
 bot.on("message", (ctx) => {
@@ -51,8 +43,8 @@ bot.on("message", (ctx) => {
     const welcomeMessage = `Bienvenida ${message.new_chat_member.first_name} al grupo!`;
     // ask what to do
 
-    const messageID = message.message_id;
-    const chatId = "-527027995";
+    // const messageID = message.message_id;
+    // const chatId = "-527027995";
 
     promises.push(ctx.reply(welcomeMessage));
   } else {
