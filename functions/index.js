@@ -3,7 +3,8 @@ const admin = require("firebase-admin");
 admin.initializeApp();
 
 const functions = require("firebase-functions");
-const {Telegraf} = require('telegraf');
+const {Telegraf, Markup} = require('telegraf');
+const {button} = Markup;
 const bot = new Telegraf("1679863001:AAGaNKtMl6tFhDZ_LfH3uZlafwx_GA8uDms");
 
 // const ABOUT_MESSAGE = `Podés utilizar este bot para
@@ -24,15 +25,16 @@ bot.catch((err, ctx) => {
 bot.command("/start", (ctx) => ctx.reply("Hola Chicas, en que puedo ayudarlas hoy?"));
 
 bot.command('custom', (ctx) => {
+  console.log(`INLINE KEYBOARD ${JSON.stringify(Markup.inlineKeyboard([[]]))}`);
   bot.telegram.sendMessage(
     '1183288911',
     'Custom buttons keyboard',
-    {
-      reply_markup: {
-        inline_keyboard: [[{text: "Custom1", url: "https://core.telegram.org/bots/api#sendmessage"}]],
-      },
-    });
+    JSON.stringify(Markup.inlineKeyboard([ // {"reply_markup":{"inline_keyboard":[...
+      // [button.callback('👍', 'like')], // {"text":"👍","callback_data":"like","hide":false} => object
+    ])),
+    );
 });
+
 // copy every message and send to the user
 bot.on("message", (ctx) => {
   const {message} = ctx;
