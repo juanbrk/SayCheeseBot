@@ -5,7 +5,7 @@ admin.initializeApp();
 const functions = require("firebase-functions");
 const {Telegraf, Markup} = require("telegraf");
 const {button} = Markup;
-const bot = new Telegraf("1679863001:AAGaNKtMl6tFhDZ_LfH3uZlafwx_GA8uDms");
+const bot = new Telegraf("YOUR KEY HERE");
 
 // Para comenzar a utilizarlo, escribí */nuevoCobro* en tu teclado`;
 
