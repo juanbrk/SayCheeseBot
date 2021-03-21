@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 // The Firebase Admin SDK to access Firestore.
 const admin = require("firebase-admin");
 admin.initializeApp();
@@ -5,7 +7,7 @@ admin.initializeApp();
 const functions = require("firebase-functions");
 const {Telegraf, Markup} = require("telegraf");
 const {button} = Markup;
-const bot = new Telegraf("YOUR KEY HERE");
+const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
 
 // Para comenzar a utilizarlo, escribí */nuevoCobro* en tu teclado`;
 
