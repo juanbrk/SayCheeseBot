@@ -11,6 +11,7 @@ module.exports = {
   ],
   rules: {
     "quotes": ["warn", "double"],
+    "new-cap": ["warn", {"newIsCap": true}],
     "no-tabs": ["error", {allowIndentationTabs: true}],
     "indent": ["warn", 2],
     "max-len": ["warn", {
