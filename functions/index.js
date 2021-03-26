@@ -44,11 +44,20 @@ const teclados = {
   inline: "INLINE",
 };
 
+// const sayCheeseGroupID = process.env.SAY_CHEESE_GROUP_CHAT_ID;
+// const sayCheeseYJuanID = process.env.SAY_CHEESE_JUAN_CHAT_ID;
+
+const urlsCosasGraciosas = [
+  "https://media.giphy.com/media/26tP3M3i03hoIYL6M/giphy.gif",
+];
+
+const datosInteresantes = [
+  "Cuando se encontró el primer hueso de dinosaurio hace miles de años en China, se creyó que era de un dragón, ya " +
+  "que en ese país hay una cultura milenaria relacionado a ellos",
+];
 // -------------------------------- FUNCIONES ---------------------------------
 
-// const sayCheeseGroupID = "-527027995";
-// const sayCheeseYJuanID = "1183288911"
-// promises.push(ctx.telegram.sendDocument("-527027995", "http://gph.is/2roKEH4")); Para enviar un gif
+// promises.push(ctx.telegram.sendDocument("chat_id", "http://gph.is/2roKEH4")); Para enviar un gif
 
 /**
  * Cuando se inicializa el bot, el bot se presenta, comenta que es lo que tiene para ofrecer y
@@ -80,7 +89,7 @@ async function mostrarUsoDeInline(ctx) {
     teclados.inline,
     [
       {mensaje: mensajesComunes.ejemploInlineGracioso, url: "inlineGracioso"},
-      {mensaje: mensajesComunes.ejemploInlineInteresante, url: "https://www.google.com"},
+      {mensaje: mensajesComunes.ejemploInlineInteresante, url: "inlineInteresante"},
     ],
     ctx,
     {mensaje: mensajesComunes.ejemploParaUsarInline}
@@ -122,6 +131,22 @@ function enviarMensajeConMarkup(tipoDeTeclado, mensajesParaLosBotones, ctx, extr
 bot.command(comandos.start, (ctx) => darLaBienvenida(ctx, true));
 bot.command(comandos.ejemploComando, (ctx) => mostrarUsoDeInline(ctx));
 
+// --------------------------- ACTIONS -------------------------------
+
+bot.action("inlineGracioso", async (ctx) => {
+  await ctx.editMessageText("Aquí te va algo gracioso");
+  const urlGraciosa = urlsCosasGraciosas[Math.floor(Math.random() * urlsCosasGraciosas.length)];
+  await ctx.telegram.sendDocument(ctx.chat.id, urlGraciosa);
+  return ctx.telegram.answerCbQuery(ctx.callbackQuery.id);
+});
+
+bot.action("inlineInteresante", async (ctx) => {
+  await ctx.editMessageText("¿Sabías que..");
+  const datoInteresante = datosInteresantes[Math.floor(Math.random() * datosInteresantes.length)];
+  ctx.reply(`${datoInteresante}?`);
+  return ctx.telegram.answerCbQuery(ctx.callbackQuery.id);
+});
+
 // --------------------------- UPDATES -------------------------------
 
 // copy every message and send to the user
@@ -144,22 +169,19 @@ bot.on("message", async (ctx) => {
 });
 
 bot.on("inline_query", (ctx) => console.log("INQUIRED"));
-bot.action("inlineGracioso", async (ctx) => {
-  await ctx.editMessageText("Graciosado");
-  await ctx.telegram.sendDocument("-527027995", "http://gph.is/2roKEH4");
-  return ctx.telegram.answerCbQuery(ctx.callbackQuery.id);
-}
-);
 
 bot.on('callback_query', (ctx) => {
   console.log('CALLBACK QUERY');
+  console.log(`CALLBACK CTX ${JSON.stringify(ctx)}`);
 
   // Explicit usage
-  ctx.telegram.answerCbQuery(ctx.callbackQuery.id)
+  ctx.telegram.answerCbQuery(ctx.callbackQuery.id);
 
   // Using context shortcut
-  ctx.answerCbQuery()
-})
+  ctx.answerCbQuery();
+});
+
+
 // --------------------------- ERROR HANDLING -------------------------------
 // error handling
 bot.catch((err, ctx) => {
