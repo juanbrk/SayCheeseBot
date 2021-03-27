@@ -1,5 +1,4 @@
 require('dotenv').config();
-
 // The Firebase Admin SDK to access Firestore.
 const admin = require("firebase-admin");
 admin.initializeApp();
@@ -9,7 +8,10 @@ const {Telegraf, Markup} = require("telegraf");
 const {button} = Markup;
 const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
 
-// Para comenzar a utilizarlo, escribí */nuevoCobro* en tu teclado`;
+const express = require('express');
+const app = express();
+
+// --------------------------- CONSTANTES -------------------------------
 
 const mensajesComunes = {
   constanciaDeRecibo: "Mensaje recibido",
@@ -29,7 +31,6 @@ const mensajesComunes = {
   siConPulgarParaArriba: "Si 👍🏽",
   ahoraNoConCaritaSonriente: "Ahora no 😃",
   exitoAlUsarPrimerComando: "Genial, acabás de utilizar tu primer comando. Vamos ahora con las solicitudes en linea",
-
 };
 
 const comandos = {
@@ -43,9 +44,20 @@ const teclados = {
   inline: "INLINE",
 };
 
-// const sayCheeseGroupID = "-527027995";
-// const sayCheeseYJuanID = "1183288911"
-// promises.push(ctx.telegram.sendDocument("-527027995", "http://gph.is/2roKEH4")); Para enviar un gif
+// const sayCheeseGroupID = process.env.SAY_CHEESE_GROUP_CHAT_ID;
+// const sayCheeseYJuanID = process.env.SAY_CHEESE_JUAN_CHAT_ID;
+
+const urlsCosasGraciosas = [
+  "https://media.giphy.com/media/26tP3M3i03hoIYL6M/giphy.gif",
+];
+
+const datosInteresantes = [
+  "Cuando se encontró el primer hueso de dinosaurio hace miles de años en China, se creyó que era de un dragón, ya " +
+  "que en ese país hay una cultura milenaria relacionado a ellos",
+];
+// -------------------------------- FUNCIONES ---------------------------------
+
+// promises.push(ctx.telegram.sendDocument("chat_id", "http://gph.is/2roKEH4")); Para enviar un gif
 
 /**
  * Cuando se inicializa el bot, el bot se presenta, comenta que es lo que tiene para ofrecer y
@@ -76,27 +88,13 @@ async function mostrarUsoDeInline(ctx) {
   return enviarMensajeConMarkup(
     teclados.inline,
     [
-      {mensaje: mensajesComunes.ejemploInlineGracioso, url: "http://gph.is/2n1VsfF"},
-      {mensaje: mensajesComunes.ejemploInlineInteresante, url: "https://www.rd.com/list/fun-snow-facts/"},
+      {mensaje: mensajesComunes.ejemploInlineGracioso, url: "inlineGracioso"},
+      {mensaje: mensajesComunes.ejemploInlineInteresante, url: "inlineInteresante"},
     ],
     ctx,
     {mensaje: mensajesComunes.ejemploParaUsarInline}
   );
 }
-
-// initialize the commands
-bot.command(comandos.start, (ctx) => darLaBienvenida(ctx, true));
-bot.command(comandos.ejemploComando, (ctx) => mostrarUsoDeInline(ctx));
-
-bot.command(comandos.custom, (ctx) => {
-  console.log(`INLINE KEYBOARD ${JSON.stringify(button.url("", "https://github.com/telegraf/telegraf/blob/develop/docs/examples/keyboard-bot.js"))}`);
-  ctx.reply(
-    "JPÑAS",
-    Markup.inlineKeyboard([
-      [button.url("inoasod", "https://github.com/telegraf/telegraf/blob/develop/docs/examples/keyboard-bot.js")],
-    ]),
-    );
-});
 
 /**
  * Para evitar tener que escribir el markup de respuesta con teclado personalizado, usamos esta funcion donde
@@ -120,18 +118,41 @@ function enviarMensajeConMarkup(tipoDeTeclado, mensajesParaLosBotones, ctx, extr
       Markup.keyboard(botones).oneTime(),
       );
     }// Current support is for custom and inline keyboard
-    const botones = mensajesParaLosBotones.map( (boton) => [button.url(boton.mensaje, boton.url )]);
+    const botones = mensajesParaLosBotones.map( (boton) => [button.callback(boton.mensaje, boton.url )]);
     return ctx.reply(
     extra.mensaje,
-    Markup.inlineKeyboard(botones).oneTime(),
+    Markup.inlineKeyboard(botones),
     );
 }
+
+
+// -------------------------------- COMANDOS ---------------------------------
+// initialize the commands
+bot.command(comandos.start, (ctx) => darLaBienvenida(ctx, true));
+bot.command(comandos.ejemploComando, (ctx) => mostrarUsoDeInline(ctx));
+
+// --------------------------- ACTIONS -------------------------------
+
+bot.action("inlineGracioso", async (ctx) => {
+  await ctx.editMessageText("Aquí te va algo gracioso");
+  const urlGraciosa = urlsCosasGraciosas[Math.floor(Math.random() * urlsCosasGraciosas.length)];
+  await ctx.telegram.sendDocument(ctx.chat.id, urlGraciosa);
+  return ctx.telegram.answerCbQuery(ctx.callbackQuery.id);
+});
+
+bot.action("inlineInteresante", async (ctx) => {
+  await ctx.editMessageText("¿Sabías que..");
+  const datoInteresante = datosInteresantes[Math.floor(Math.random() * datosInteresantes.length)];
+  ctx.reply(`${datoInteresante}?`);
+  return ctx.telegram.answerCbQuery(ctx.callbackQuery.id);
+});
+
+// --------------------------- UPDATES -------------------------------
 
 // copy every message and send to the user
 bot.on("message", async (ctx) => {
   const {message} = ctx;
   const promises = [];
-  console.log(`MENSAJE ${JSON.stringify(message)}`);
   if (message.new_chat_member) {
     const welcomeMessage = `Bienvenida ${message.new_chat_member.first_name} al grupo!`;
     await ctx.reply(welcomeMessage);
@@ -144,11 +165,24 @@ bot.on("message", async (ctx) => {
       promises.push(ctx.reply(mensajesComunes.constanciaDeRecibo));
     }
   }
-
   return Promise.all(promises);
 });
 
+bot.on("inline_query", (ctx) => console.log("INQUIRED"));
 
+bot.on('callback_query', (ctx) => {
+  console.log('CALLBACK QUERY');
+  console.log(`CALLBACK CTX ${JSON.stringify(ctx)}`);
+
+  // Explicit usage
+  ctx.telegram.answerCbQuery(ctx.callbackQuery.id);
+
+  // Using context shortcut
+  ctx.answerCbQuery();
+});
+
+
+// --------------------------- ERROR HANDLING -------------------------------
 // error handling
 bot.catch((err, ctx) => {
   functions.logger.error("[Bot] Error", err);
@@ -161,3 +195,13 @@ bot.launch();
 // Enable graceful stop
 process.once("SIGINT", () => bot.stop("SIGINT"));
 process.once("SIGTERM", () => bot.stop("SIGTERM"));
+
+// --------------------------- CLOUD FUNCTIONS -------------------------------
+
+exports.inlineGracioso = functions.https.onRequest(async (request, response) => {
+  console.log(`REQUEST ${JSON.stringify(request)}`);
+  console.log(`RESPONSE ${JSON.stringify(response)}`);
+});
+
+// Expose Express API as a single Cloud Function:
+exports.app = functions.https.onRequest(app);
