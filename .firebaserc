@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "my-first-bot-da27e"
+    "default": "my-first-bot-da27e",
+    "dev": "my-first-bot-da27e"
   }
 }
