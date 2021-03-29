@@ -39,6 +39,13 @@ const strings = {
       confirmarDatos: "Gracias por el telefono. ¿Podés confirmar si los siguientes datos son correctos, por favor?",
       registrandoCliente: "Gracias por confirmar. Procedo entonces a registrar el nuevo cliente",
       clienteCreado: "Se creó correctamente el cliente",
+      consultaRecomienzoRegistro: "¿Querés volver a ingresar los datos?",
+      confirmacion: {
+        datosCorrectos: "Si, son correctos",
+        datosIncorrectos: "No, son incorrectos",
+        recomenzarRegistro: "Si, volver a ingresar datos",
+        anularRegistro: "No, anular registro",
+      },
     },
     confirmacion: {
       afirmativo: "Si",
@@ -156,11 +163,14 @@ function enviarMensajeConMarkup(tipoDeTeclado, mensajesParaLosBotones, ctx, extr
 /**
  * Para poder registrar cobros, primero necesitamos registrar clientes
  * @param {Object} ctx Telegraf context object
+ * @param {Boolean} esRecomienzoDelRegistro para saber de donde tomar el message inicial
  * @return {Object} Mensaje
  */
-async function registrarNuevoCliente(ctx) {
+async function registrarNuevoCliente(ctx, esRecomienzoDelRegistro = false) {
   ctx.session.registrandoNuevoCliente = true;
-  ctx.session.nuevoCliente = {mensajeInicial: ctx.message.message_id};
+  ctx.session.nuevoCliente = esRecomienzoDelRegistro ?
+    {mensajeInicial: ctx.update.callback_query.message.message_id} :
+    {mensajeInicial: ctx.message.message_id};
   return ctx.reply(strings.mensajes.nuevoCliente.agregarCliente);
 }
 
@@ -205,10 +215,37 @@ bot.action("registrarNuevoCliente", async (ctx) => {
   return ctx.telegram.answerCbQuery(ctx.callbackQuery.id);
 });
 
-bot.action("recomenzarRegistroNuevoCliente", (ctx) => {
-  ctx.reply("EN PROGRESO");
+bot.action("confirmarRecomienzoDeRegistro", async (ctx) => {
+  enviarMensajeConMarkup(
+    teclados.inline,
+    [
+      {mensaje: strings.mensajes.nuevoCliente.confirmacion.recomenzarRegistro, url: "recomenzarRegistroNuevoCliente"},
+      {mensaje: strings.mensajes.nuevoCliente.confirmacion.anularRegistro, url: "anularRegistroNuevoCliente"},
+    ],
+    ctx,
+    {mensaje: strings.mensajes.nuevoCliente.consultaRecomienzoRegistro}
+  );
   return ctx.telegram.answerCbQuery(ctx.callbackQuery.id);
 });
+
+bot.action("recomenzarRegistroNuevoCliente", async (ctx) => {
+  registrarNuevoCliente(ctx, true);
+  return ctx.telegram.answerCbQuery(ctx.callbackQuery.id);
+});
+
+bot.action("anularRegistroNuevoCliente", async (ctx) => {
+  await enviarMensajeConMarkup(
+    teclados.inline,
+    [
+      {mensaje: strings.mensajes.nuevoCliente.confirmacion.recomenzarRegistro, url: "recomenzarRegistroNuevoCliente"},
+      {mensaje: strings.mensajes.nuevoCliente.confirmacion.anularRegistro, url: "anularRegistroNuevoCliente"},
+    ],
+    ctx,
+    {mensaje: strings.mensajes.nuevoCliente.consultaRecomienzoRegistro}
+  );
+  return ctx.telegram.answerCbQuery(ctx.callbackQuery.id);
+});
+
 
 // --------------------------- MIDDLEWARE -------------------------------
 
@@ -237,8 +274,8 @@ bot.on("message", async (ctx) => {
         return enviarMensajeConMarkup(
           teclados.inline,
           [
-            {mensaje: strings.mensajes.confirmacion.afirmativo, url: "registrarNuevoCliente"},
-            {mensaje: strings.mensajes.confirmacion.negativo, url: "recomenzarRegistroNuevoCliente"},
+            {mensaje: strings.mensajes.nuevoCliente.confirmacion.datosCorrectos, url: "registrarNuevoCliente"},
+            {mensaje: strings.mensajes.nuevoCliente.confirmacion.datosIncorrectos, url: "confirmarRecomienzoDeRegistro"},
           ],
           ctx,
           {mensaje: datosDelCliente}
@@ -258,9 +295,6 @@ bot.on("message", async (ctx) => {
 bot.on("inline_query", (ctx) => console.log("INQUIRED"));
 
 bot.on('callback_query', (ctx) => {
-  console.log('CALLBACK QUERY');
-  console.log(`CALLBACK CTX ${JSON.stringify(ctx)}`);
-
   // Explicit usage
   ctx.telegram.answerCbQuery(ctx.callbackQuery.id);
 
@@ -284,11 +318,6 @@ process.once("SIGINT", () => bot.stop("SIGINT"));
 process.once("SIGTERM", () => bot.stop("SIGTERM"));
 
 // --------------------------- CLOUD FUNCTIONS -------------------------------
-
-exports.inlineGracioso = functions.https.onRequest(async (request, response) => {
-  console.log(`REQUEST ${JSON.stringify(request)}`);
-  console.log(`RESPONSE ${JSON.stringify(response)}`);
-});
 
 // Expose Express API as a single Cloud Function:
 exports.app = functions.https.onRequest(app);
