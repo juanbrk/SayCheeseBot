@@ -2,41 +2,69 @@ require('dotenv').config();
 // The Firebase Admin SDK to access Firestore.
 const admin = require("firebase-admin");
 admin.initializeApp();
+const db = admin.firestore();
 
 const functions = require("firebase-functions");
 const {Telegraf, Markup} = require("telegraf");
+const RedisSession = require('telegraf-session-redis');
 const {button} = Markup;
+
 const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
+
+const session = new RedisSession({
+  store: {
+    host: process.env.TELEGRAM_SESSION_HOST || '127.0.0.1',
+    port: process.env.TELEGRAM_SESSION_PORT || 6379,
+  },
+});
+
+bot.use(session);
 
 const express = require('express');
 const app = express();
 
 // --------------------------- CONSTANTES -------------------------------
 
-const mensajesComunes = {
+const strings = {
+  comandos: {
+    start: "start",
+    custom: "custom",
+    ejemploComando: "comando",
+    nuevoCliente: "nuevo_cliente",
+  },
+  mensajes: {
+    nuevoCliente: {
+      agregarCliente: "Genial. Por favor, pasame el nombre del nuevo cliente",
+      obtenerTelefono: "Recibido. Pasame ahora el telefono del cliente por favor.",
+      confirmarDatos: "Gracias por el telefono. ¿Podés confirmar si los siguientes datos son correctos, por favor?",
+      registrandoCliente: "Gracias por confirmar. Procedo entonces a registrar el nuevo cliente",
+      clienteCreado: "Se creó correctamente el cliente",
+    },
+    confirmacion: {
+      afirmativo: "Si",
+      negativo: "No",
+    },
+  },
   constanciaDeRecibo: "Mensaje recibido",
   elDelComienzo: "Hola Chicas! Soy su nuevo asistente bot y es un placer trabajar para ustedes",
   surgioUnError: "Oops, encontre un error para",
   acercaDe: `Podés utilizar este bot para
-     - Registrar nuevos cobros a clientes
+     - Registrar cobros a clientes
      - Generar resumenes contables
      - Chatear con tu socia
      - Y lo que se te ocurra (solo tenes que avisarle a Juan)`,
   ejemploParaUsarComandos: "Podes comunicarte conmigo usando comandos. Para usar un comando apreta el simbolo [ / ] que" +
   " está a la derecha de donde escribis mensajes y selecciona el que dice comando.",
-  ejemploParaUsarInline: "Por favor dame una instrucción seleccionando una de las siguientes opciones:",
-  ejemploInlineGracioso: "Mostrame algo gracioso",
-  ejemploInlineInteresante: "Contame algo interesante",
   preguntaPorTutorial: "¿Te gustaría hacer un pequeño tutorial para aprender a interactuar conmigo?",
   siConPulgarParaArriba: "Si 👍🏽",
   ahoraNoConCaritaSonriente: "Ahora no 😃",
   exitoAlUsarPrimerComando: "Genial, acabás de utilizar tu primer comando. Vamos ahora con las solicitudes en linea",
-};
-
-const comandos = {
-  start: "start",
-  custom: "custom",
-  ejemploComando: "comando",
+  inline: {
+    conectarConFirestore: "Conectar con firestore",
+    ejemploParaUsarInline: "Por favor dame una instrucción seleccionando una de las siguientes opciones:",
+    ejemploInlineGracioso: "Mostrame algo gracioso",
+    ejemploInlineInteresante: "Contame algo interesante",
+  },
 };
 
 const teclados = {
@@ -69,13 +97,13 @@ const datosInteresantes = [
  * @return {Promise}
  */
 async function darLaBienvenida(ctx, pressedStart = false) {
-  if (pressedStart) await ctx.reply(mensajesComunes.elDelComienzo);
-  await ctx.reply(mensajesComunes.acercaDe);
+  if (pressedStart) await ctx.reply(strings.elDelComienzo);
+  await ctx.reply(strings.acercaDe);
   return enviarMensajeConMarkup(
     teclados.personalizado,
-    [mensajesComunes.siConPulgarParaArriba, mensajesComunes.ahoraNoConCaritaSonriente],
+    [strings.siConPulgarParaArriba, strings.ahoraNoConCaritaSonriente],
     ctx,
-    {mensaje: mensajesComunes.preguntaPorTutorial},
+    {mensaje: strings.preguntaPorTutorial},
   );
 }
 
@@ -84,15 +112,15 @@ async function darLaBienvenida(ctx, pressedStart = false) {
  * @param {any} ctx telegraf context
  */
 async function mostrarUsoDeInline(ctx) {
-  await ctx.reply(mensajesComunes.exitoAlUsarPrimerComando);
+  await ctx.reply(strings.exitoAlUsarPrimerComando);
   return enviarMensajeConMarkup(
     teclados.inline,
     [
-      {mensaje: mensajesComunes.ejemploInlineGracioso, url: "inlineGracioso"},
-      {mensaje: mensajesComunes.ejemploInlineInteresante, url: "inlineInteresante"},
+      {mensaje: strings.inline.ejemploInlineGracioso, url: "inlineGracioso"},
+      {mensaje: strings.inline.ejemploInlineInteresante, url: "inlineInteresante"},
     ],
     ctx,
-    {mensaje: mensajesComunes.ejemploParaUsarInline}
+    {mensaje: strings.inline.ejemploParaUsarInline}
   );
 }
 
@@ -125,11 +153,23 @@ function enviarMensajeConMarkup(tipoDeTeclado, mensajesParaLosBotones, ctx, extr
     );
 }
 
+/**
+ * Para poder registrar cobros, primero necesitamos registrar clientes
+ * @param {Object} ctx Telegraf context object
+ * @return {Object} Mensaje
+ */
+async function registrarNuevoCliente(ctx) {
+  ctx.session.registrandoNuevoCliente = true;
+  ctx.session.nuevoCliente = {mensajeInicial: ctx.message.message_id};
+  return ctx.reply(strings.mensajes.nuevoCliente.agregarCliente);
+}
+
 
 // -------------------------------- COMANDOS ---------------------------------
 // initialize the commands
-bot.command(comandos.start, (ctx) => darLaBienvenida(ctx, true));
-bot.command(comandos.ejemploComando, (ctx) => mostrarUsoDeInline(ctx));
+bot.command(strings.comandos.start, (ctx) => darLaBienvenida(ctx, true));
+bot.command(strings.comandos.ejemploComando, (ctx) => mostrarUsoDeInline(ctx));
+bot.command(strings.comandos.nuevoCliente, (ctx) => registrarNuevoCliente(ctx));
 
 // --------------------------- ACTIONS -------------------------------
 
@@ -147,6 +187,32 @@ bot.action("inlineInteresante", async (ctx) => {
   return ctx.telegram.answerCbQuery(ctx.callbackQuery.id);
 });
 
+bot.action("registrarNuevoCliente", async (ctx) => {
+  await ctx.editMessageText(strings.mensajes.nuevoCliente.registrandoCliente);
+  const coleccion = "Cliente";
+  const docRef = db.collection(coleccion).doc(`${ctx.session.nuevoCliente.nombre}`);
+  const documentoCliente = {
+    nombre: `${ctx.session.nuevoCliente.nombre}`,
+    telefono: `${ctx.session.nuevoCliente.telefono}`,
+    registradoPor: `${ctx.update.callback_query.from.first_name}`,
+  };
+
+  await docRef.set(documentoCliente);
+  ctx.reply(`${strings.mensajes.nuevoCliente.clienteCreado} ${ctx.session.nuevoCliente.nombre}`);
+  ctx.session.registrandoNuevoCliente = false;
+  ctx.session.nuevoCliente = {};
+
+  return ctx.telegram.answerCbQuery(ctx.callbackQuery.id);
+});
+
+bot.action("recomenzarRegistroNuevoCliente", (ctx) => {
+  ctx.reply("EN PROGRESO");
+  return ctx.telegram.answerCbQuery(ctx.callbackQuery.id);
+});
+
+// --------------------------- MIDDLEWARE -------------------------------
+
+
 // --------------------------- UPDATES -------------------------------
 
 // copy every message and send to the user
@@ -158,11 +224,32 @@ bot.on("message", async (ctx) => {
     await ctx.reply(welcomeMessage);
     return darLaBienvenida(ctx);
   } else {
+    if (ctx.session.registrandoNuevoCliente) {
+      if (ctx.message.message_id == ctx.session.nuevoCliente.mensajeInicial + 2) { // input nombre cliente
+        ctx.session.nuevoCliente.nombre = ctx.message.text;
+        return ctx.reply(strings.mensajes.nuevoCliente.obtenerTelefono);
+      } else if (ctx.message.message_id == ctx.session.nuevoCliente.mensajeInicial + 4) { // Telefono obtenido
+        ctx.session.nuevoCliente.telefono = ctx.message.text;
+        await ctx.reply(strings.mensajes.nuevoCliente.confirmarDatos);
+        const datosDelCliente =
+        "\n- Nombre: " + ctx.session.nuevoCliente.nombre + "\n- Telefono: " + ctx.session.nuevoCliente.telefono;
+
+        return enviarMensajeConMarkup(
+          teclados.inline,
+          [
+            {mensaje: strings.mensajes.confirmacion.afirmativo, url: "registrarNuevoCliente"},
+            {mensaje: strings.mensajes.confirmacion.negativo, url: "recomenzarRegistroNuevoCliente"},
+          ],
+          ctx,
+          {mensaje: datosDelCliente}
+        );
+      }
+    }
     // El mensaje no es de un update, sino un simple mensaje
-    if (message.text === mensajesComunes.siConPulgarParaArriba) {
-      await ctx.reply(mensajesComunes.ejemploParaUsarComandos, Markup.removeKeyboard());
+    if (message.text === strings.siConPulgarParaArriba) {
+      await ctx.reply(strings.ejemploParaUsarComandos, Markup.removeKeyboard());
     } else {
-      promises.push(ctx.reply(mensajesComunes.constanciaDeRecibo));
+      promises.push(ctx.reply(strings.constanciaDeRecibo));
     }
   }
   return Promise.all(promises);
@@ -187,7 +274,7 @@ bot.on('callback_query', (ctx) => {
 bot.catch((err, ctx) => {
   functions.logger.error("[Bot] Error", err);
   functions.logger.error("[Bot] Error CTX", ctx);
-  return ctx.reply(`${mensajesComunes.surgioUnError} ${ctx.updateType}`, err);
+  return ctx.reply(`${strings.surgioUnError} ${ctx.updateType}`, err);
 });
 
 bot.launch();
