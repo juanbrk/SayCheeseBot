@@ -9,7 +9,7 @@ const {Telegraf, Markup} = require("telegraf");
 const RedisSession = require('telegraf-session-redis');
 const {button} = Markup;
 
-const bot = new Telegraf(process.env.TELEGRAM_TOKEN);
+const bot = new Telegraf(process.env.TELEGRAM_TOKEN, {telegram: {webhookReply: true}});
 
 const session = new RedisSession({
   store: {
@@ -173,7 +173,12 @@ async function registrarNuevoCliente(ctx, esRecomienzoDelRegistro = false) {
     {mensajeInicial: ctx.message.message_id};
   return ctx.reply(strings.mensajes.nuevoCliente.agregarCliente);
 }
-
+// -------------------------------- MIDDLEWARE ---------------------------------
+// Ejemplo de middleware
+app.use((req, res) => {
+  console.log('Servidor web funcionando tanto en http y https !');
+  res.send('Servidor web funcionando tanto en http y https !');
+});
 
 // -------------------------------- COMANDOS ---------------------------------
 // initialize the commands
@@ -311,13 +316,9 @@ bot.catch((err, ctx) => {
   return ctx.reply(`${strings.surgioUnError} ${ctx.updateType}`, err);
 });
 
-bot.launch();
-
-// Enable graceful stop
-process.once("SIGINT", () => bot.stop("SIGINT"));
-process.once("SIGTERM", () => bot.stop("SIGTERM"));
-
 // --------------------------- CLOUD FUNCTIONS -------------------------------
 
 // Expose Express API as a single Cloud Function:
-exports.app = functions.https.onRequest(app);
+exports.app = functions.https.onRequest(
+  (req, res) => bot.handleUpdate(req.body, res)
+);
