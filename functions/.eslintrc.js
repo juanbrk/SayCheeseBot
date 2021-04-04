@@ -9,6 +9,7 @@ module.exports = {
     "eslint:recommended",
     "google",
   ],
+  ignorePatterns: ["lib/*.js"],
   rules: {
     "quotes": ["warn", "double"],
     "new-cap": ["warn", {"newIsCap": true}],

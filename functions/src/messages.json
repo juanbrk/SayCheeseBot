@@ -1,0 +1,11 @@
+{
+    "mensajes": {
+        "saludos":{
+            "elDelComienzo": "Hola Chicas! Soy su nuevo asistente bot y es un placer trabajar para ustedes"
+
+        },
+        "informacion":{
+            "acercaDe": "Podés utilizar este bot para:\n-Registrar cobros a clientes\n- Generar resumenes contables\n- Chatear con tu socia\n- Y lo que se te ocurra (solo tenes que avisarle a Juan)"
+        }
+    }
+}
