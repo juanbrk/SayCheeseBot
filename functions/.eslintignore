@@ -1,0 +1,6 @@
+# Valid
+/lib/*.js
+/lib/*.js.map
+/lib/**/*.js
+
+index.js
