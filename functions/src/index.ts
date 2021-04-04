@@ -38,48 +38,6 @@ bot.on('message', async (ctx) => messageHandler(ctx));
 bot.action("inlineGracioso", async (ctx) => responderAInlineGracioso(ctx));
 bot.action("inlineInteresante", async (ctx) => responderAInlineInteresante(ctx));
 
-// -------------------------------- COMANDOS ---------------------------------
-// initialize the commands
-
-// bot.command(strings.comandos.ejemploComando, (ctx) => mostrarUsoDeInline(ctx));
-// bot.command(strings.comandos.nuevoCliente, (ctx) => registrarNuevoCliente(ctx));
-
-// copy every message and send to the user
-// bot.on("message", async (ctx) => {
-//     const {message} = ctx;
-//     const promises = [];
-//     if (ctx.session.registrandoNuevoCliente) {
-//         if (ctx.message.message_id == ctx.session.nuevoCliente.mensajeInicial + 2) { // input nombre cliente
-//           ctx.session.nuevoCliente.nombre = ctx.message.text;
-//           return ctx.reply(strings.mensajes.nuevoCliente.obtenerTelefono);
-//         } else if (ctx.message.message_id == ctx.session.nuevoCliente.mensajeInicial + 4) { // Telefono obtenido
-//           ctx.session.nuevoCliente.telefono = ctx.message.text;
-//           await ctx.reply(strings.mensajes.nuevoCliente.confirmarDatos);
-//           const datosDelCliente =
-//           "\n- Nombre: " + ctx.session.nuevoCliente.nombre + "\n- Telefono: " + ctx.session.nuevoCliente.telefono;
-  
-//           return enviarMensajeConMarkup(
-//             teclados.inline,
-//             [
-//               {mensaje: strings.mensajes.nuevoCliente.confirmacion.datosCorrectos, url: "registrarNuevoCliente"},
-//               {mensaje: strings.mensajes.nuevoCliente.confirmacion.datosIncorrectos, url: "confirmarRecomienzoDeRegistro"},
-//             ],
-//             ctx,
-//             {mensaje: datosDelCliente}
-//           );
-//         }
-//       }
-//       // El mensaje no es de un update, sino un simple mensaje
-//       if (message.text === strings.siConPulgarParaArriba) {
-//         await ctx.reply(strings.ejemploParaUsarComandos, Markup.removeKeyboard());
-//       } else {
-//         promises.push(ctx.reply(strings.constanciaDeRecibo));
-//       }
-//     }
-//     return Promise.all(promises);
-//   });
-  
-
 // --------------------------- ERROR HANDLING -------------------------------
 // error handling
 bot.catch((err: any, ctx:any) => {
