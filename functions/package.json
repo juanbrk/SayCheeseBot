@@ -18,13 +18,14 @@
     "express": "^4.17.1",
     "firebase-admin": "^9.5.0",
     "firebase-functions": "^3.11.0",
-    "telegraf": "^4.2.1"
+    "telegraf": "^4.3.0"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
     "eslint": "^7.6.0",
     "eslint-config-google": "^0.14.0",
-    "firebase-functions-test": "^0.2.0"
+    "firebase-functions-test": "^0.2.0",
+    "typegram": "^3.2.3"
   },
   "private": true
 }

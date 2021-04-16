@@ -4,3 +4,6 @@
 /lib/**/*.js
 
 index.js
+a.js
+
+.runtimeConfig.json
