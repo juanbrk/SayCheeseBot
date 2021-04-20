@@ -1,6 +1,12 @@
-import { Context } from 'telegraf';
-import {darLaBienvenida} from '../../modules/utils/mensajes';
+import {ExtendedContext} from "../../../config/context/myContext";
+import {darLaBienvenida} from "../../modules/utils/mensajes";
 
-export async function startCommand(ctx: Context, sePresionoStart: boolean){
-    return darLaBienvenida(ctx, sePresionoStart);
+/**
+ *
+ * @param {ExtendedContext} ctx
+ * @param {boolean} sePresionoStart
+ * @return {Promise}
+ */
+export async function startCommand(ctx: ExtendedContext, sePresionoStart: boolean) {
+  return darLaBienvenida(ctx, sePresionoStart);
 }

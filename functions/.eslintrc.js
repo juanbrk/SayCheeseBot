@@ -4,14 +4,29 @@ module.exports = {
     es6: true,
     node: true,
   },
-  parser:"@babel/eslint-parser",
   extends: [
     "eslint:recommended",
+    "plugin:import/errors",
+    "plugin:import/warnings",
+    "plugin:import/typescript",
     "google",
+    "plugin:@typescript-eslint/recommended"
   ],
-  ignorePatterns: ["lib/*.js"],
+  parser: "@typescript-eslint/parser",
+  parserOptions: {
+    project: ["tsconfig.json", "tsconfig.dev.json"],
+    sourceType: "module",
+  },
+  ignorePatterns: [
+    "/lib/**/*", // Ignore built files.
+  ],
+  plugins: [
+    "@typescript-eslint",
+    "import",
+  ],
   rules: {
-    "quotes": ["warn", "double"],
+    quotes: ["error", "double"],
+    camelcase: ["warn"],
     "new-cap": ["warn", {"newIsCap": true}],
     "no-tabs": ["error", {allowIndentationTabs: true}],
     "indent": ["warn", 2],

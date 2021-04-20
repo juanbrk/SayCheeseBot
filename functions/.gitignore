@@ -1,3 +1,22 @@
 node_modules/
 
-.runtimeConfig.json
+# Compiled JavaScript files
+lib/**/*.js
+lib/**/*.js.map
+
+src/*.js
+
+#dotenv
+.env
+
+#runtime environmental configuration files
+
+
+# TypeScript v1 declaration files
+typings/
+
+# Node.js dependency directory
+node_modules/
+
+serviceAccountKey.*
+package-lock.*

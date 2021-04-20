@@ -1,6 +1,11 @@
-import { Context } from 'telegraf';
-import {mostrarUsoDeInline} from '../../modules/utils/mensajes';
+import {ExtendedContext} from "../../../config/context/myContext";
+import {mostrarUsoDeInline} from "../../modules/utils/mensajes";
 
-export async function ejemploCommand(ctx: Context){
-    return mostrarUsoDeInline(ctx);
+/**
+ *
+ * @param {ExtendedContext} ctx
+ * @return {Promise}
+ */
+export async function ejemploCommand(ctx: ExtendedContext) {
+  return mostrarUsoDeInline(ctx);
 }

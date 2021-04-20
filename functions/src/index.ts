@@ -1,40 +1,72 @@
-import {Telegraf} from 'telegraf';
-import { Request, Response } from 'express';
+import {Telegraf} from "telegraf";
+import {Request, Response} from "express";
+import {ExtendedContext} from "../config/context/myContext";
 
 import {startCommand} from "./handlers/commands/start";
 import {ejemploCommand} from "./handlers/commands/comando";
 import {saludarNuevoMiembro} from "./handlers/updates/nuevoMiembro";
-import { messageHandler } from './handlers/updates/message';
-import { responderAInlineGracioso } from './handlers/actions/responderAInlineGracioso';
-import { responderAInlineInteresante } from './handlers/actions/responderAInlineInteresante';
+import {messageHandler} from "./handlers/updates/message";
+import {responderAInlineGracioso} from "./handlers/actions/responderAInlineGracioso";
+import {responderAInlineInteresante} from "./handlers/actions/responderAInlineInteresante";
+import {iniciarRegistroNuevoCliente} from "./handlers/commands/cliente";
 
-const admin = require("firebase-admin");
+
+import admin = require("firebase-admin");
 admin.initializeApp();
+import firestoreSession = require("telegraf-session-firestore");
+export const db = admin.firestore();
 
-const functions = require("firebase-functions");
-// const db = admin.firestore();
+import functions = require("firebase-functions");
+import {procesarRegistroCliente} from "./handlers/actions/cliente";
 
 const telegramToken: string = functions.config().telegram.token;
 if (telegramToken === undefined) {
-    throw new Error('BOT TOKEN must be provided');
+  throw new Error("BOT TOKEN must be provided");
 }
-const bot = new Telegraf(telegramToken, {telegram: {webhookReply: true}});
+export const bot = new Telegraf<ExtendedContext>(telegramToken, {telegram: {webhookReply: true}});
+
 
 // --------------------------- MIDDLEWARE -------------------------------
+bot.use(firestoreSession(db.collection("sessions")));
+
+bot.use((ctx, next) => {
+  const session = ctx.session;
+  console.log("SESSION", session);
+  return next();
+});
+
+// --------------------------- ACTIONS -------------------------------
+bot.on("callback_query", async (ctx) => {
+  if (ctx.callbackQuery && "data" in ctx.callbackQuery) {
+    switch (ctx.callbackQuery.data) {
+    case "/registrarNuevoCliente":
+    case "/cancelarRegistroNuevoCliente":
+    case "/confirmarRegistro":
+    case "/recomenzarRegistroCliente":
+      await procesarRegistroCliente(ctx);
+      break;
+    default:
+      break;
+    }
+  }
+  ctx.answerCbQuery(ctx.callbackQuery.id);
+});
 
 // --------------------------- COMMANDS -------------------------------
 bot.start((ctx) => startCommand(ctx, true));
 bot.command("comando", (ctx) => ejemploCommand(ctx));
-  
+bot.command("nuevo_cliente", (ctx) => iniciarRegistroNuevoCliente(ctx));
+
 // --------------------------- HANDLING UPDATES -------------------------------
 
-bot.on('new_chat_members', async (ctx) => saludarNuevoMiembro(ctx));
-bot.on('message', async (ctx) => messageHandler(ctx));
+bot.on("new_chat_members", async (ctx) => saludarNuevoMiembro(ctx));
+bot.on("message", async (ctx) => messageHandler(ctx));
 
 // --------------------------- ACTIONS -------------------------------
 
 bot.action("inlineGracioso", async (ctx) => responderAInlineGracioso(ctx));
 bot.action("inlineInteresante", async (ctx) => responderAInlineInteresante(ctx));
+
 
 // -------------------------------- COMANDOS ---------------------------------
 // initialize the commands
@@ -55,7 +87,7 @@ bot.action("inlineInteresante", async (ctx) => responderAInlineInteresante(ctx))
 //           await ctx.reply(strings.mensajes.nuevoCliente.confirmarDatos);
 //           const datosDelCliente =
 //           "\n- Nombre: " + ctx.session.nuevoCliente.nombre + "\n- Telefono: " + ctx.session.nuevoCliente.telefono;
-  
+
 //           return enviarMensajeConMarkup(
 //             teclados.inline,
 //             [
@@ -76,14 +108,14 @@ bot.action("inlineInteresante", async (ctx) => responderAInlineInteresante(ctx))
 //     }
 //     return Promise.all(promises);
 //   });
-  
+
 
 // --------------------------- ERROR HANDLING -------------------------------
 // error handling
 bot.catch((err: any, ctx:any) => {
-    functions.logger.error("[Bot] Error", err);
-    functions.logger.error("[Bot] Error CTX", ctx);
-    return ctx.reply(`Error`, err);
+  functions.logger.error("[Bot] Error", err);
+  functions.logger.error("[Bot] Error CTX", ctx);
+  return ctx.reply("Error", err);
 });
 
 // Expose Express API as a single Cloud Function:
