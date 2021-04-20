@@ -3,7 +3,8 @@
 /lib/*.js.map
 /lib/**/*.js
 
-index.js
-a.js
+#Always ignore node_modules
+node_modules/
 
-.runtimeConfig.json
+index.js
+.eslintrc.js

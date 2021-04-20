@@ -1,10 +1,14 @@
-import { Context } from "telegraf";
-import {darLaBienvenida} from '../../modules/utils/mensajes';
+import {ExtendedContext} from "../../../config/context/myContext";
+import {darLaBienvenida} from "../../modules/utils/mensajes";
 
-
-export async function saludarNuevoMiembro(ctx: Context){
-    const {update}: any = ctx;
-    const welcomeMessage = `Bienvenida ${update.message.new_chat_member.first_name} al grupo!`;
-    await ctx.reply(welcomeMessage);
-    return darLaBienvenida(ctx);
+/**
+ *
+ * @param {ExtendedContext} ctx
+ * @return {Promise}
+ */
+export async function saludarNuevoMiembro(ctx: ExtendedContext) {
+  const {update}: any = ctx;
+  const welcomeMessage = `Bienvenida ${update.message.new_chat_member.first_name} al grupo!`;
+  await ctx.reply(welcomeMessage);
+  return darLaBienvenida(ctx);
 }
