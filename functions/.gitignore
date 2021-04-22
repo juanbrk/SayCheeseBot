@@ -19,4 +19,5 @@ typings/
 node_modules/
 
 serviceAccountKey.*
+config.*
 package-lock.*

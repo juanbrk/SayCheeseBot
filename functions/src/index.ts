@@ -9,10 +9,15 @@ import {messageHandler} from "./handlers/updates/message";
 import {responderAInlineGracioso} from "./handlers/actions/responderAInlineGracioso";
 import {responderAInlineInteresante} from "./handlers/actions/responderAInlineInteresante";
 import {iniciarRegistroNuevoCliente} from "./handlers/commands/cliente";
+import firebaseAccountCredentials from "../config/serviceAccountKey.json";
 
 
 import admin = require("firebase-admin");
-admin.initializeApp();
+const serviceAccount = firebaseAccountCredentials as admin.ServiceAccount;
+
+admin.initializeApp({
+  credential: admin.credential.cert(serviceAccount),
+});
 import firestoreSession = require("telegraf-session-firestore");
 export const db = admin.firestore();
 
