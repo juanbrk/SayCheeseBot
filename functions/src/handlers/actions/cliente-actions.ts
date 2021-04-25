@@ -1,8 +1,8 @@
-import {MenuMiddleware, MenuTemplate} from "telegraf-inline-menu/dist/source";
 import {ExtendedContext} from "../../../config/context/myContext";
 import {PropiedadesCliente} from "../../modules/enums/cliente";
 import {Session} from "../../modules/models/session";
-import {bot, db} from "../../index";
+import {db} from "../../index";
+import {ClienteFirestore} from "../../modules/models/cliente";
 
 /**
  * Una vez que comenzó el registro del cliente, hay que continuar hasta que se hayan
@@ -20,34 +20,18 @@ export async function procesarRegistroCliente(ctx: ExtendedContext) {
       obtenerTelefonoCliente(ctx, session.nuevoCliente!.nombre!);
     } else if (ingresoTelefono && ctx.session.nuevoCliente) {
       guardarPropiedadCliente(ctx, session, PropiedadesCliente.telefono);
-      // Confirmar datos
-      await ctx.reply("Confirmame, por favor, si estos datos son correctos:");
+      // TODO: Confirmar datos mediante un submenu
       const datosDelCliente =
         "\n- Nombre: " + ctx.session.nuevoCliente.nombre + "\n- Telefono: " + ctx.session.nuevoCliente.telefono;
-      const menu = new MenuTemplate<ExtendedContext>(() => datosDelCliente);
-      menu.interact("Si, son correctos", "confirmarRegistro", {
-        do: async (ctx) => await ctx.answerCbQuery("Desea confirmar registro cliente"),
-      });
-      menu.interact("No, son incorrectos", "recomenzarRegistroCliente", {
-        do: async (ctx) => await ctx.answerCbQuery("Desea recomenzar registro cliente"),
-      });
-      const menuMiddleware = new MenuMiddleware<ExtendedContext>("/", menu);
-      bot.use(menuMiddleware.middleware());
-      return menuMiddleware.replyToContext(ctx);
+      await ctx.reply(`Guardando cliente con los siguientes datos: ${datosDelCliente}`);
+      await guardarCliente(ctx);
+      ctx.session.registrandoNuevoCliente = false;
     }
-
-    // TODO: REGISTRAR CLIENTE
   } else {
     if (ctx.callbackQuery && "data" in ctx.callbackQuery) {
       switch (ctx.callbackQuery.data) {
       case "/registrarNuevoCliente":
         return obtenerNombreCliente(ctx);
-      case "/cancelarRegistroNuevoCliente":
-        return cancelarRegistroCliente(ctx);
-      case "/confirmarRegistro":
-        return guardarCliente(ctx);
-      case "/recomenzarRegistroCliente":
-        return recomenzarRegistroCliente(ctx);
       default:
         break;
       }
@@ -72,30 +56,6 @@ export async function obtenerNombreCliente(ctx: ExtendedContext): Promise<any> {
   return ctx.editMessageText("Ok. Por favor ingresá el nombre del nuevo cliente: ");
 }
 
-/**
- * El usuario puede cancelar el registro de un nuevo cliente, luego de haber ingresado el comando /nuevo_cliente.
- * @param {ExtendedContext} ctx
- * @return {Promise}
- */
-export async function cancelarRegistroCliente(ctx: ExtendedContext): Promise<any> {
-  const session = ctx.session;
-  session.registrandoNuevoCliente = false;
-  ctx.session = session;
-  return ctx.editMessageText("Ok. Se canceló el registro del nuevo cliente ");
-}
-
-/**
- * El usuario puede cancelar el registro de un nuevo cliente, luego de haber ingresado el comando /nuevo_cliente.
- * @param {ExtendedContext} ctx
- * @return {Promise}
- */
-export async function recomenzarRegistroCliente(ctx: ExtendedContext): Promise<any> {
-  const session = ctx.session;
-  session.registrandoNuevoCliente = false;
-  ctx.session = session;
-  await ctx.editMessageText("El registro  del nuevo cliente fue cancelado.");
-  return ctx.reply("Podés recomenzar el registro del nuevo cliente ingresando el comando /nuevo_cliente");
-}
 
 /**
  *
@@ -103,17 +63,17 @@ export async function recomenzarRegistroCliente(ctx: ExtendedContext): Promise<a
  * @param {Cliente} cliente que debemos guardar
  */
 export async function guardarCliente(ctx: ExtendedContext) {
-  await ctx.editMessageText("Registrando cliente...");
   const coleccion = "Cliente";
-  const docRef = db.collection(coleccion).doc(`${ctx.session.nuevoCliente!.nombre}`);
-  const documentoCliente = {
+  const uid = ctx.session.nuevoCliente!.nombre?.replace(/ /g, "_").toLowerCase();
+  const docRef = db.collection(coleccion).doc(`${uid}`);
+  const documentoCliente: ClienteFirestore= {
     nombre: `${ctx.session.nuevoCliente!.nombre}`,
     telefono: `${ctx.session.nuevoCliente!.telefono}`,
-    registradoPor: `${ctx.callbackQuery!.from.first_name}`,
+    registradoPor: `${ctx.message!.from.first_name}`,
+    uid: uid!,
   };
   await docRef.set(documentoCliente);
   ctx.reply(`${"Se creó correctamente el cliente"} ${ctx.session.nuevoCliente!.nombre}`);
-  ctx.session.registrandoNuevoCliente = false;
 }
 
 /**

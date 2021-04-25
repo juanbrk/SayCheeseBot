@@ -1,0 +1,10 @@
+#node modules
+node_modules/
+
+#seed
+seed/
+
+#json
+a.json
+package-lock.json
+*.log

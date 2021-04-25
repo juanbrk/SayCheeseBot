@@ -3,3 +3,10 @@ export interface Cliente {
     telefono?: string;
     mensajeInicial: number;
 }
+
+export interface ClienteFirestore {
+    nombre: string,
+    telefono: string,
+    registradoPor: string,
+    uid: string
+}
