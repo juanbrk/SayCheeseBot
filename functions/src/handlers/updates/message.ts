@@ -1,6 +1,6 @@
 import {Markup} from "telegraf";
 import {mensajes as mensajesEnvio} from "../../modules/utils/mensajes";
-import {procesarRegistroCliente} from "../actions/cliente";
+import {procesarRegistroCliente} from "../actions/cliente-actions";
 
 const mensajes = {
   ejemploParaUsarComandos: "Podes comunicarte conmigo usando comandos. Para usar un comando apreta el simbolo [ / ] que" +
@@ -19,8 +19,8 @@ export async function messageHandler(ctx: any) {
   if (message.text === mensajesEnvio.siConPulgarParaArriba) {
     await ctx.reply(mensajes.ejemploParaUsarComandos, Markup.removeKeyboard());
   } else if (session.registrandoNuevoCliente) {
-    procesarRegistroCliente(ctx);
+    return procesarRegistroCliente(ctx);
   } else {
-    ctx.reply(mensajes.constanciaDeRecibo);
+    return ctx.reply(mensajes.constanciaDeRecibo, Markup.removeKeyboard());
   }
 }
