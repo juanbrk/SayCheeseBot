@@ -1,6 +1,7 @@
 import {Markup} from "telegraf";
 import {mensajes as mensajesEnvio} from "../../modules/utils/mensajes";
 import {procesarRegistroCliente} from "../actions/cliente-actions";
+import {procesarRegistroCobro} from "../actions/cobro-actions";
 
 const mensajes = {
   ejemploParaUsarComandos: "Podes comunicarte conmigo usando comandos. Para usar un comando apreta el simbolo [ / ] que" +
@@ -20,6 +21,8 @@ export async function messageHandler(ctx: any) {
     await ctx.reply(mensajes.ejemploParaUsarComandos, Markup.removeKeyboard());
   } else if (session.registrandoNuevoCliente) {
     return procesarRegistroCliente(ctx);
+  } else if (session.cobro.registrandoNuevoCobro) {
+    return procesarRegistroCobro(ctx);
   } else {
     return ctx.reply(mensajes.constanciaDeRecibo, Markup.removeKeyboard());
   }

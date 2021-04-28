@@ -10,3 +10,11 @@ export interface ClienteFirestore {
     registradoPor: string,
     uid: string
 }
+
+export interface ClienteAsEntity {
+    nombre: string;
+    uid: string;
+}
+
+export type ClientesFirestore = Array<ClienteFirestore>
+export type ClientesEntities = Array<ClienteAsEntity>

@@ -11,7 +11,6 @@ import firestoreSession = require("telegraf-session-firestore");
 
 admin.initializeApp();
 export const db = admin.firestore();
-
 const telegramToken: string = functions.config().telegram.token;
 if (telegramToken === undefined) {
   throw new Error("BOT TOKEN must be provided");
@@ -20,12 +19,12 @@ const bot = new Telegraf<ExtendedContext>(telegramToken, {telegram: {webhookRepl
 
 // --------------------------- MIDDLEWARE -------------------------------
 bot.use(firestoreSession(db.collection("sessions")));
-bot.use((ctx, next) => {
+bot.use(async (ctx, next) => {
   const session = ctx.session;
   console.log("SESSION", session);
-  console.log(menuMiddleware.tree());
   return next();
 });
+
 
 export const menuMiddleware = new MenuMiddleware("/", menu);
 // --------------------------- COMMANDS -------------------------------
