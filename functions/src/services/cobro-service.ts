@@ -1,24 +1,27 @@
-import {db} from "../index";
-import {ClienteFirestore} from "../modules/models/cliente";
+import {ExtendedContext} from "../../config/context/myContext";
+import {db} from "../../src/index";
+import {CobroFirestore} from "../modules/models/cobro";
 
 /**
  *
- * @return {Array} clientes in firesotre format
+ * @param {ExtendedContext} ctx
+ * @param {Cliente} cliente que debemos guardar
  */
-export async function getClientes() {
-  const clientes: ClienteFirestore[] = [];
-  const clientesRef = db.collection("Cliente");
-  await clientesRef.get()
-    .then((snapshot) => {
-      snapshot.forEach((doc) => {
-        const cliente: ClienteFirestore = {
-          nombre: doc.data().nombre,
-          telefono: doc.data().telefono,
-          registradoPor: doc.data().registradoPor,
-          uid: doc.data().uid,
-        };
-        clientes.push(cliente);
-      });
-    });
-  return clientes;
+export async function registrarCobro(ctx: ExtendedContext) {
+  const coleccion = "Cobro";
+  if (ctx.session.cobro) {
+    const {cobro} = ctx.session;
+    const uid = `${ctx.session.cobro.cliente.uid}_${ctx.session.cobro.motivo!.replace(/ /g, "_").toLowerCase()}`;
+    const docRef = db.collection(coleccion).doc(`${uid}`);
+    const documentoCobro: CobroFirestore= {
+      uid: uid,
+      registradoPor: cobro.registradoPor!,
+      cliente: cobro.cliente,
+      monto: cobro.monto!,
+      fechaCobro: new Date(),
+      motivo: cobro.motivo!,
+    };
+    await docRef.set(documentoCobro);
+  }
+  return ctx.reply(`${"Se registró correctamente el cobro a"} ${ctx.session.cobro!.cliente.nombre!}`);
 }
