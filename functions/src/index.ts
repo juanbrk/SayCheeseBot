@@ -42,6 +42,13 @@ bot.catch((err: any, ctx: any) => {
   return ctx.reply("Error", err);
 });
 
+bot.telegram.setMyCommands([
+  {command: "start", description: "Comenzar a usar el bot"},
+  {command: "menu", description: "Consultá las opciones que tengo para ayudarte"},
+  {command: "help", description: "Mostrar ayuda"},
+  {command: "settings", description: "Abrir las configuraciones"},
+]);
+
 
 bot.use(menuMiddleware.middleware());
 // Expose Express API as a single Cloud Function:
