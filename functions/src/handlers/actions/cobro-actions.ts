@@ -2,7 +2,7 @@ import {ExtendedContext} from "../../../config/context/myContext";
 import {PropiedadesCobro} from "../../modules/enums/cobro";
 import {ClienteAsEntity} from "../../modules/models/cliente";
 import {Session} from "../../modules/models/session";
-import {getCliente} from "../../services/cliente-service";
+import {getClienteEntity} from "../../services/cliente-service";
 import {registrarCobro} from "../../services/cobro-service";
 
 const regexMontoPagado = /\d+(,\d{1,2})?/;
@@ -14,7 +14,7 @@ const regexMontoPagado = /\d+(,\d{1,2})?/;
  * @return {Promise}
  */
 export async function iniciarCobroCliente(ctx: ExtendedContext, clienteUID: string) {
-  const cliente: ClienteAsEntity = await getCliente(clienteUID);
+  const cliente: ClienteAsEntity = await getClienteEntity(clienteUID);
   const session: Session = await ctx.session;
   if (ctx.callbackQuery && ctx.callbackQuery.message) {
     session.cobro = {
@@ -54,7 +54,7 @@ export async function procesarRegistroCobro(ctx: ExtendedContext) {
       await guardarPropiedadCobro(ctx, session, PropiedadesCobro.REGISTRADO_POR);
       presentarInformacionCobro(ctx);
       await registrarCobro(ctx);
-      ctx.session.cobro.registrandoNuevoCobro = false;
+      delete ctx.session.cobro;
     }
   }
   return;

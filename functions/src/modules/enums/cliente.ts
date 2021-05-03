@@ -1,4 +1,4 @@
 export const enum PropiedadesCliente {
-    nombre = "nombre",
-    telefono = "telefono",
+    NOMBRE = "nombre",
+    TELEFONO = "telefono",
 }

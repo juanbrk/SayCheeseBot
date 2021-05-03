@@ -1,7 +1,6 @@
-export interface Cliente {
+export interface ClienteSession {
     nombre?: string;
     telefono?: string;
-    mensajeInicial: number;
 }
 
 export interface ClienteFirestore {
@@ -18,3 +17,15 @@ export interface ClienteAsEntity {
 
 export type ClientesFirestore = Array<ClienteFirestore>
 export type ClientesEntities = Array<ClienteAsEntity>
+
+export interface EdicionInformacionCliente {
+    cliente: ClienteFirestore;
+    mensajeInicial: number;
+    propiedadAEditar?: string;
+    nuevoValor?: string;
+}
+
+export interface RegistroNuevoCliente {
+    cliente?: ClienteSession;
+    mensajeInicial: number;
+}
