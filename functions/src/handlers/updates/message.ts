@@ -1,6 +1,6 @@
 import {Markup} from "telegraf";
 import {mensajes as mensajesEnvio} from "../../modules/utils/mensajes";
-import {procesarRegistroCliente} from "../actions/cliente-actions";
+import {procesarEdicionDeCliente, procesarRegistroCliente} from "../actions/cliente-actions";
 import {procesarRegistroCobro} from "../actions/cobro-actions";
 
 const mensajes = {
@@ -19,10 +19,12 @@ export async function messageHandler(ctx: any) {
   const {session} = ctx;
   if (message.text === mensajesEnvio.siConPulgarParaArriba) {
     await ctx.reply(mensajes.ejemploParaUsarComandos, Markup.removeKeyboard());
-  } else if (session.registrandoNuevoCliente) {
+  } else if (session.nuevoCliente) {
     return procesarRegistroCliente(ctx);
-  } else if (session.cobro.registrandoNuevoCobro) {
+  } else if (session.cobro) {
     return procesarRegistroCobro(ctx);
+  } else if (session.edicionInformacionCliente) {
+    return procesarEdicionDeCliente(ctx);
   } else {
     return ctx.reply(mensajes.constanciaDeRecibo, Markup.removeKeyboard());
   }

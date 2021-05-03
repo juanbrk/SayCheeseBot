@@ -45,13 +45,34 @@ export async function getClientesAsEntities(): Promise<ClientesEntities> {
  * @param {string} clienteUID uid  del cliente
  * @return {Promise<ClienteAsEntity>} cliente
  */
-export async function getCliente(clienteUID: string): Promise<ClienteAsEntity> {
+export async function getClienteEntity(clienteUID: string): Promise<ClienteAsEntity> {
   const docCliente = await db.collection("Cliente").doc(clienteUID).get();
   if (!docCliente.exists) {
     throw new Error(`No se encontró al cliente con el uid ${clienteUID}`);
   } else {
     const cliente : ClienteAsEntity = {
       nombre: docCliente.data()!.nombre,
+      uid: docCliente.data()!.uid,
+    };
+    return cliente;
+  }
+}
+
+/**
+ * Necesitamos obtener los datos del  cliente según su UID
+ *
+ * @param {string} clienteUID uid  del cliente
+ * @return {Promise<ClienteFirestore>} cliente
+ */
+export async function getDatosCliente(clienteUID: string): Promise<ClienteFirestore> {
+  const docCliente = await db.collection("Cliente").doc(clienteUID).get();
+  if (!docCliente.exists) {
+    throw new Error(`No se encontró al cliente con el uid ${clienteUID}`);
+  } else {
+    const cliente : ClienteFirestore = {
+      nombre: docCliente.data()!.nombre,
+      telefono: docCliente.data()!.telefono,
+      registradoPor: docCliente.data()!.registradoPor,
       uid: docCliente.data()!.uid,
     };
     return cliente;
