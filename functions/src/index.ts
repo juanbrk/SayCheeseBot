@@ -54,4 +54,9 @@ bot.use(menuMiddleware.middleware());
 // Expose Express API as a single Cloud Function:
 exports.api = functions.https.onRequest((req: Request, res: Response) => bot.handleUpdate(req.body, res));
 
+// Listeners
+
+import {onBalanceCreated} from "./controllers/balance-controller";
+exports.onBalanceCreated = onBalanceCreated;
+
 

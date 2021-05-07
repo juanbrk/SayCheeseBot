@@ -7,7 +7,6 @@ import {CobroFirestore} from "../models/cobro";
  * @return {CobroAsEntity}
  */
 export const cobroAsEntityFactory = (cobro: CobroFirestore) => {
-  console.log("AHORA ES EL MOMENTO DEL COBRO AS ENTITY FACTORY");
   const {monto, uid} = cobro;
   return {monto, uid};
 };
