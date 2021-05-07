@@ -14,3 +14,6 @@ export interface ResumenFirestore {
     uid: string;
     cantidadDeCobros: number;
 }
+
+
+export type ListadoResumenes = Array<ResumenFirestore>;

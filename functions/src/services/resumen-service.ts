@@ -3,7 +3,7 @@ import {CollectionName} from "../modules/enums/collectionName";
 import {TipoResumen} from "../modules/enums/resumen";
 import {actualizacionResumenFactory, resumenFactory} from "../modules/factories/resumenFactory";
 import {BalanceFirestore} from "../modules/models/balance";
-import {ResumenFirestore} from "../modules/models/resumen";
+import {ListadoResumenes, ResumenFirestore} from "../modules/models/resumen";
 
 /**
  * Con cada cobro se genera un balance y, a partir de ese balance, se genera un nuevo resumen mensual o
@@ -62,7 +62,7 @@ const generarResumenMensual = async (
  * @param {boolean} esActualizacion nos permite saber si crear o actualizar el documento en firestore
  * @return {Promise<FirebaseFirestore.WriteResult>}
  */
-const guardarResumen = async (resumenAGuardar: ResumenFirestore, esActualizacion = false) => {
+const guardarResumen = async (resumenAGuardar: ResumenFirestore, esActualizacion = false): Promise<FirebaseFirestore.WriteResult> => {
   const {uid} = resumenAGuardar;
   const docRef = db.collection(CollectionName.RESUMEN).doc(`${uid}`);
   if (!esActualizacion) {
@@ -71,3 +71,35 @@ const guardarResumen = async (resumenAGuardar: ResumenFirestore, esActualizacion
     return docRef.update(resumenAGuardar);
   }
 };
+
+/**
+ * Necesitamos obtener los resumenes para presentar en el submenú de generación
+ * de resumenes
+ *
+ * @return {Promise<ListadoResumenes>}
+ */
+export async function getResumenes(): Promise<ListadoResumenes> {
+  const resumenesSnapshot = await db.collection(CollectionName.RESUMEN).get();
+  const resumenes : ListadoResumenes = [];
+  resumenesSnapshot.forEach((doc) => {
+    const resumen= doc.data() as ResumenFirestore;
+    resumenes.push(resumen);
+  });
+  return resumenes;
+}
+
+/**
+ * Obtenemos el resumen según su UID
+ *
+ * @param {string} resumenUID
+ * @return {Promise<ResumenFirestore>}
+ */
+export async function getResumenByUID(resumenUID: string) {
+  const resumenRef = await db.collection(CollectionName.RESUMEN).doc(resumenUID).get();
+  if (!resumenRef.exists) {
+    console.log(`No se encontró resumen para el UID ${resumenUID}`);
+    throw new Error("No se encontró resumen para el UID ${resumenUID}`");
+  } else {
+    return resumenRef.data() as ResumenFirestore;
+  }
+}
