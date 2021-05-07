@@ -18,3 +18,7 @@ export interface CobroFirestore {
     uid: string;
 }
 
+export interface CobroAsEntity {
+    monto: number;
+    uid: string;
+}

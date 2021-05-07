@@ -1,4 +1,5 @@
 import {db} from "../index";
+import {CollectionName} from "../modules/enums/collectionName";
 import {ClienteAsEntity, ClienteFirestore, ClientesEntities, ClientesFirestore} from "../modules/models/cliente";
 
 /**
@@ -27,7 +28,7 @@ export async function getClientes() : Promise<ClientesFirestore> {
  * @return {Promise<ClientesEntities>}
  */
 export async function getClientesAsEntities(): Promise<ClientesEntities> {
-  const clientesSnapshot = await db.collection("Cliente").get();
+  const clientesSnapshot = await db.collection(CollectionName.CLIENTE).get();
   const clientes : ClientesEntities = [];
   clientesSnapshot.forEach((doc) => {
     const cliente : ClienteAsEntity = {
