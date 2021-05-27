@@ -30,7 +30,7 @@
     "eslint-config-google": "^0.14.0",
     "eslint-plugin-import": "^2.22.1",
     "firebase-functions-test": "^0.2.0",
-    "typegram": "^3.2.3",
+    "typegram": "^3.3.1",
     "typescript": "^4.2.3"
   },
   "private": true

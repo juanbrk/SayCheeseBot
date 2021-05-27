@@ -13,6 +13,9 @@ src/*.js
 config.json
 
 
+#runtime env config
+.runtimeConfig.json
+
 
 # TypeScript v1 declaration files
 typings/
