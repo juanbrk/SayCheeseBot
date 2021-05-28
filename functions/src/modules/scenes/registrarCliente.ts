@@ -4,6 +4,10 @@ import {ExtendedContext} from "../../../config/context/myContext";
 const stepHandler = new Composer<ExtendedContext>();
 
 stepHandler.command("next", async (ctx) => {
+  await ctx.reply("Done");
+  return await ctx.scene.leave();
+});
+stepHandler.command("leave", async (ctx) => {
   await ctx.reply("Step 2. Via command");
   return ctx.wizard.next();
 });
@@ -14,6 +18,7 @@ stepHandler.use((ctx) =>
 export const superWizard = new Scenes.WizardScene(
   "super-wizard",
   async (ctx) => {
+    console.log(ctx);
     try {
       ctx.reply(
         "Step 1",

@@ -9,6 +9,7 @@ export const menu = new MenuTemplate<ExtendedContext>("¿Qué deseas hacer?");
 
 menu.interact("Registrar nuevo cliente", "nuevo", {
   do: (ctx) => {
+    console.log(ctx);
     ctx.answerCbQuery("Desea registrar cliente nuevo");
     ctx.scene.enter("super-wizard");
     return false;
