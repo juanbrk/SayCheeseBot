@@ -1,27 +1,32 @@
-import {Telegraf} from "telegraf";
+import {Scenes, Telegraf} from "telegraf";
 import {Request, Response} from "express";
 import {ExtendedContext} from "../config/context/myContext";
 import functions = require("firebase-functions");
 import {MenuMiddleware} from "telegraf-inline-menu/dist/source";
 import {messageHandler} from "./handlers/updates/message";
 
+
+import {onBalanceCreated} from "./controllers/balance-controller";
+
 import {menu} from "./handlers/menus/index";
 import admin = require("firebase-admin");
 import firestoreSession = require("telegraf-session-firestore");
+import {superWizard} from "./modules/scenes/registrarCliente";
 
 admin.initializeApp();
+const stage = new Scenes.Stage<ExtendedContext>([superWizard]);
 export const db = admin.firestore();
 const telegramToken: string = functions.config().telegram.token;
 if (telegramToken === undefined) {
   throw new Error("BOT TOKEN must be provided");
 }
-const bot = new Telegraf<ExtendedContext>(telegramToken, {telegram: {webhookReply: true}});
+export const bot = new Telegraf<ExtendedContext>(telegramToken, {telegram: {webhookReply: true}});
 
 // --------------------------- MIDDLEWARE -------------------------------
 bot.use(firestoreSession(db.collection("sessions")));
+bot.use(stage.middleware());
 bot.use(async (ctx, next) => {
-  const session = ctx.session;
-  console.log("SESSION", session);
+  console.log(ctx);
   return next();
 });
 
@@ -56,7 +61,6 @@ exports.api = functions.https.onRequest((req: Request, res: Response) => bot.han
 
 // Listeners
 
-import {onBalanceCreated} from "./controllers/balance-controller";
 exports.onBalanceCreated = onBalanceCreated;
 
 
