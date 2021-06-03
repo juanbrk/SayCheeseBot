@@ -1,6 +1,7 @@
 export interface ClienteSession {
     nombre?: string;
     telefono?: string;
+    datosConfirmados: boolean;
 }
 
 export interface ClienteFirestore {
@@ -23,9 +24,4 @@ export interface EdicionInformacionCliente {
     mensajeInicial: number;
     propiedadAEditar?: string;
     nuevoValor?: string;
-}
-
-export interface RegistroNuevoCliente {
-    cliente?: ClienteSession;
-    mensajeInicial: number;
 }

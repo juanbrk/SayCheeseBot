@@ -1,5 +1,5 @@
 import {WizardSession, WizardSessionData} from "telegraf/typings/scenes";
-import {EdicionInformacionCliente, RegistroNuevoCliente} from "./cliente";
+import {ClienteFirestore, ClienteSession, EdicionInformacionCliente} from "./cliente";
 import {CobroSession} from "./cobro";
 import {ListadoResumenes} from "./resumen";
 
@@ -15,7 +15,7 @@ import {ListadoResumenes} from "./resumen";
 export interface Session extends WizardSession<MyWizardSession> {
 	page?: number;
     counter?: number;
-	nuevoCliente?: RegistroNuevoCliente;
+	nuevoCliente?: ClienteFirestore;
 	cobro?: CobroSession;
 	edicionInformacionCliente?: EdicionInformacionCliente;
 	resumenes?: ListadoResumenes;
@@ -27,7 +27,8 @@ export interface Session extends WizardSession<MyWizardSession> {
  * own interface as a type variable to `WizardSession` and to
  * `WizardContextWizard`.
  */
-interface MyWizardSession extends WizardSessionData {
+export interface MyWizardSession extends WizardSessionData {
 	// will be available under `ctx.scene.session.myWizardSessionProp`
-	myWizardSessionProp: number
+	myWizardSessionProp: number;
+	datosCliente?: ClienteSession;
   }

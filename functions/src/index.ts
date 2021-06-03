@@ -26,8 +26,6 @@ export const bot = new Telegraf<ExtendedContext>(telegramToken, {telegram: {webh
 bot.use(firestoreSession(db.collection("sessions")));
 bot.use(stage.middleware());
 bot.use(async (ctx, next) => {
-  const session = ctx.session;
-  console.log("SESSION", session);
   console.log(ctx);
   return next();
 });

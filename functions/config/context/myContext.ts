@@ -1,6 +1,6 @@
 import {Context as TelegrafContext} from "telegraf";
-import {SceneContextScene, WizardContextWizard, WizardSessionData} from "telegraf/typings/scenes";
-import {Session} from "../../src/modules/models/session";
+import {SceneContextScene, WizardContextWizard} from "telegraf/typings/scenes";
+import {Session, MyWizardSession} from "../../src/modules/models/session";
 
 /**
  * Now that we have our session object, we can define our own context object.
@@ -15,7 +15,7 @@ import {Session} from "../../src/modules/models/session";
 export interface ExtendedContext extends TelegrafContext {
 	session: Session;
 	// declare scene type
-	scene: SceneContextScene<ExtendedContext, WizardSessionData>
+	scene: SceneContextScene<ExtendedContext, MyWizardSession>
 	// declare wizard type
 	wizard: WizardContextWizard<ExtendedContext>
 	readonly match: RegExpExecArray | undefined;
