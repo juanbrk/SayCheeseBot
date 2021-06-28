@@ -5,25 +5,26 @@ import {balanceFactory} from "../modules/factories/balanceFactory";
 import {BalanceFirestore} from "../modules/models/balance";
 import {CobroFirestore} from "../modules/models/cobro";
 import {registrarBalance} from "./balance-service";
-
 /**
  *
  * @param {ExtendedContext} ctx
  * @param {Cliente} cliente que debemos guardar
  */
 export async function registrarCobro(ctx: ExtendedContext) {
-  if (ctx.session.cobro) {
-    const {cobro} = ctx.session;
-    const uid = `${ctx.session.cobro.cliente.uid}_${ctx.session.cobro.motivo!.replace(/ /g, "_").toLowerCase()}`;
+  if (ctx.scene.session.datosCobro) {
+    const {datosCobro} = ctx.scene.session;
+    const uid = `${ctx.scene.session.datosCobro.cliente.uid}_${ctx.scene.session.datosCobro.motivo!.replace(/ /g, "_").toLowerCase()}`;
     const docRef = db.collection(CollectionName.COBRO).doc(`${uid}`);
-    if (cobro.registradoPor && cobro.monto) {
+    if (datosCobro.registradoPor && datosCobro.monto && datosCobro.asignadoA) {
       const documentoCobro: CobroFirestore= {
         uid: uid,
-        registradoPor: cobro.registradoPor,
-        cliente: cobro.cliente,
-        monto: cobro.monto,
+        registradoPor: datosCobro.registradoPor,
+        cobradoPor: datosCobro.asignadoA,
+        estaDividido: !!datosCobro.dividieronLaPlata,
+        cliente: datosCobro.cliente,
+        monto: datosCobro.monto,
         fechaCobro: new Date(),
-        motivo: cobro.motivo!,
+        motivo: datosCobro.motivo!,
       };
       docRef.set(documentoCobro)
         .then(() => {

@@ -8,4 +8,5 @@ export interface BalanceFirestore {
     leCorrespondeAFer: number;
     fechaGenerado: FirebaseFirestore.Timestamp;
     uid: string;
+    estaDividido: boolean;
 }

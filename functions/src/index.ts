@@ -12,9 +12,10 @@ import {menu} from "./handlers/menus/index";
 import admin = require("firebase-admin");
 import firestoreSession = require("telegraf-session-firestore");
 import {superWizard} from "./modules/scenes/registrarCliente";
+import {cobroWizard} from "./modules/scenes/registrarCobro";
 
 admin.initializeApp();
-const stage = new Scenes.Stage<ExtendedContext>([superWizard]);
+const stage = new Scenes.Stage<ExtendedContext>([superWizard, cobroWizard]);
 export const db = admin.firestore();
 const telegramToken: string = functions.config().telegram.token;
 if (telegramToken === undefined) {
@@ -25,10 +26,10 @@ export const bot = new Telegraf<ExtendedContext>(telegramToken, {telegram: {webh
 // --------------------------- MIDDLEWARE -------------------------------
 bot.use(firestoreSession(db.collection("sessions")));
 bot.use(stage.middleware());
-bot.use(async (ctx, next) => {
-  console.log(ctx);
-  return next();
-});
+// bot.use(async (ctx, next) => {
+//   console.log(ctx);
+//   return next();
+// });
 
 
 export const menuMiddleware = new MenuMiddleware("/", menu);
