@@ -1,4 +1,5 @@
 import admin = require("firebase-admin");
+import {Socias} from "../enums/socias";
 import {CobroFirestore} from "../models/cobro";
 import {cobroAsEntityFactory} from "./cobroAsEntityFactory";
 
@@ -14,6 +15,7 @@ export const balanceFactory = (cobro: CobroFirestore) => {
   const cobroAsEntity = cobroAsEntityFactory(cobro);
   const {leCorrespondeAFer, leCorrespondeAFlor} = asignarCuantoLeCorrespondeACadaSocia();
   const uid = generarUidDelBalance();
+  const estaDividido: boolean = cobro.estaDividido;
 
 
   /**
@@ -28,7 +30,7 @@ export const balanceFactory = (cobro: CobroFirestore) => {
     let leCorrespondeAFer;
     let leCorrespondeAFlor;
     const laMitadDeLoCobrado: number = cobro.monto / 2;
-    const cobroFer = cobro.registradoPor == "Fer";
+    const cobroFer = cobro.registradoPor == Socias.FER;
 
     if (cobroFer) {
       leCorrespondeAFer = laMitadDeLoCobrado;
@@ -49,7 +51,7 @@ export const balanceFactory = (cobro: CobroFirestore) => {
    */
   function generarUidDelBalance() {
     const timestamp = Date.now();
-    const quienRealizoElCobro = cobro.registradoPor == "Fer" ? "fer" : "flor";
+    const quienRealizoElCobro = cobro.registradoPor == Socias.FER ? Socias.FER.toLocaleLowerCase() : Socias.FLOR.toLowerCase();
     const clienteUID = cobro.cliente.uid;
 
     return `${timestamp}-${quienRealizoElCobro}-${clienteUID}`;
@@ -64,6 +66,7 @@ export const balanceFactory = (cobro: CobroFirestore) => {
     año,
     mes,
     uid,
+    estaDividido,
   };
 };
 

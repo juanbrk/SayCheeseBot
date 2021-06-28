@@ -28,7 +28,7 @@ export interface Session extends WizardSession<MyWizardSession> {
  * `WizardContextWizard`.
  */
 export interface MyWizardSession extends WizardSessionData {
-	// will be available under `ctx.scene.session.myWizardSessionProp`
-	myWizardSessionProp: number;
+	// will be available under `ctx.scene.session....`
 	datosCliente?: ClienteSession;
+	datosCobro?: CobroSession;
   }

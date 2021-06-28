@@ -12,8 +12,8 @@ export const menu = new MenuTemplate<ExtendedContext>("¿A quien le cobraste?");
  */
 menu.choose("clienteId", obtenerListadoClientes, {
   do: async (ctx, clienteUID) => {
-    await ctx.answerCbQuery("Cobrar a cliente");
     await iniciarCobroCliente(ctx, clienteUID);
+    await ctx.scene.enter("cobros-wizard");
     return false;
   },
   columns: 2,

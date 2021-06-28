@@ -1,7 +1,8 @@
 import {ExtendedContext} from "../../../config/context/myContext";
 import {PropiedadesCobro} from "../../modules/enums/cobro";
+import {Socias} from "../../modules/enums/socias";
 import {ClienteAsEntity} from "../../modules/models/cliente";
-import {Session} from "../../modules/models/session";
+import {MyWizardSession, Session} from "../../modules/models/session";
 import {getClienteEntity} from "../../services/cliente-service";
 import {registrarCobro} from "../../services/cobro-service";
 
@@ -15,16 +16,16 @@ const regexMontoPagado = /\d+(,\d{1,2})?/;
  */
 export async function iniciarCobroCliente(ctx: ExtendedContext, clienteUID: string) {
   const cliente: ClienteAsEntity = await getClienteEntity(clienteUID);
-  const session: Session = await ctx.session;
+  const session: Session = ctx.session;
   if (ctx.callbackQuery && ctx.callbackQuery.message) {
     session.cobro = {
-      registrandoNuevoCobro: true,
       cliente: cliente,
-      mensajeInicial: ctx.callbackQuery.message.message_id,
+      datosConfirmados: false,
+      registradoPor: ctx.callbackQuery.from.first_name,
     };
   }
-  ctx.session = await session;
-  return ctx.editMessageText( "Ingresa el monto cobrado:");
+  ctx.session = session;
+  return cliente;
 }
 
 /**
@@ -32,29 +33,48 @@ export async function iniciarCobroCliente(ctx: ExtendedContext, clienteUID: stri
  * el monto y motivo, antes de guardarlo en BD
  *
  * @param {ExtendedContext} ctx Actualización en curso
+ * @param {string|boolean} valorAguardar Si se interactuó con un inline button, vendrá el valor de la propiedad a guardar
+ *  string en la asignación
+ *  boolean en la division
  */
-export async function procesarRegistroCobro(ctx: ExtendedContext) {
-  const {session} = ctx;
-  if (ctx.session.cobro?.mensajeInicial && (ctx.message && "text" in ctx.message)) {
-    const {mensajeInicial} = ctx.session.cobro;
-    const ingresoMonto = ctx.message.message_id == mensajeInicial + 1;
-    const ingresoMotivo = ctx.message.message_id == mensajeInicial + 3;
-    if (ingresoMonto) {
+export async function procesarRegistroCobro(ctx: ExtendedContext, valorAguardar?: Socias|boolean) {
+  const {session} = ctx.scene;
+  if (ctx.message && session.datosCobro) {
+    const ingresoMonto = session.datosCobro.monto && !session.datosCobro.motivo;
+    const ingresoMotivo = session.datosCobro.motivo && !session.datosCobro.asignadoA;
+
+    if (ingresoMonto && session.datosCobro && "text" in ctx.message) {
       const montoEsValido = regexMontoPagado.test(ctx.message.text);
-      if (montoEsValido) {
-        await guardarPropiedadCobro(ctx, session, PropiedadesCobro.MONTO);
-        return solicitarIngresoMotivoCobro(ctx);
+      const montoComoNumero: number = +(ctx.message.text.replace(",", "."));
+      if (montoEsValido && montoComoNumero> 0) {
+        return guardarPropiedadCobro(ctx, session, PropiedadesCobro.MONTO);
       } else {
-        ctx.session.cobro.mensajeInicial = mensajeInicial+3;
         await ctx.reply("Si vas a registrar un cobro, asegurate de ingresar sólo números. Te acepto (como mucho) una coma.");
-        return ctx.reply("Ingresa nuevamente el monto cobrado, pero hacelo bien esta vez 🙏🏾)");
+        await ctx.reply("Ingresa nuevamente el monto cobrado, pero hacelo bien esta vez 🙏🏾)");
+        return;
       }
-    } else if (ingresoMotivo) {
-      await guardarPropiedadCobro(ctx, session, PropiedadesCobro.MOTIVO);
-      await guardarPropiedadCobro(ctx, session, PropiedadesCobro.REGISTRADO_POR);
-      presentarInformacionCobro(ctx);
-      await registrarCobro(ctx);
-      delete ctx.session.cobro;
+    }
+
+    if (ingresoMotivo) {
+      return guardarPropiedadCobro(ctx, session, PropiedadesCobro.MOTIVO);
+    }
+  } else if (ctx.callbackQuery && session.datosCobro) {
+    const realizoAsignacion = typeof valorAguardar === "string";
+    const registraronDivision =typeof valorAguardar === "boolean";
+    const losDatosSonCorrectos = session.datosCobro.datosConfirmados;
+
+    if (realizoAsignacion && valorAguardar) {
+      return guardarPropiedadCobro(ctx, session, PropiedadesCobro.ASIGNADO_A, valorAguardar);
+    }
+
+    if (registraronDivision && valorAguardar) {
+      return guardarPropiedadCobro(ctx, session, PropiedadesCobro.ESTA_DIVIDIDO, valorAguardar);
+    }
+
+    if (losDatosSonCorrectos) {
+      await ctx.reply("Estoy registrando el cobro");
+      guardarPropiedadCobro(ctx, session, PropiedadesCobro.REGISTRADO_POR);
+      return registrarCobro(ctx);
     }
   }
   return;
@@ -66,49 +86,50 @@ export async function procesarRegistroCobro(ctx: ExtendedContext) {
  * @param {ExtendedContext} ctx Actualización en curso
  * @param {Session} sessionActual Sesion que contiene el cobro en curso y que actualizaremos con la nueva propiedad
  * @param {string} propiedadAGuardar es la que se agregará en la sesión
+ * @param {string|boolean} valorAguardar viene unicamente si en el paso se presionó un botón.
+ *    string en la asignación
+ *    boolean en la division
+ * @return {boolean}
  */
-function guardarPropiedadCobro(ctx: ExtendedContext, sessionActual: Session, propiedadAGuardar: PropiedadesCobro) {
-  if (sessionActual.cobro?.registrandoNuevoCobro && (ctx.message && "text" in ctx.message)) {
+function guardarPropiedadCobro(ctx: ExtendedContext, sessionActual: MyWizardSession, propiedadAGuardar: PropiedadesCobro, valorAguardar?: Socias | boolean) {
+  if (
+    sessionActual.datosCobro &&
+    (ctx.message && "text" in ctx.message)
+  ) {
     switch (propiedadAGuardar) {
     case PropiedadesCobro.MONTO: {
-      const montoFormateado = Number(ctx.message.text.replace(",", "."));
-      sessionActual.cobro.monto = montoFormateado;
+      const montoFormateado: number = +(ctx.message.text.replace(",", "."));
+      sessionActual.datosCobro = {
+        ...sessionActual.datosCobro,
+        monto: montoFormateado,
+      };
       break;
     }
     case PropiedadesCobro.MOTIVO:
-      sessionActual.cobro.motivo = ctx.message.text;
-      break;
-    case PropiedadesCobro.REGISTRADO_POR:
-      sessionActual.cobro.registradoPor = ctx.message.from.first_name;
+      sessionActual.datosCobro.motivo = ctx.message.text;
       break;
     default:
       break;
     }
-  }
-  ctx.session = sessionActual;
-}
+  } else if (
+    sessionActual.datosCobro &&
+    (ctx.callbackQuery && "data" in ctx.callbackQuery) &&
+    valorAguardar
+  ) {
+    switch (propiedadAGuardar) {
+    case PropiedadesCobro.ASIGNADO_A:
+      if (typeof valorAguardar === "string") {
+        sessionActual.datosCobro.asignadoA = valorAguardar;
+      }
+      break;
+    case PropiedadesCobro.ESTA_DIVIDIDO:
+      sessionActual.datosCobro.dividieronLaPlata = true;
+      break;
 
-/**
- * Al procesar un cobro, solicitamos al usuairo el ingreso del motivo por el cual realizó el cobro.
- * @param {ExtendedContext} ctx Actualización en curso
- * @return {Promise<Message.TextMessage>} solicitando que ingrese el motivo del cobro
- */
-function solicitarIngresoMotivoCobro(ctx: ExtendedContext) {
-  return ctx.reply("Ingresá el motivo del cobro:");
-}
-
-/**
- * Luego de procesar un cobro en su totalidad, se le presenta al cliente la información
- * que se guardara en la DB
- * @param {ExtendedContext} ctx Actualización en curso
- * @return {Promise<Message.TextMessage>} indicando lo que se guardará en DB
- */
-function presentarInformacionCobro(ctx: ExtendedContext) {
-  let datosDelCliente= "";
-  if (ctx.session.cobro) {
-    datosDelCliente ="\n- Cliente: " + ctx.session.cobro.cliente.nombre +
-          "\n- Monto: $" + ctx.session.cobro.monto +
-          "\n- Motivo: " + ctx.session.cobro.motivo;
+    default:
+      break;
+    }
   }
-  return ctx.reply(`Registrando el cobro con los siguientes datos: ${datosDelCliente}`);
+  ctx.scene.session.datosCobro = sessionActual.datosCobro;
+  return true;
 }

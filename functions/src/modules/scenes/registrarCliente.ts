@@ -1,6 +1,7 @@
 import {Composer, Markup, Scenes} from "telegraf";
 import {ExtendedContext} from "../../../config/context/myContext";
 import {procesarRegistroCliente} from "../../handlers/actions/cliente-actions";
+import {avanzar, repetirPaso, solicitarIngresoMenu} from "./general";
 
 const obtenerNombre = async (ctx: ExtendedContext) => {
   ctx.editMessageText("Ok. Por favor ingresá el nombre del nuevo cliente:");
@@ -104,14 +105,3 @@ const leaveScene = async (ctx: any) => {
   return ctx.scene.leave();
 };
 
-const repetirPaso = (ctx: any) => {
-  return;
-};
-
-const avanzar = (ctx: ExtendedContext) => {
-  ctx.wizard.next();
-};
-
-const solicitarIngresoMenu = (ctx: ExtendedContext) => {
-  ctx.reply("Ingresá /menu para ver las opciones");
-};
