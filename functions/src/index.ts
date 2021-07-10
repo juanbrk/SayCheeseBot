@@ -13,9 +13,10 @@ import admin = require("firebase-admin");
 import firestoreSession = require("telegraf-session-firestore");
 import {superWizard} from "./modules/scenes/registrarCliente";
 import {cobroWizard} from "./modules/scenes/registrarCobro";
+import {wizardNuevoPago} from "./modules/scenes/pagos/registrarNuevoPago";
 
 admin.initializeApp();
-const stage = new Scenes.Stage<ExtendedContext>([superWizard, cobroWizard]);
+const stage = new Scenes.Stage<ExtendedContext>([superWizard, cobroWizard, wizardNuevoPago]);
 export const db = admin.firestore();
 const telegramToken: string = functions.config().telegram.token;
 if (telegramToken === undefined) {

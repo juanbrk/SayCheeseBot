@@ -4,4 +4,5 @@ export enum CollectionName {
     COBRO = "Cobro",
     BALANCE = "Balance",
     RESUMEN = "Resumen",
+    PAGO = "Pago"
 }
