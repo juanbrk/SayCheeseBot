@@ -1,6 +1,7 @@
 import {WizardSession, WizardSessionData} from "telegraf/typings/scenes";
 import {ClienteFirestore, ClienteSession, EdicionInformacionCliente} from "./cliente";
 import {CobroSession} from "./cobro";
+import {PagoSession} from "./pago";
 import {ListadoResumenes} from "./resumen";
 
 
@@ -31,4 +32,5 @@ export interface MyWizardSession extends WizardSessionData {
 	// will be available under `ctx.scene.session....`
 	datosCliente?: ClienteSession;
 	datosCobro?: CobroSession;
+	datosPago?: PagoSession;
   }
