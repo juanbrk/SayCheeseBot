@@ -69,7 +69,7 @@ const armarCuerpoExtracto = (resumen: ResumenFirestore, datosExtracto: ExtractoR
 
     💰 Total cobrado: $${totalCobrado}
     🏷️ Cantidad de cobros: ${resumen.cantidadDeCobros}
-    💸 A ambas les corresponde: $${loQueLeCorrespondeACadaSocia}
+    💸 Hay un saldo para ambas de: $${loQueLeCorrespondeACadaSocia}
     ✅ ${sociaQueDebePagar} debe pagarle $${saldoAdeudado} a ${sociaAdeudada}
   `;
 };
