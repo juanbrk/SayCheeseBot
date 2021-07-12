@@ -29,15 +29,16 @@ export const balanceFactory = (cobro: CobroFirestore) => {
   function asignarCuantoLeCorrespondeACadaSocia() {
     let leCorrespondeAFer;
     let leCorrespondeAFlor;
+    const elCobroEstaDividido = cobro.estaDividido;
     const laMitadDeLoCobrado: number = cobro.monto / 2;
-    const cobroFer = cobro.registradoPor == Socias.FER;
+    const cobroFer = cobro.cobradoPor == Socias.FER;
 
     if (cobroFer) {
-      leCorrespondeAFer = laMitadDeLoCobrado;
-      leCorrespondeAFlor = laMitadDeLoCobrado * -1;
+      leCorrespondeAFer = elCobroEstaDividido ? 0 : laMitadDeLoCobrado;
+      leCorrespondeAFlor = elCobroEstaDividido ? 0 : laMitadDeLoCobrado * -1;
     } else {
-      leCorrespondeAFlor = laMitadDeLoCobrado;
-      leCorrespondeAFer = laMitadDeLoCobrado * -1;
+      leCorrespondeAFlor = elCobroEstaDividido ? 0 : laMitadDeLoCobrado;
+      leCorrespondeAFer = elCobroEstaDividido ? 0 : laMitadDeLoCobrado * -1;
     }
     return {
       leCorrespondeAFlor,
