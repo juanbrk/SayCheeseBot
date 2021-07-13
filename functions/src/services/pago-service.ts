@@ -6,6 +6,9 @@ import {PagoFirestore} from "../modules/models/pago";
 
 import functions = require("firebase-functions");
 import DateTime = require("luxon");
+import {BalanceFirestore} from "../modules/models/balance";
+import {balanceFactoryFromPago} from "../modules/factories/balanceFactory";
+import {registrarBalance} from "./balance-service";
 
 
 /**
@@ -20,7 +23,11 @@ export async function registrarPago(ctx: ExtendedContext) {
     const pagoRef = db.collection(CollectionName.PAGO).doc(`${uid}`);
 
     try {
-      await pagoRef.set(documentoPago);
+      pagoRef.set(documentoPago)
+        .then(() => {
+          const balanceDoc: BalanceFirestore = balanceFactoryFromPago(documentoPago);
+          return registrarBalance(balanceDoc);
+        });
       return ctx.reply("Ya está registrado el nuevo pago");
     } catch (error) {
       functions.logger.log("Ocurrió un error registrando un nuevo pago", error);

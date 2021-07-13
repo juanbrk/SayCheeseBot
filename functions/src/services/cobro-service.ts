@@ -1,7 +1,7 @@
 import {ExtendedContext} from "../../config/context/myContext";
 import {db} from "../../src/index";
 import {CollectionName} from "../modules/enums/collectionName";
-import {balanceFactory} from "../modules/factories/balanceFactory";
+import {balanceFactoryFromCobro} from "../modules/factories/balanceFactory";
 import {BalanceFirestore} from "../modules/models/balance";
 import {CobroFirestore} from "../modules/models/cobro";
 import {registrarBalance} from "./balance-service";
@@ -28,7 +28,7 @@ export async function registrarCobro(ctx: ExtendedContext) {
       };
       docRef.set(documentoCobro)
         .then(() => {
-          const balanceDoc: BalanceFirestore = balanceFactory(documentoCobro);
+          const balanceDoc: BalanceFirestore = balanceFactoryFromCobro(documentoCobro);
           return registrarBalance(balanceDoc);
         });
     }

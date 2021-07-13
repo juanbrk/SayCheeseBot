@@ -16,3 +16,8 @@ export interface PagoFirestore extends PagoSession {
     dateCreated: Date;
     dateUpdated: Date;
 }
+
+export interface PagoAsEntity {
+    monto: number;
+    uid: string;
+}

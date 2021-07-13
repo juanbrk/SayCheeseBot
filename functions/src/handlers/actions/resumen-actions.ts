@@ -60,7 +60,6 @@ const obtenerDatosExtracto = (resumen: ResumenFirestore): ExtractoResumen => {
  */
 const armarCuerpoExtracto = (resumen: ResumenFirestore, datosExtracto: ExtractoResumen): string => {
   const totalCobrado = new Intl.NumberFormat("de-DE").format(resumen.totalCobrado);
-  const loQueLeCorrespondeACadaSocia = new Intl.NumberFormat("de-DE").format(resumen.correspondeACadaSocia);
   const sociaQueDebePagar = datosExtracto.sociaQueDebe;
   const sociaAdeudada = datosExtracto.sociaAdeudada;
   const saldoAdeudado = new Intl.NumberFormat("de-DE").format(datosExtracto.saldoAdeudado);
@@ -69,7 +68,7 @@ const armarCuerpoExtracto = (resumen: ResumenFirestore, datosExtracto: ExtractoR
 
     💰 Total cobrado: $${totalCobrado}
     🏷️ Cantidad de cobros: ${resumen.cantidadDeCobros}
-    💸 Hay un saldo para ambas de: $${loQueLeCorrespondeACadaSocia}
+    💸 Cantidad de pagos : ${resumen.cantidadDePagos}
     ✅ ${sociaQueDebePagar} debe pagarle $${saldoAdeudado} a ${sociaAdeudada}
   `;
 };

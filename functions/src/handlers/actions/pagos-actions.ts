@@ -56,7 +56,7 @@ export async function procesarRegistroPago( ctx: ExtendedContext, pagoEnProceso:
       `Estoy registrando el pago:
        - <b>Monto</b>: $${new Intl.NumberFormat("de-DE", {minimumFractionDigits: 2}).format(datosPago.monto!)}
        - <b>Motivo</b>: ${datosPago.motivo}
-       - <b>Cobrado por</b>: ${datosPago.asignadoA}
+       - <b>¿Quien pagó?</b>: ${datosPago.asignadoA}
        - <b>¿Es de Say Cheese?</b>: ${datosPago.tipoPago == TipoPago.SAY_CHEESE ? "Si" : "No"}
        - <b>¿Ya está dividido?</b>: ${datosPago.dividieronLaPlata ? "Si" : "No"}`,
       {

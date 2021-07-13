@@ -238,7 +238,7 @@ validarDivisionYSolicitarConfirmacion.action("pagoDividido", async (ctx) => {
         `Confirmá si los datos son correctos:
          - <b>Monto</b>: $${new Intl.NumberFormat("de-DE", {minimumFractionDigits: 2}).format(datosPago.monto!)}
          - <b>Motivo</b>: ${datosPago.motivo}
-         - <b>Cobrado por</b>: ${datosPago.asignadoA}
+         - <b>¿Quien pagó?</b>: ${datosPago.asignadoA}
          - <b>¿Es de Say Cheese?</b>: ${datosPago.tipoPago == TipoPago.SAY_CHEESE ? "Si" : "No"}
          - <b>¿Ya está dividido?</b>: Si
 
@@ -279,7 +279,7 @@ validarDivisionYSolicitarConfirmacion.action("pagoSinDividir", async (ctx) => {
         `Confirmá si los datos son correctos:
            - <b>Monto</b>: $${new Intl.NumberFormat("de-DE", {minimumFractionDigits: 2}).format(datosPago.monto!)}
            - <b>Motivo</b>: ${datosPago.motivo}
-           - <b>Cobrado por</b>: ${datosPago.asignadoA}
+           - <b>¿Quien pagó?</b>: ${datosPago.asignadoA}
            - <b>¿Es de Say Cheese?</b>: ${datosPago.tipoPago == TipoPago.SAY_CHEESE ? "si" : "no"}
            - <b>¿Ya está dividido?</b>: No
   
