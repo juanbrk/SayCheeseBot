@@ -1,5 +1,5 @@
 import {ExtendedContext} from "../../../config/context/myContext";
-import {PagoFirestore} from "../models/pago";
+import {PagoAsEntity, PagoFirestore} from "../models/pago";
 
 /**
  * Para guardar el pago como referencia en documentos de firestore
@@ -21,3 +21,15 @@ export const pagosFactory = (ctx: ExtendedContext, uid: string): PagoFirestore =
     uid: pagoUid,
   };
 };
+
+/**
+ * Para guardar el pago como referencia en documentos de firestore
+ *
+ * @param {number}  monto valor del monto del pago
+ * @param {string}  uid uid del pago
+ * @return {PagoAsEntity}
+ */
+export const pagoAsEntityFactory = (monto: number, uid: string): PagoAsEntity => {
+  return {monto, uid};
+};
+

@@ -13,6 +13,7 @@ export interface ResumenFirestore {
     updatedAt: FirebaseFirestore.Timestamp;
     uid: string;
     cantidadDeCobros: number;
+    cantidadDePagos: number;
 }
 
 
