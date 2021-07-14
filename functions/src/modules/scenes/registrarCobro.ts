@@ -93,8 +93,8 @@ obtenerDivision.action("cobroFer", async (ctx) => {
     await ctx.editMessageText(
       "¿Ya dividieron la plata entre ustedes?",
       Markup.inlineKeyboard([
-        Markup.button.callback("Si", "cobroDividido"),
         Markup.button.callback("No", "cobroSinDividir"),
+        Markup.button.callback("Si", "cobroDividido"),
       ]));
     return avanzar(ctx);
   }
@@ -114,8 +114,8 @@ obtenerDivision.action("cobroFlor", async (ctx) => {
     await ctx.editMessageText(
       "¿Ya dividieron la plata entre ustedes?",
       Markup.inlineKeyboard([
-        Markup.button.callback("Si", "cobroDividido"),
         Markup.button.callback("No", "cobroSinDividir"),
+        Markup.button.callback("Si", "cobroDividido"),
       ]));
     return avanzar(ctx);
   }
@@ -145,8 +145,8 @@ registrarDivision.on("message", async (ctx: any) => {
   await ctx.reply(
     "¿Ya dividieron la plata entre ustedes?",
     Markup.inlineKeyboard([
-      Markup.button.callback("Si", "cobroDividido"),
       Markup.button.callback("No", "cobroSinDividir"),
+      Markup.button.callback("Si", "cobroDividido"),
     ]));
   return ctx.wizard.selectStep(4);
 });
@@ -185,8 +185,8 @@ registrarDivision.action("cobroDividido", async (ctx) => {
   await ctx.reply(
     "¿Ya dividieron la plata entre ustedes?",
     Markup.inlineKeyboard([
-      Markup.button.callback("Si", "cobroDividido"),
       Markup.button.callback("No", "cobroSinDividir"),
+      Markup.button.callback("Si", "cobroDividido"),
     ]));
   return ctx.wizard.selectStep(4);
 });

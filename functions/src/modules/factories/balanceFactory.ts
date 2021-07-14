@@ -1,5 +1,4 @@
 import admin = require("firebase-admin");
-import {TipoPago} from "../enums/pago";
 import {Socias} from "../enums/socias";
 import {TipoTransaccion} from "../enums/tipoTransaccion";
 import {BalanceFirestore} from "../models/balance";
@@ -81,7 +80,7 @@ export const balanceFactoryFromPago = (pago: PagoFirestore) : BalanceFirestore =
   const año: number = new Date().getFullYear();
   const mes: number = new Date().getMonth();
 
-  const pagoAsEntity : PagoAsEntity = pagoAsEntityFactory(pago.monto!, pago.uid);
+  const pagoAsEntity : PagoAsEntity = pagoAsEntityFactory(pago.monto!, pago.uid, pago.asignadoA!);
   const {leCorrespondeAFer, leCorrespondeAFlor} = asignarCuantoLeCorrespondeACadaSocia();
   const uid = generarUidDelBalance();
   const estaDividido = !!pago.dividieronLaPlata;
@@ -89,9 +88,7 @@ export const balanceFactoryFromPago = (pago: PagoFirestore) : BalanceFirestore =
 
   /**
    * Para saber cuanto le corresponde a cada socia a partir de un pago, se genera un balance con dos valores:
-   *  - Si el pago es para algo de Say cheese, ambos valores corresponden a la mitad de lo pagado
-   *  - Si el pago no es para algo de Say cheese, ambos valores corresponden al total de lo pagado y lo adeuda la socia que no realizo el 
-   * pago, ya que se toma como un pago hecho por una socia para algo de otra socia
+   *  - Ambos valores corresponden a la mitad de lo pagado
    *  - Un valor es positivo e indica que esa persona ha cobrado ese dinero y le debe a la otra
    *  - Un valor es negativo e indica que a esa persona se le adeuda ese monto por dicho cobro
    *
@@ -102,25 +99,14 @@ export const balanceFactoryFromPago = (pago: PagoFirestore) : BalanceFirestore =
     let leCorrespondeAFlor = 0;
     const elPagoEstaDividido = pago.dividieronLaPlata;
     const laMitadDeLoPagado: number = pago.monto! / 2;
-    const esPagoDeSayCheese = pago.tipoPago == TipoPago.SAY_CHEESE;
     const pagoFer = pago.asignadoA == Socias.FER;
-    if (esPagoDeSayCheese && !elPagoEstaDividido) {
+    if (!elPagoEstaDividido) {
       if (pagoFer) {
         leCorrespondeAFer = laMitadDeLoPagado * -1;
         leCorrespondeAFlor = laMitadDeLoPagado;
       } else {
         leCorrespondeAFer = laMitadDeLoPagado;
         leCorrespondeAFlor = laMitadDeLoPagado *-1;
-      }
-    }
-
-    if (!esPagoDeSayCheese && !elPagoEstaDividido) {
-      if (pagoFer) {
-        leCorrespondeAFer = pago.monto!* -1;
-        leCorrespondeAFlor = pago.monto!;
-      } else {
-        leCorrespondeAFer = pago.monto!;
-        leCorrespondeAFlor = pago.monto! * -1;
       }
     }
 

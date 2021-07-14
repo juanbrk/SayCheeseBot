@@ -25,4 +25,5 @@ export interface CobroFirestore {
 export interface CobroAsEntity {
     monto: number;
     uid: string;
+    realizadoPor: Socias;
 }

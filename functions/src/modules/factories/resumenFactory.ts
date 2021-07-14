@@ -1,5 +1,6 @@
 import admin = require("firebase-admin");
 import {TipoResumen} from "../enums/resumen";
+import {Socias} from "../enums/socias";
 import {TipoTransaccion} from "../enums/tipoTransaccion";
 import {BalanceFirestore} from "../models/balance";
 import {ResumenFirestore} from "../models/resumen";
@@ -21,13 +22,16 @@ export const resumenFactory = (
 ): ResumenFirestore => {
   const seGeneroAPartirDeUnCobro = documentoBalance.tipoTransaccion == TipoTransaccion.COBRO;
   const seLeDebeAFlor = documentoBalance.leCorrespondeAFer > 0;
+  const transaccionRealizadaPorFer = documentoBalance.transaccion.realizadoPor == Socias.FER;
   const mes: number = mesDelResumen;
   const año: number = añoDelResumen;
-  const subTotalCobrado = seGeneroAPartirDeUnCobro ? documentoBalance.transaccion.monto : 0;
   const totalCobrado = seGeneroAPartirDeUnCobro ? documentoBalance.transaccion.monto : 0;
+  const totalPagado = !seGeneroAPartirDeUnCobro ? documentoBalance.transaccion.monto : 0;
   const florDebeAFer = seLeDebeAFlor ? 0 : documentoBalance.leCorrespondeAFlor;
   const ferDebeAFlor = seLeDebeAFlor ? documentoBalance.leCorrespondeAFer : 0;
-  const correspondeACadaSocia = seGeneroAPartirDeUnCobro ? Math.abs(documentoBalance.leCorrespondeAFlor): 0;
+  const correspondeACadaSocia = seGeneroAPartirDeUnCobro ? documentoBalance.transaccion.monto / 2: 0;
+  const totalCobradoPorFer = seGeneroAPartirDeUnCobro && transaccionRealizadaPorFer ? totalCobrado : 0;
+  const totalCobradoPorFlor = seGeneroAPartirDeUnCobro && !transaccionRealizadaPorFer ? totalCobrado : 0;
   const uid = `${mes}_${año}_${tipoResumen}`.toLowerCase();
   const cantidadDeCobros = seGeneroAPartirDeUnCobro ? 1 : 0;
   const cantidadDePagos = seGeneroAPartirDeUnCobro ? 0 : 1;
@@ -36,11 +40,13 @@ export const resumenFactory = (
     mes,
     year: año,
     tipoResumen,
-    subTotalCobrado,
     totalCobrado,
+    totalPagado,
     florDebeAFer,
     ferDebeAFlor,
     correspondeACadaSocia,
+    totalCobradoPorFer,
+    totalCobradoPorFlor,
     createdAt: admin.firestore.Timestamp.fromDate(new Date()),
     updatedAt: admin.firestore.Timestamp.fromDate(new Date()),
     uid,
@@ -64,15 +70,18 @@ export const actualizacionResumenFactory = (
   const seLeDebeAFlor = documentoBalance.leCorrespondeAFer > 0;
   const florDebeAFer = seLeDebeAFlor ? 0 : documentoBalance.leCorrespondeAFlor;
   const ferDebeAFlor = seLeDebeAFlor ? documentoBalance.leCorrespondeAFer : 0;
+  const transaccionRealizadaPorFer = documentoBalance.transaccion.realizadoPor == Socias.FER;
   const seActualizaDebidoAUnCobro = documentoBalance.tipoTransaccion == TipoTransaccion.COBRO;
 
   documentoResumen = {
     ...documentoResumen,
-    subTotalCobrado: seActualizaDebidoAUnCobro ? documentoResumen.subTotalCobrado + documentoBalance.transaccion.monto : documentoResumen.subTotalCobrado,
     totalCobrado: seActualizaDebidoAUnCobro ? documentoResumen.totalCobrado + documentoBalance.transaccion.monto : documentoResumen.totalCobrado,
+    totalPagado: !seActualizaDebidoAUnCobro ? documentoResumen.totalPagado + documentoBalance.transaccion.monto : documentoResumen.totalPagado,
     florDebeAFer: documentoResumen.florDebeAFer + florDebeAFer,
     ferDebeAFlor: documentoResumen.ferDebeAFlor + ferDebeAFlor,
-    correspondeACadaSocia: seActualizaDebidoAUnCobro ? documentoResumen.correspondeACadaSocia + Math.abs(documentoBalance.leCorrespondeAFlor): documentoResumen.correspondeACadaSocia,
+    totalCobradoPorFer: seActualizaDebidoAUnCobro && transaccionRealizadaPorFer ? documentoResumen.totalCobradoPorFer + documentoBalance.transaccion.monto : documentoResumen.totalCobradoPorFer,
+    totalCobradoPorFlor: seActualizaDebidoAUnCobro && !transaccionRealizadaPorFer ? documentoResumen.totalCobradoPorFlor + documentoBalance.transaccion.monto : documentoResumen.totalCobradoPorFlor,
+    correspondeACadaSocia: seActualizaDebidoAUnCobro ? documentoResumen.correspondeACadaSocia + documentoBalance.transaccion.monto/2: documentoResumen.correspondeACadaSocia,
     updatedAt: admin.firestore.Timestamp.fromDate(new Date()),
     cantidadDeCobros: seActualizaDebidoAUnCobro ? documentoResumen.cantidadDeCobros + 1 : documentoResumen.cantidadDeCobros,
     cantidadDePagos: seActualizaDebidoAUnCobro ? (documentoResumen.cantidadDePagos == undefined ? 0 : documentoResumen.cantidadDePagos ) : (documentoResumen.cantidadDePagos == undefined ? 1 : documentoResumen.cantidadDePagos + 1),

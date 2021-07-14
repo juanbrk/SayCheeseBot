@@ -3,8 +3,10 @@ import {TipoResumen} from "../enums/resumen";
 export interface ResumenFirestore {
     mes: number;
     year: number;
-    subTotalCobrado: number;
     totalCobrado: number;
+    totalPagado: number;
+    totalCobradoPorFer: number;
+    totalCobradoPorFlor: number;
     tipoResumen: TipoResumen;
     correspondeACadaSocia: number;
     ferDebeAFlor: number;

@@ -23,7 +23,7 @@ export async function presentarResumen(ctx: ExtendedContext, resumenUID: string)
   const datosExtracto = obtenerDatosExtracto(resumenAPresentar);
   const cuerpoMensajeExtracto = armarCuerpoExtracto(resumenAPresentar, datosExtracto);
 
-  return ctx.editMessageText(cuerpoMensajeExtracto);
+  return ctx.editMessageText(cuerpoMensajeExtracto, {parse_mode: "HTML"});
 }
 
 
@@ -60,15 +60,21 @@ const obtenerDatosExtracto = (resumen: ResumenFirestore): ExtractoResumen => {
  */
 const armarCuerpoExtracto = (resumen: ResumenFirestore, datosExtracto: ExtractoResumen): string => {
   const totalCobrado = new Intl.NumberFormat("de-DE").format(resumen.totalCobrado);
+  const totalPagado = new Intl.NumberFormat("de-DE").format(resumen.totalPagado);
+  const totalCobradoPorFer = new Intl.NumberFormat("de-DE").format(resumen.totalCobradoPorFer);
+  const totalCobradoPorFlor = new Intl.NumberFormat("de-DE").format(resumen.totalCobradoPorFlor);
   const sociaQueDebePagar = datosExtracto.sociaQueDebe;
   const sociaAdeudada = datosExtracto.sociaAdeudada;
   const saldoAdeudado = new Intl.NumberFormat("de-DE").format(datosExtracto.saldoAdeudado);
 
   return `🧾 Este es el resumen del mes de ${ MESES[resumen.mes]}:
 
-    💰 Total cobrado: $${totalCobrado}
-    🏷️ Cantidad de cobros: ${resumen.cantidadDeCobros}
-    💸 Cantidad de pagos : ${resumen.cantidadDePagos}
-    ✅ ${sociaQueDebePagar} debe pagarle $${saldoAdeudado} a ${sociaAdeudada}
+    🏦 <b>Total cobrado en el mes</b>: $${totalCobrado}
+    💸 <b>Total pagado en el mes</b>: $${totalPagado}
+    
+    🏷️ <b>Total cobrado por Fer</b>: $${totalCobradoPorFer}
+    🏷️ <b>Total cobrado por Flor</b>: $${totalCobradoPorFlor}
+    
+    🤲 ${sociaQueDebePagar} debe pagarle $${saldoAdeudado} a ${sociaAdeudada}
   `;
 };
