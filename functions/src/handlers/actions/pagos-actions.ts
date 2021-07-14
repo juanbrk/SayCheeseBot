@@ -1,5 +1,5 @@
 import {ExtendedContext} from "../../../config/context/myContext";
-import {PropiedadesPago, TipoPago} from "../../modules/enums/pago";
+import {PropiedadesPago} from "../../modules/enums/pago";
 import {Socias} from "../../modules/enums/socias";
 import {PagoSession} from "../../modules/models/pago";
 import {registrarPago} from "../../services/pago-service";
@@ -16,9 +16,8 @@ const regexMontoPagado = /\d+(,\d{1,2})?/;
 export async function procesarRegistroPago( ctx: ExtendedContext, pagoEnProceso: PagoSession) {
   const ingresoMonto = pagoEnProceso.monto && pagoEnProceso.motivo == undefined;
   const ingresoMotivo = pagoEnProceso.motivo && pagoEnProceso.asignadoA == undefined;
-  const seAsignoElPago = pagoEnProceso.asignadoA && pagoEnProceso.tipoPago == undefined;
-  const seEligioElTipo = pagoEnProceso.tipoPago && !pagoEnProceso.dividieronLaPlata && !pagoEnProceso.datosConfirmados;
-  const dividieronLaPlata = pagoEnProceso.dividieronLaPlata && !pagoEnProceso.datosConfirmados;
+  const seAsignoElPago = pagoEnProceso.asignadoA && pagoEnProceso.dividieronLaPlata == undefined;
+  const dividieronLaPlata = pagoEnProceso.dividieronLaPlata !== undefined && !pagoEnProceso.datosConfirmados;
   const confirmoLosDatos = !!pagoEnProceso.datosConfirmados;
 
   if (ingresoMonto && pagoEnProceso.monto) {
@@ -42,10 +41,6 @@ export async function procesarRegistroPago( ctx: ExtendedContext, pagoEnProceso:
     return guardarPago(ctx, pagoEnProceso.asignadoA, PropiedadesPago.ASIGNADO_A);
   }
 
-  if (seEligioElTipo && pagoEnProceso.tipoPago) {
-    return guardarPago(ctx, pagoEnProceso.tipoPago, PropiedadesPago.TIPO_PAGO);
-  }
-
   if (dividieronLaPlata && pagoEnProceso.dividieronLaPlata !== undefined ) {
     return guardarPago(ctx, pagoEnProceso.dividieronLaPlata, PropiedadesPago.ESTA_DIVIDIDO);
   }
@@ -57,7 +52,6 @@ export async function procesarRegistroPago( ctx: ExtendedContext, pagoEnProceso:
        - <b>Monto</b>: $${new Intl.NumberFormat("de-DE", {minimumFractionDigits: 2}).format(datosPago.monto!)}
        - <b>Motivo</b>: ${datosPago.motivo}
        - <b>¿Quien pagó?</b>: ${datosPago.asignadoA}
-       - <b>¿Es de Say Cheese?</b>: ${datosPago.tipoPago == TipoPago.SAY_CHEESE ? "Si" : "No"}
        - <b>¿Ya está dividido?</b>: ${datosPago.dividieronLaPlata ? "Si" : "No"}`,
       {
         parse_mode: "HTML",
@@ -81,9 +75,6 @@ const guardarPago = (context: ExtendedContext, valorAGuardar: any, propiedadAGua
       break;
     case PropiedadesPago.ASIGNADO_A:
       datosPago = {...datosPago, asignadoA: valorAGuardar as Socias};
-      break;
-    case PropiedadesPago.TIPO_PAGO:
-      datosPago = {...datosPago, tipoPago: valorAGuardar as TipoPago};
       break;
     case PropiedadesPago.ESTA_DIVIDIDO:
       datosPago = {...datosPago, dividieronLaPlata: valorAGuardar as boolean};

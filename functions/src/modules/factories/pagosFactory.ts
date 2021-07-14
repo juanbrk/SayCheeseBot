@@ -1,4 +1,5 @@
 import {ExtendedContext} from "../../../config/context/myContext";
+import {Socias} from "../enums/socias";
 import {PagoAsEntity, PagoFirestore} from "../models/pago";
 
 /**
@@ -27,9 +28,10 @@ export const pagosFactory = (ctx: ExtendedContext, uid: string): PagoFirestore =
  *
  * @param {number}  monto valor del monto del pago
  * @param {string}  uid uid del pago
+ * @param {Socias}  generadoPor socia que realizo el pago
  * @return {PagoAsEntity}
  */
-export const pagoAsEntityFactory = (monto: number, uid: string): PagoAsEntity => {
-  return {monto, uid};
+export const pagoAsEntityFactory = (monto: number, uid: string, generadoPor: Socias): PagoAsEntity => {
+  return {monto, uid, realizadoPor: generadoPor};
 };
 

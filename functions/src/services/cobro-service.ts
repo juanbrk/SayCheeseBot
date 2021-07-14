@@ -5,6 +5,8 @@ import {balanceFactoryFromCobro} from "../modules/factories/balanceFactory";
 import {BalanceFirestore} from "../modules/models/balance";
 import {CobroFirestore} from "../modules/models/cobro";
 import {registrarBalance} from "./balance-service";
+
+import DateTime = require("luxon");
 /**
  *
  * @param {ExtendedContext} ctx
@@ -13,7 +15,7 @@ import {registrarBalance} from "./balance-service";
 export async function registrarCobro(ctx: ExtendedContext) {
   if (ctx.scene.session.datosCobro) {
     const {datosCobro} = ctx.scene.session;
-    const uid = `${ctx.scene.session.datosCobro.cliente.uid}_${ctx.scene.session.datosCobro.motivo!.replace(/ /g, "_").toLowerCase()}`;
+    const uid = `${ctx.scene.session.datosCobro.cliente.uid}_${ctx.scene.session.datosCobro.motivo!.replace(/ /g, "_").toLowerCase()}_${ctx.scene.session.datosCobro.asignadoA!.toLowerCase()}_${DateTime.DateTime.utc().toFormat("yMMddHHmmss")}`;
     const docRef = db.collection(CollectionName.COBRO).doc(`${uid}`);
     if (datosCobro.registradoPor && datosCobro.monto && datosCobro.asignadoA) {
       const documentoCobro: CobroFirestore= {

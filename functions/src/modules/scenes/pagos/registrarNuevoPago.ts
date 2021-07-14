@@ -1,7 +1,6 @@
 import {Composer, Markup, Scenes} from "telegraf";
 import {ExtendedContext} from "../../../../config/context/myContext";
 import {procesarRegistroPago} from "../../../handlers/actions/pagos-actions";
-import {TipoPago} from "../../enums/pago";
 import {Socias} from "../../enums/socias";
 import {PagoSession} from "../../models/pago";
 import {avanzar, repetirPaso, solicitarIngresoMenu} from "../general";
@@ -58,7 +57,6 @@ validarMontoYObtenerMotivo.command("salir", async (ctx) => {
 const validarMotivoYSolicitarAsignacion = new Composer<ExtendedContext>();
 validarMotivoYSolicitarAsignacion.hears(["salir", "Salir", "cancelar", "Cancelar"], async (ctx) => leaveScene(ctx));
 
-
 validarMotivoYSolicitarAsignacion.on("message", async (ctx: any) => {
   const {text: motivoIngresado} = ctx.message;
   if (motivoIngresado.length < 2 ) {
@@ -86,10 +84,10 @@ validarMotivoYSolicitarAsignacion.on("message", async (ctx: any) => {
 /**
  * Valida la asignación del cobro y pregunta si se dividió el pago
  */
-const validarAsignacionYSolicitarTipoPago = new Composer<ExtendedContext>();
-validarAsignacionYSolicitarTipoPago.hears(["salir", "Salir", "cancelar", "Cancelar"], async (ctx) => leaveScene(ctx));
+const validarAsignacionYSolicitarDivision = new Composer<ExtendedContext>();
+validarAsignacionYSolicitarDivision.hears(["salir", "Salir", "cancelar", "Cancelar"], async (ctx) => leaveScene(ctx));
 
-validarAsignacionYSolicitarTipoPago.on("message", async (ctx: any) => {
+validarAsignacionYSolicitarDivision.on("message", async (ctx: any) => {
   await ctx.reply("Por favor, selecciona una de las socias para dejar asentado quien cobro la plata");
   await ctx.reply(
     "¿Quién hizo el pago?",
@@ -100,7 +98,7 @@ validarAsignacionYSolicitarTipoPago.on("message", async (ctx: any) => {
   return ctx.wizard.selectStep(3);
 });
 
-validarAsignacionYSolicitarTipoPago.action("pagoFer", async (ctx) => {
+validarAsignacionYSolicitarDivision.action("pagoFer", async (ctx) => {
   if (ctx.callbackQuery && ctx.scene.session.datosPago) {
     const pago: PagoSession = {
       ...ctx.scene.session.datosPago,
@@ -112,16 +110,17 @@ validarAsignacionYSolicitarTipoPago.action("pagoFer", async (ctx) => {
     }
 
     await ctx.editMessageText(
-      "¿Pagaste algo para saycheese o es por otra cosa?",
+      "¿Ya lo dividieron entre ustedes?",
       Markup.inlineKeyboard([
-        Markup.button.callback("Es de say cheese", "sayCheese"),
-        Markup.button.callback("Es otra cosa", "varios"),
+        Markup.button.callback("No", "pagoSinDividir"),
+        Markup.button.callback("Si", "pagoDividido"),
       ]));
+
     return avanzar(ctx);
   }
 });
 
-validarAsignacionYSolicitarTipoPago.action("pagoFlor", async (ctx) => {
+validarAsignacionYSolicitarDivision.action("pagoFlor", async (ctx) => {
   if (ctx.callbackQuery && ctx.scene.session.datosPago) {
     const pago: PagoSession = {
       ...ctx.scene.session.datosPago,
@@ -133,84 +132,10 @@ validarAsignacionYSolicitarTipoPago.action("pagoFlor", async (ctx) => {
     }
 
     await ctx.editMessageText(
-      "¿Pagaste algo para saycheese o es por otra cosa?",
+      "¿Ya lo dividieron entre ustedes?",
       Markup.inlineKeyboard([
-        Markup.button.callback("Es de say cheese", "sayCheese"),
-        Markup.button.callback("Es otra cosa", "varios"),
-      ]));
-    return avanzar(ctx);
-  }
-});
-
-
-/**
- * Valida la asignación del cobro y pregunta si se dividió el pago
- */
-const validarTipoYSolicitarDivision = new Composer<ExtendedContext>();
-validarTipoYSolicitarDivision.hears(["salir", "Salir", "cancelar", "Cancelar"], async (ctx) => leaveScene(ctx));
-
-validarTipoYSolicitarDivision.on("message", async (ctx: any) => {
-  await ctx.reply("Por favor, elegí el tipo de pago que realizaron");
-  await ctx.reply(
-    "¿Pagaste algo para saycheese o es por otra cosa?",
-    Markup.inlineKeyboard([
-      Markup.button.callback("Es de say cheese", "sayCheese"),
-      Markup.button.callback("Es otra cosa", "varios"),
-    ]));
-  return ctx.wizard.selectStep(3);
-});
-
-validarTipoYSolicitarDivision.action("sayCheese", async (ctx) => {
-  if (ctx.callbackQuery && ctx.scene.session.datosPago) {
-    const pago: PagoSession = {
-      ...ctx.scene.session.datosPago,
-      tipoPago: TipoPago.SAY_CHEESE,
-    };
-
-    const registrarTipoPago = await procesarRegistroPago(ctx, pago);
-    if (!registrarTipoPago) {
-      await ctx.editMessageText(
-        "¿Pagaste algo para saycheese o es por otra cosa?",
-        Markup.inlineKeyboard([
-          Markup.button.callback("Es de say cheese", "sayCheese"),
-          Markup.button.callback("Es otra cosa", "varios"),
-        ]));
-      return ctx.wizard.selectStep(4);
-    }
-
-    await ctx.editMessageText(
-      "¿Ya se pagaron entre ustedes?",
-      Markup.inlineKeyboard([
-        Markup.button.callback("Si", "pagoDividido"),
         Markup.button.callback("No", "pagoSinDividir"),
-      ]));
-    return avanzar(ctx);
-  }
-});
-
-
-validarTipoYSolicitarDivision.action("varios", async (ctx) => {
-  if (ctx.callbackQuery && ctx.scene.session.datosPago) {
-    const pago: PagoSession = {
-      ...ctx.scene.session.datosPago,
-      tipoPago: TipoPago.VARIOS,
-    };
-    const registrarTipoPago = await procesarRegistroPago(ctx, pago);
-    if (!registrarTipoPago) {
-      await ctx.editMessageText(
-        "¿Pagaste algo para saycheese o es por otra cosa?",
-        Markup.inlineKeyboard([
-          Markup.button.callback("Es de say cheese", "sayCheese"),
-          Markup.button.callback("Es otra cosa", "varios"),
-        ]));
-      return repetirPaso(ctx);
-    }
-
-    await ctx.editMessageText(
-      "¿Ya se pagaron entre ustedes?",
-      Markup.inlineKeyboard([
         Markup.button.callback("Si", "pagoDividido"),
-        Markup.button.callback("No", "pagoSinDividir"),
       ]));
     return avanzar(ctx);
   }
@@ -239,8 +164,7 @@ validarDivisionYSolicitarConfirmacion.action("pagoDividido", async (ctx) => {
          - <b>Monto</b>: $${new Intl.NumberFormat("de-DE", {minimumFractionDigits: 2}).format(datosPago.monto!)}
          - <b>Motivo</b>: ${datosPago.motivo}
          - <b>¿Quien pagó?</b>: ${datosPago.asignadoA}
-         - <b>¿Es de Say Cheese?</b>: ${datosPago.tipoPago == TipoPago.SAY_CHEESE ? "Si" : "No"}
-         - <b>¿Ya está dividido?</b>: Si
+         - <b>¿Ya está saldado entre ustedes?</b>: Si
 
          ¿Los datos son correctos?`,
         {
@@ -257,10 +181,10 @@ validarDivisionYSolicitarConfirmacion.action("pagoDividido", async (ctx) => {
     } else {
       await ctx.editMessageText("Algo salió mal, volvé a elegir");
       await ctx.reply(
-        "¿Ya se pagaron entre ustedes?",
+        "¿Ya lo dividieron entre ustedes?",
         Markup.inlineKeyboard([
-          Markup.button.callback("Si", "pagoDividido"),
           Markup.button.callback("No", "pagoSinDividir"),
+          Markup.button.callback("Si", "pagoDividido"),
         ]));
       return repetirPaso(ctx);
     }
@@ -274,14 +198,18 @@ validarDivisionYSolicitarConfirmacion.action("pagoDividido", async (ctx) => {
 validarDivisionYSolicitarConfirmacion.action("pagoSinDividir", async (ctx) => {
   if (ctx.callbackQuery && ctx.scene.session.datosPago) {
     const {datosPago} = ctx.scene.session;
+    const pago: PagoSession = {
+      ...datosPago,
+      dividieronLaPlata: false,
+    };
+    await procesarRegistroPago(ctx, pago);
     if (datosPago) {
       await ctx.editMessageText(
         `Confirmá si los datos son correctos:
            - <b>Monto</b>: $${new Intl.NumberFormat("de-DE", {minimumFractionDigits: 2}).format(datosPago.monto!)}
            - <b>Motivo</b>: ${datosPago.motivo}
            - <b>¿Quien pagó?</b>: ${datosPago.asignadoA}
-           - <b>¿Es de Say Cheese?</b>: ${datosPago.tipoPago == TipoPago.SAY_CHEESE ? "si" : "no"}
-           - <b>¿Ya está dividido?</b>: No
+           - <b>¿Ya está saldado entre ustedes?</b>: No
   
            ¿Los datos son correctos?`,
         {
@@ -298,10 +226,10 @@ validarDivisionYSolicitarConfirmacion.action("pagoSinDividir", async (ctx) => {
     } else {
       await ctx.editMessageText("Algo salió mal, por favor volvé a elegir");
       await ctx.reply(
-        "¿Ya se pagaron entre ustedes?",
+        "¿Ya lo dividieron entre ustedes?",
         Markup.inlineKeyboard([
-          Markup.button.callback("Si", "pagoDividido"),
           Markup.button.callback("No", "pagoSinDividir"),
+          Markup.button.callback("Si", "pagoDividido"),
         ]));
       return repetirPaso(ctx);
     }
@@ -312,12 +240,12 @@ validarDivisionYSolicitarConfirmacion.action("pagoSinDividir", async (ctx) => {
 validarDivisionYSolicitarConfirmacion.on("message", async (ctx: any) => {
   await ctx.reply("Por favor, elegí una opción");
   await ctx.reply(
-    "¿Ya se pagaron entre ustedes?",
+    "¿Ya lo dividieron entre ustedes?",
     Markup.inlineKeyboard([
-      Markup.button.callback("Si", "pagoDividido"),
       Markup.button.callback("No", "pagoSinDividir"),
+      Markup.button.callback("Si", "pagoDividido"),
     ]));
-  return ctx.wizard.selectStep(5);
+  return ctx.wizard.selectStep(4);
 });
 
 const validarConfirmaciónYRegistrarPago = new Composer<ExtendedContext>();
@@ -352,8 +280,7 @@ export const wizardNuevoPago = new Scenes.WizardScene(
   obtenerMonto,
   validarMontoYObtenerMotivo,
   validarMotivoYSolicitarAsignacion,
-  validarAsignacionYSolicitarTipoPago,
-  validarTipoYSolicitarDivision,
+  validarAsignacionYSolicitarDivision,
   validarDivisionYSolicitarConfirmacion,
   validarConfirmaciónYRegistrarPago
 );

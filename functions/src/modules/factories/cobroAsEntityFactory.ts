@@ -7,6 +7,6 @@ import {CobroFirestore} from "../models/cobro";
  * @return {CobroAsEntity}
  */
 export const cobroAsEntityFactory = (cobro: CobroFirestore) => {
-  const {monto, uid} = cobro;
-  return {monto, uid};
+  const {monto, uid, cobradoPor: realizadoPor} = cobro;
+  return {monto, uid, realizadoPor};
 };

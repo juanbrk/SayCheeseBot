@@ -1,4 +1,3 @@
-import {TipoPago} from "../enums/pago";
 import {Socias} from "../enums/socias";
 
 export interface PagoSession {
@@ -8,7 +7,6 @@ export interface PagoSession {
     asignadoA?: Socias;
     dividieronLaPlata?: boolean;
     datosConfirmados: boolean;
-    tipoPago?: TipoPago;
 }
 
 export interface PagoFirestore extends PagoSession {
@@ -20,4 +18,5 @@ export interface PagoFirestore extends PagoSession {
 export interface PagoAsEntity {
     monto: number;
     uid: string;
+    realizadoPor: Socias;
 }
