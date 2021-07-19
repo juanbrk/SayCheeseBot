@@ -5,7 +5,6 @@ import {Socias} from "../../enums/socias";
 import {PagoSession} from "../../models/pago";
 import {avanzar, repetirPaso, solicitarIngresoMenu} from "../general";
 
-import functions = require("firebase-functions");
 
 const obtenerMonto = async (ctx: ExtendedContext) => {
   if (ctx.scene.session.datosPago) {
