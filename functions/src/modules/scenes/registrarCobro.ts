@@ -173,8 +173,8 @@ registrarDivision.action("cobroDividido", async (ctx) => {
         parse_mode: "HTML",
         reply_markup: {
           inline_keyboard: [
-            [{text: "Si, registrar cobro", callback_data: "registrar"}],
             [{text: "No, reiniciar registro", callback_data: "recomenzarRegistro"}],
+            [{text: "Si, registrar cobro", callback_data: "registrar"}],
           ],
         },
       }
@@ -211,8 +211,8 @@ registrarDivision.action("cobroSinDividir", async (ctx) => {
         parse_mode: "HTML",
         reply_markup: {
           inline_keyboard: [
-            [{text: "Si, registrar cobro", callback_data: "registrar"}],
             [{text: "No, reiniciar registro", callback_data: "recomenzarRegistro"}],
+            [{text: "Si, registrar cobro", callback_data: "registrar"}],
           ],
         },
       }
@@ -247,8 +247,8 @@ confirmarDatos.on("message", async (ctx: any) => {
         parse_mode: "HTML",
         reply_markup: {
           inline_keyboard: [
-            [{text: "Si, registrar cobro", callback_data: "registrar"}],
             [{text: "No, reiniciar registro", callback_data: "recomenzarRegistro"}],
+            [{text: "Si, registrar cobro", callback_data: "registrar"}],
           ],
         },
       }

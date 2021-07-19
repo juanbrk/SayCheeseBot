@@ -4,5 +4,6 @@ export const enum PropiedadesPago {
     ASIGNADO_A = "asignadoA",
     ESTA_DIVIDIDO= "dividieronLaPlata",
     REGISTRADO_POR= "registradoPor",
-    CONFIRMACION_DATOS = "datosConfirmados"
+    CONFIRMACION_DATOS = "datosConfirmados",
+    SALDO_RESTANTE = "saldoRestante"
 }

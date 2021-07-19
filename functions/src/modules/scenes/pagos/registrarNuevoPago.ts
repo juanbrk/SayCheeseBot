@@ -28,7 +28,6 @@ validarMontoYObtenerMotivo.hears(["salir", "Salir", "cancelar", "Cancelar"], asy
 
 validarMontoYObtenerMotivo.on("message", async (ctx: any) => {
   const {text: montoIngresado} = ctx.message;
-  functions.logger.log("MESSAGE", ctx.message);
   if (montoIngresado.length < 2 ) {
     await ctx.reply("Por favor, ingresá nuevamente un monto válido");
     return repetirPaso(ctx);
@@ -171,8 +170,8 @@ validarDivisionYSolicitarConfirmacion.action("pagoDividido", async (ctx) => {
           parse_mode: "HTML",
           reply_markup: {
             inline_keyboard: [
-              [{text: "Si, registrar pago", callback_data: "registrar"}],
               [{text: "No, reiniciar registro", callback_data: "recomenzarRegistro"}],
+              [{text: "Si, registrar pago", callback_data: "registrar"}],
             ],
           },
         }
@@ -216,8 +215,8 @@ validarDivisionYSolicitarConfirmacion.action("pagoSinDividir", async (ctx) => {
           parse_mode: "HTML",
           reply_markup: {
             inline_keyboard: [
-              [{text: "Si, registrar pago", callback_data: "registrar"}],
               [{text: "No, reiniciar registro", callback_data: "recomenzarRegistro"}],
+              [{text: "Si, registrar pago", callback_data: "registrar"}],
             ],
           },
         }

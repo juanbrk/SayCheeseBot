@@ -59,8 +59,8 @@ confirmarDatos.on("message", async (ctx: ExtendedContext) => {
         - Nombre: ${datosCliente.nombre}
         - Telefono: ${datosCliente.telefono}`,
       Markup.inlineKeyboard([
-        Markup.button.callback("Están bien, registrar", "registrar"),
         Markup.button.callback("Son incorrectos", "recomenzarRegistro"),
+        Markup.button.callback("Están bien, registrar", "registrar"),
       ]));
     return avanzar(ctx);
   } else {

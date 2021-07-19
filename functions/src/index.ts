@@ -14,9 +14,10 @@ import firestoreSession = require("telegraf-session-firestore");
 import {superWizard} from "./modules/scenes/registrarCliente";
 import {cobroWizard} from "./modules/scenes/registrarCobro";
 import {wizardNuevoPago} from "./modules/scenes/pagos/registrarNuevoPago";
+import {wizardSaldarDeuda} from "./modules/scenes/saldos/registrarSaldoDeuda";
 
 admin.initializeApp();
-const stage = new Scenes.Stage<ExtendedContext>([superWizard, cobroWizard, wizardNuevoPago]);
+const stage = new Scenes.Stage<ExtendedContext>([superWizard, cobroWizard, wizardNuevoPago, wizardSaldarDeuda]);
 export const db = admin.firestore();
 const telegramToken: string = functions.config().telegram.token;
 if (telegramToken === undefined) {
@@ -28,7 +29,8 @@ export const bot = new Telegraf<ExtendedContext>(telegramToken, {telegram: {webh
 bot.use(firestoreSession(db.collection("sessions")));
 bot.use(stage.middleware());
 // bot.use(async (ctx, next) => {
-//   console.log(ctx);
+//   console.log(ctx.session);
+//   console.log(menuMiddleware.tree());
 //   return next();
 // });
 
@@ -50,10 +52,10 @@ bot.catch((err: any, ctx: any) => {
 });
 
 bot.telegram.setMyCommands([
-  {command: "start", description: "Comenzar a usar el bot"},
-  {command: "menu", description: "Consultá las opciones que tengo para ayudarte"},
-  {command: "help", description: "Mostrar ayuda"},
-  {command: "settings", description: "Abrir las configuraciones"},
+  {command: "start", description: "Iniciar"},
+  {command: "menu", description: "Menú"},
+  {command: "help", description: "Ayuda"},
+  {command: "settings", description: "Configuraciones"},
 ]);
 
 

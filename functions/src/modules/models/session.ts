@@ -3,6 +3,7 @@ import {ClienteFirestore, ClienteSession, EdicionInformacionCliente} from "./cli
 import {CobroSession} from "./cobro";
 import {PagoSession} from "./pago";
 import {ListadoResumenes} from "./resumen";
+import {DatosSaldoSession, SaldoDeudaWizardSession} from "./saldoDeuda";
 
 
 /**
@@ -20,6 +21,7 @@ export interface Session extends WizardSession<MyWizardSession> {
 	cobro?: CobroSession;
 	edicionInformacionCliente?: EdicionInformacionCliente;
 	resumenes?: ListadoResumenes;
+	datosSaldo?: DatosSaldoSession
 }
 
 /**
@@ -33,4 +35,5 @@ export interface MyWizardSession extends WizardSessionData {
 	datosCliente?: ClienteSession;
 	datosCobro?: CobroSession;
 	datosPago?: PagoSession;
+	datosSaldoDeuda?: SaldoDeudaWizardSession;
   }

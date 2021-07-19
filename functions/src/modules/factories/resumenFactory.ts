@@ -57,7 +57,8 @@ export const resumenFactory = (
 
 /**
  * Actualizamos un resumen existente en firestore con datos de un nuevo balance generado a partir de un nuevo
- * cobro a clientes o un pago
+ * cobro a clientes, un pago o un saldo de deuda
+ *
  *
  * @param {ResumenFirestore} documentoResumen Ya existente en firestore
  * @param {BalanceFirestore} documentoBalance A partir del cual acumular en el resumen existente
