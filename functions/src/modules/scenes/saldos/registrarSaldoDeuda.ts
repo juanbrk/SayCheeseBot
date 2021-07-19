@@ -246,7 +246,6 @@ chequearConfirmacionRegistrarSaldoYPresentarRestante.action("reingresarMonto", a
   return ctx.wizard.selectStep(3);
 });
 
-import functions = require("firebase-functions");
 import {procesarRegistroSaldo} from "../../../handlers/actions/saldo-actions";
 chequearConfirmacionRegistrarSaldoYPresentarRestante.action("registrarSaldo", async (ctx: any) => {
   if (ctx.callbackQuery && ctx.scene.session.datosSaldoDeuda) {
