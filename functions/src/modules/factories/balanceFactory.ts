@@ -141,3 +141,71 @@ export const balanceFactoryFromPago = (pago: PagoFirestore) : BalanceFirestore =
   };
 };
 
+/**
+ *
+ * @param {PagoFirestore} pago Necesitamos generar un balance a partir del saldo de una deuda. El saldo
+ * de una deuda se ingresa como pago
+ * @return {BalanceFirestore}
+ */
+export const balanceFactoryFromSaldo = (pago: PagoFirestore) : BalanceFirestore => {
+  const año: number = new Date().getFullYear();
+  const mes: number = new Date().getMonth();
+
+  const pagoAsEntity : PagoAsEntity = pagoAsEntityFactory(pago.monto!, pago.uid, pago.asignadoA!);
+  const {leCorrespondeAFer, leCorrespondeAFlor} = asignarCuantoLeCorrespondeACadaSocia();
+  const uid = generarUidDelBalance();
+
+
+  /**
+   * Para saber cuanto le corresponde a cada socia a partir de un saldo, se genera un balance con dos valores:
+   *  - Ambos valores corresponden al total de lo pagado
+   *  - Un valor es positivo e indica que esa persona es la adeudada y ha cobrado ese dinero
+   *  - Un valor es negativo e indica que a esa persona es la deudora y saldó su cuenta por ese monto
+   *
+   * @return {any} con dos valores, uno positivo para quien cobró y uno negativo para quien saldó
+   */
+  function asignarCuantoLeCorrespondeACadaSocia() {
+    let leCorrespondeAFer = 0;
+    let leCorrespondeAFlor = 0;
+    const montoPagado: number = pago.monto!;
+    const pagoFer = pago.asignadoA == Socias.FER;
+
+    if (pagoFer) { // Fer es deudora y saldó
+      leCorrespondeAFer = montoPagado * -1;
+      leCorrespondeAFlor = montoPagado;
+    } else {
+      leCorrespondeAFer = montoPagado;
+      leCorrespondeAFlor = montoPagado *-1;
+    }
+
+    return {
+      leCorrespondeAFlor,
+      leCorrespondeAFer,
+    };
+  }
+
+  /**
+   * Necesitamos generar el UID con el que guardaremos el documento en firebase
+   * @return {string} con el UID del documento a guardar
+   */
+  function generarUidDelBalance() {
+    const timestamp = Date.now();
+    const quienPago = pago.asignadoA == Socias.FER ? Socias.FER.toLocaleLowerCase() : Socias.FLOR.toLowerCase();
+    const pagoUID = "saldo";
+
+    return `${timestamp}-${quienPago}-${pagoUID}`;
+  }
+
+  return {
+    transaccion: pagoAsEntity,
+    tipoTransaccion: TipoTransaccion.SALDO,
+    leCorrespondeAFer,
+    leCorrespondeAFlor,
+    fechaGenerado: admin.firestore.Timestamp.fromDate(new Date()),
+    año,
+    mes,
+    uid,
+    estaDividido: false,
+  };
+};
+

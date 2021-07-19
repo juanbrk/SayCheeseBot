@@ -1,4 +1,5 @@
 export enum TipoTransaccion {
     COBRO = "Cobro",
-    PAGO = "Pago"
+    PAGO = "Pago",
+    SALDO = "Saldo"
 }

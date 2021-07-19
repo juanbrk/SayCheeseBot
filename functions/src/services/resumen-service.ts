@@ -1,9 +1,17 @@
 import {db} from "..";
+import {ExtendedContext} from "../../config/context/myContext";
 import {CollectionName} from "../modules/enums/collectionName";
 import {TipoResumen} from "../modules/enums/resumen";
 import {actualizacionResumenFactory, resumenFactory} from "../modules/factories/resumenFactory";
 import {BalanceFirestore} from "../modules/models/balance";
 import {ListadoResumenes, ResumenFirestore} from "../modules/models/resumen";
+import {PagoFirestore} from "../modules/models/pago";
+import {pagosFactory} from "../modules/factories/pagosFactory";
+
+import DateTime = require("luxon");
+import functions = require("firebase-functions");
+import {balanceFactoryFromSaldo} from "../modules/factories/balanceFactory";
+import {registrarBalance} from "./balance-service";
 
 /**
  * Con cada cobro se genera un balance y, a partir de ese balance, se genera un nuevo resumen mensual o
@@ -102,4 +110,29 @@ export async function getResumenByUID(resumenUID: string) {
   } else {
     return resumenRef.data() as ResumenFirestore;
   }
+}
+
+/**
+ *
+ * @param {ExtendedContext} ctx
+ */
+export async function registrarSaldo(ctx: ExtendedContext) {
+  if (ctx.scene.session.datosSaldoDeuda) {
+    const {datosSaldoDeuda} = ctx.scene.session;
+    const uid = `${datosSaldoDeuda.registradoPor.toLowerCase()}-${DateTime.DateTime.utc().toFormat("yMMddHHmmss")}`;
+    const documentoPago: PagoFirestore = pagosFactory(ctx, uid);
+    const pagoRef = db.collection(CollectionName.PAGO).doc(`${uid}`);
+
+    try {
+      pagoRef.set(documentoPago)
+        .then(() => {
+          const balanceDoc: BalanceFirestore = balanceFactoryFromSaldo(documentoPago);
+          return registrarBalance(balanceDoc);
+        });
+    } catch (error) {
+      functions.logger.log("Ocurrió un error registrando un nuevo pago", error);
+      Promise.reject(error);
+    }
+  }
+  return ctx.reply("Ya está registrado el saldo");
 }

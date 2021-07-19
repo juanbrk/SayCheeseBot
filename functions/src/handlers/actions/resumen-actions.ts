@@ -1,17 +1,18 @@
 import {ExtendedContext} from "../../../config/context/myContext";
+import {Socias} from "../../modules/enums/socias";
 import {ResumenFirestore} from "../../modules/models/resumen";
 import {ExtractoResumen} from "../../modules/models/saldoResumen";
 import {getResumenByUID} from "../../services/resumen-service";
 import {MESES} from "../menus/choices";
 
 /**
- * Una vez seleccionado el resumen, debemos presentarlo y enviarselo al usuario
+ * Una vez seleccionado el resumen, debemos presentarlo y enviarselo al usuario.
  *
  * @param {ExtendedContext} ctx contexto
  * @param {string} resumenUID del cliente al que se le registra el cobro
  * @return {Promise}
  */
-export async function presentarResumen(ctx: ExtendedContext, resumenUID: string): Promise<any> {
+export async function armarResumen(ctx: ExtendedContext, resumenUID: string): Promise<string> {
   let resumenAPresentar: ResumenFirestore;
   const {resumenes} = ctx.session;
   if (resumenes) {
@@ -19,11 +20,15 @@ export async function presentarResumen(ctx: ExtendedContext, resumenUID: string)
   } else {
     resumenAPresentar = await getResumenByUID(resumenUID);
   }
-  // GENERAR MENSAJE
   const datosExtracto = obtenerDatosExtracto(resumenAPresentar);
-  const cuerpoMensajeExtracto = armarCuerpoExtracto(resumenAPresentar, datosExtracto);
 
-  return ctx.editMessageText(cuerpoMensajeExtracto, {parse_mode: "HTML"});
+  ctx.session.datosSaldo = {
+    resumenASaldar: resumenAPresentar,
+    sociaQueAdeuda: datosExtracto.sociaQueDebe,
+    montoAdeudado: datosExtracto.montoAdeudado,
+  };
+  const cuerpoMensajeExtracto = armarCuerpoExtracto(resumenAPresentar, datosExtracto);
+  return cuerpoMensajeExtracto;
 }
 
 
@@ -37,12 +42,11 @@ export async function presentarResumen(ctx: ExtendedContext, resumenUID: string)
 const obtenerDatosExtracto = (resumen: ResumenFirestore): ExtractoResumen => {
   // llevar saldos a cero
   const {florDebeAFer, ferDebeAFlor} = resumen;
-  const sociaQueDebe: string = florDebeAFer > ferDebeAFlor? "Flor" : "Fer";
-  const sociaAdeudada: string = sociaQueDebe == "Flor" ? "Fer" : "Flor";
-  const saldoAdeudado: number = sociaQueDebe == "Flor" ? florDebeAFer - ferDebeAFlor : ferDebeAFlor - florDebeAFer;
-  // obtener monto adeudado
+  const sociaQueDebe: Socias = florDebeAFer > ferDebeAFlor? Socias.FLOR : Socias.FER;
+  const sociaAdeudada: Socias = sociaQueDebe == Socias.FLOR ? Socias.FER : Socias.FLOR;
+  const montoAdeudado: number = sociaQueDebe == Socias.FLOR ? florDebeAFer - ferDebeAFlor : ferDebeAFlor - florDebeAFer;
   return {
-    saldoAdeudado,
+    montoAdeudado,
     sociaAdeudada,
     sociaQueDebe,
   };
@@ -65,7 +69,8 @@ const armarCuerpoExtracto = (resumen: ResumenFirestore, datosExtracto: ExtractoR
   const totalCobradoPorFlor = new Intl.NumberFormat("de-DE").format(resumen.totalCobradoPorFlor);
   const sociaQueDebePagar = datosExtracto.sociaQueDebe;
   const sociaAdeudada = datosExtracto.sociaAdeudada;
-  const saldoAdeudado = new Intl.NumberFormat("de-DE").format(datosExtracto.saldoAdeudado);
+  const saldoAdeudado = new Intl.NumberFormat("de-DE").format(datosExtracto.montoAdeudado);
+  const textoQuienDebePagar = datosExtracto.montoAdeudado !== 0 ? `🤲 ${sociaQueDebePagar} debe pagarle $${saldoAdeudado} a ${sociaAdeudada}` : "🎉🎉  Sus cuentas están saldadas 💃. Nadie debe nada!! 🎉🎉 ";
 
   return `🧾 Este es el resumen del mes de ${ MESES[resumen.mes]}:
 
@@ -75,6 +80,6 @@ const armarCuerpoExtracto = (resumen: ResumenFirestore, datosExtracto: ExtractoR
     🏷️ <b>Total cobrado por Fer</b>: $${totalCobradoPorFer}
     🏷️ <b>Total cobrado por Flor</b>: $${totalCobradoPorFlor}
     
-    🤲 ${sociaQueDebePagar} debe pagarle $${saldoAdeudado} a ${sociaAdeudada}
+    ${textoQuienDebePagar}
   `;
 };
