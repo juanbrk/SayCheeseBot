@@ -1,6 +1,8 @@
 import {Socias} from "../enums/socias";
 import {ClienteAsEntity} from "./cliente";
 
+import admin = require("firebase-admin");
+
 export interface CobroSession {
     registradoPor?: string;
     cliente: ClienteAsEntity;
@@ -10,6 +12,14 @@ export interface CobroSession {
     dividieronLaPlata?: boolean;
     datosConfirmados: boolean;
 }
+
+export interface ResumenCobro extends CobroSession {
+    fechaCobro: admin.firestore.Timestamp;
+}
+
+
+export type ResumenesCobro = Array<ResumenCobro>
+
 
 export interface CobroFirestore {
     registradoPor: string;

@@ -62,3 +62,17 @@ export async function obtenerCamposCliente(ctx: ExtendedContext): Promise<Record
   const result: Record<string, string> = opciones;
   return result;
 }
+
+/**
+ * A la hora de visualizar los cobros realizados, obtenemos los meses en los que se generaron resumenes (en teoría si se
+ * generó un resumen, tiene que haberse generado un cobro) para mostrar los cobros realizados en ese mes.
+ * @param {ExtendedContext} ctx context
+ */
+export async function obtenerMesesEnLosQueHuboCobros(ctx: ExtendedContext): Promise<Record<string, string>> {
+  const resumenes: ListadoResumenes = await getResumenes();
+  const result: Record<string, string> = {};
+  resumenes.forEach((resumen: ResumenFirestore) => {
+    result[`${resumen.mes}`] = MESES[resumen.mes];
+  });
+  return result;
+}
