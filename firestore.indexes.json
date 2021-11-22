@@ -1,0 +1,19 @@
+{
+  "indexes": [
+    {
+      "collectionGroup": "Cobro",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "cobradoPor",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fechaCobro",
+          "order": "ASCENDING"
+        }
+      ]
+    }
+  ],
+  "fieldOverrides": []
+}
