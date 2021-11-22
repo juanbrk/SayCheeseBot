@@ -76,3 +76,13 @@ export async function obtenerMesesEnLosQueHuboCobros(ctx: ExtendedContext): Prom
   });
   return result;
 }
+
+/**
+ * Necesitamos obtener las socias para mostrarlas en las opciones del menú
+ * @param {ExtendedContext} ctx
+ * @return {Record<string,string>}
+ */
+export function obtenerSocias(ctx: ExtendedContext): Record<string, string> {
+  const records : Record<string, string> = {"FER": "Fer", "FLOR": "Flor"};
+  return records;
+}

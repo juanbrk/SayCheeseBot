@@ -5,7 +5,7 @@ import {ClienteAsEntity} from "../../modules/models/cliente";
 import {ResumenCobro, ResumenesCobro} from "../../modules/models/cobro";
 import {MyWizardSession, Session} from "../../modules/models/session";
 import {getClienteEntity} from "../../services/cliente-service";
-import {obtenerCobrosParaMes, registrarCobro} from "../../services/cobro-service";
+import {obtenerCobrosParaMesYSocia, registrarCobro} from "../../services/cobro-service";
 import {MESES} from "../menus/choices";
 
 import DateTime = require("luxon");
@@ -30,6 +30,21 @@ export async function iniciarCobroCliente(ctx: ExtendedContext, clienteUID: stri
   }
   ctx.session = session;
   return cliente;
+}
+
+/**
+ *
+ * @param {ExtendedContext} ctx
+ * @param {Socias} sociaElegida
+ */
+export async function iniciarVisualizacionCobroSocia(ctx: ExtendedContext, sociaElegida: Socias) {
+  const session: Session = ctx.session;
+  if (ctx.callbackQuery && ctx.callbackQuery.message) {
+    session.visualizacionCobro = {
+      socia: sociaElegida,
+    };
+  }
+  ctx.session = session;
 }
 
 /**
@@ -147,7 +162,7 @@ function guardarPropiedadCobro(ctx: ExtendedContext, sessionActual: MyWizardSess
  * @return {string}
  */
 export async function presentarCobrosMes(ctx: ExtendedContext, indiceMes: string): Promise<string> {
-  const cobrosMesSeleccionado = await obtenerCobrosParaMes(indiceMes);
+  const cobrosMesSeleccionado = await obtenerCobrosParaMesYSocia(indiceMes);
   const cuerpoMensajeCobros = armarTextoCobroMes(cobrosMesSeleccionado, +indiceMes);
   return cuerpoMensajeCobros;
 }
@@ -161,11 +176,15 @@ export async function presentarCobrosMes(ctx: ExtendedContext, indiceMes: string
  * @param {number} indiceMesSeleccionado El valor numerico del mes seleccionado en el menu
  * @return {string}
  */
-const armarTextoCobroMes = (cobrosDelMes: ResumenesCobro, indiceMesSeleccionado: number): string => {
+export const armarTextoCobroMes = (cobrosDelMes: ResumenesCobro, indiceMesSeleccionado: number): string => {
   let cuerpo = "";
-  cobrosDelMes.forEach((cobro) => {
-    cuerpo += armarResumenCobro(cobro);
-  });
+  if (cobrosDelMes.length < 1) {
+    cuerpo = "Todavía no hay cobros para el mes seleccionado";
+  } else {
+    cobrosDelMes.forEach((cobro) => {
+      cuerpo += armarResumenCobro(cobro);
+    });
+  }
 
   const encabezado = `🧾 Estos son los cobros del mes de ${ MESES[indiceMesSeleccionado-1]}:`;
 
@@ -190,7 +209,8 @@ const armarResumenCobro = (cobro: ResumenCobro) : string => {
   <b>Fecha:</b> ${fechaDatetime}
   <b>Monto</b>: $${new Intl.NumberFormat("de-DE").format(cobroAsNumber)};
   <b>Motivo</b>: ${cobro.motivo}
-  <b>Quien lo hizo</b>: ${cobro.registradoPor}
+  <b>Quien lo registró</b>: ${cobro.registradoPor}
+  <b>Quien lo cobró</b>: ${cobro.cobradoPor}
   <b>¿Está dividido?</b>: ${cobro.dividieronLaPlata ? "Si" : "No"}
   `;
 };
