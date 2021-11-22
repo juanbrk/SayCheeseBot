@@ -34,5 +34,6 @@ module.exports = {
       "code": 120,
       "ignoreComments": true,
     }],
+    "no-prototype-builtins": ["warn"]
   },
 };

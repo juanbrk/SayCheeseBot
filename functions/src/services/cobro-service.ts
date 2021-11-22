@@ -7,6 +7,7 @@ import {CobroFirestore, ResumenCobro, ResumenesCobro} from "../modules/models/co
 import {registrarBalance} from "./balance-service";
 
 import DateTime = require("luxon");
+import {Socias} from "../modules/enums/socias";
 
 /**
  *
@@ -42,17 +43,25 @@ export async function registrarCobro(ctx: ExtendedContext) {
 /**
  * Para visualizar los cobros realizados en un mes, debo obtener todos los cobros realizados en ese mes
  * @param {string} indiceMes seleccionado
+ * @param {Socias} socia seleccionada
  * @return {ResumenesCobro} con los cobros correspondientes al mes seleccionado
  */
-export async function obtenerCobrosParaMes(indiceMes: string): Promise<ResumenesCobro> {
+export async function obtenerCobrosParaMesYSocia(indiceMes: string, socia?: Socias): Promise<ResumenesCobro> {
   const rangoCobros = calcularMesInicialYFinal(indiceMes);
 
   const start = new Date(`2021-${rangoCobros.inicial}-01`);
   const end = new Date(`2021-${rangoCobros.final}-01`);
 
-  const cobrosRef = db.collection(CollectionName.COBRO)
+  let cobrosRef = db.collection(CollectionName.COBRO)
     .where("fechaCobro", ">", start)
     .where("fechaCobro", "<", end);
+
+  if (socia) {
+    cobrosRef = db.collection(CollectionName.COBRO)
+      .where("fechaCobro", ">", start)
+      .where("fechaCobro", "<", end)
+      .where("cobradoPor", "==", socia);
+  }
 
   const cobrosSnapshot = await cobrosRef.get();
   const cobros : ResumenesCobro= [];
@@ -65,6 +74,7 @@ export async function obtenerCobrosParaMes(indiceMes: string): Promise<Resumenes
       monto: doc.data().monto,
       motivo: doc.data().motivo,
       registradoPor: doc.data().registradoPor,
+      cobradoPor: doc.data().cobradoPor,
     };
     cobros.push(cobro);
   });

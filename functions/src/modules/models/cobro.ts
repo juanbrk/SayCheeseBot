@@ -2,15 +2,22 @@ import {Socias} from "../enums/socias";
 import {ClienteAsEntity} from "./cliente";
 
 import admin = require("firebase-admin");
+import {Meses} from "../enums/meses";
 
 export interface CobroSession {
     registradoPor?: string;
+    cobradoPor?: string;
     cliente: ClienteAsEntity;
     monto?: number;
     motivo?: string;
     asignadoA?: Socias;
     dividieronLaPlata?: boolean;
     datosConfirmados: boolean;
+}
+
+export interface VisualizacionCobroSession{
+    socia?: Socias;
+    mesSeleccionado?: Meses;
 }
 
 export interface ResumenCobro extends CobroSession {

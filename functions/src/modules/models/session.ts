@@ -1,6 +1,6 @@
 import {WizardSession, WizardSessionData} from "telegraf/typings/scenes";
 import {ClienteFirestore, ClienteSession, EdicionInformacionCliente} from "./cliente";
-import {CobroSession} from "./cobro";
+import {CobroSession, VisualizacionCobroSession} from "./cobro";
 import {PagoSession} from "./pago";
 import {ListadoResumenes} from "./resumen";
 import {DatosSaldoSession, SaldoDeudaWizardSession} from "./saldoDeuda";
@@ -22,6 +22,7 @@ export interface Session extends WizardSession<MyWizardSession> {
 	edicionInformacionCliente?: EdicionInformacionCliente;
 	resumenes?: ListadoResumenes;
 	datosSaldo?: DatosSaldoSession
+	visualizacionCobro?: VisualizacionCobroSession;
 }
 
 /**
@@ -35,5 +36,6 @@ export interface MyWizardSession extends WizardSessionData {
 	datosCliente?: ClienteSession;
 	datosCobro?: CobroSession;
 	datosPago?: PagoSession;
+	visualizacionCobro?: VisualizacionCobroSession;
 	datosSaldoDeuda?: SaldoDeudaWizardSession;
   }
