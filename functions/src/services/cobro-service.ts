@@ -9,6 +9,8 @@ import {registrarBalance} from "./balance-service";
 import DateTime = require("luxon");
 import {Socias} from "../modules/enums/socias";
 
+import functions = require("firebase-functions")
+
 /**
  *
  * @param {ExtendedContext} ctx
@@ -49,8 +51,9 @@ export async function registrarCobro(ctx: ExtendedContext) {
 export async function obtenerCobrosParaMesYSocia(indiceMes: string, socia?: Socias): Promise<ResumenesCobro> {
   const rangoCobros = calcularMesInicialYFinal(indiceMes);
 
+
   const start = new Date(`2021-${rangoCobros.inicial}-01`);
-  const end = new Date(`2021-${rangoCobros.final}-01`);
+  const end = +rangoCobros.final !== 1 ? new Date(`2021-${rangoCobros.final}-01`) : new Date(`2022-${rangoCobros.final}-01`);
 
   let cobrosRef = db.collection(CollectionName.COBRO)
     .where("fechaCobro", ">", start)
