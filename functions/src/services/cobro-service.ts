@@ -9,8 +9,6 @@ import {registrarBalance} from "./balance-service";
 import DateTime = require("luxon");
 import {Socias} from "../modules/enums/socias";
 
-import functions = require("firebase-functions")
-
 /**
  *
  * @param {ExtendedContext} ctx
