@@ -162,8 +162,8 @@ function guardarPropiedadCobro(ctx: ExtendedContext, sessionActual: MyWizardSess
  * @return {string}
  */
 export async function presentarCobrosMes(ctx: ExtendedContext, indiceMes: string): Promise<string> {
-  const cobrosMesSeleccionado = await obtenerCobrosParaMesYSocia(indiceMes);
-  const cuerpoMensajeCobros = armarTextoCobroMes(cobrosMesSeleccionado, +indiceMes);
+  const cobrosMesSeleccionado = await obtenerCobrosParaMesYSocia(indiceMes, "2021");
+  const cuerpoMensajeCobros = armarTextoCobroMes(cobrosMesSeleccionado, +indiceMes, "2021");
   return cuerpoMensajeCobros;
 }
 
@@ -174,9 +174,10 @@ export async function presentarCobrosMes(ctx: ExtendedContext, indiceMes: string
  *
  * @param {ResumenesCobro} cobrosDelMes Todos los cobros correspondientes a un mes
  * @param {number} indiceMesSeleccionado El valor numerico del mes seleccionado en el menu
+ * @param {string} anoSeleccionado Año para el cual se seleccionó la visualización de los cobros
  * @return {string}
  */
-export const armarTextoCobroMes = (cobrosDelMes: ResumenesCobro, indiceMesSeleccionado: number): string => {
+export const armarTextoCobroMes = (cobrosDelMes: ResumenesCobro, indiceMesSeleccionado: number, anoSeleccionado: string): string => {
   let cuerpo = "";
   if (cobrosDelMes.length < 1) {
     cuerpo = "Todavía no hay cobros para el mes seleccionado";
@@ -186,7 +187,7 @@ export const armarTextoCobroMes = (cobrosDelMes: ResumenesCobro, indiceMesSelecc
     });
   }
 
-  const encabezado = `🧾 Estos son los cobros del mes de ${ MESES[indiceMesSeleccionado-1]}:`;
+  const encabezado = `🧾 Estos son los cobros del mes de ${ MESES[indiceMesSeleccionado-1]} del ${anoSeleccionado}:`;
 
   return `${encabezado}
   ${cuerpo}.`;

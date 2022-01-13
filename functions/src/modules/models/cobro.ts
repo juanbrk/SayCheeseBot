@@ -18,6 +18,8 @@ export interface CobroSession {
 export interface VisualizacionCobroSession{
     socia?: Socias;
     mesSeleccionado?: Meses;
+    anos?: Record<string, string>;
+    anoSeleccionado?: string;
 }
 
 export interface ResumenCobro extends CobroSession {

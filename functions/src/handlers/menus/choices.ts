@@ -67,12 +67,39 @@ export async function obtenerCamposCliente(ctx: ExtendedContext): Promise<Record
  * A la hora de visualizar los cobros realizados, obtenemos los meses en los que se generaron resumenes (en teoría si se
  * generó un resumen, tiene que haberse generado un cobro) para mostrar los cobros realizados en ese mes.
  * @param {ExtendedContext} ctx context
+ * @param {string} ano en el que se realizaron los cobros
  */
-export async function obtenerMesesEnLosQueHuboCobros(ctx: ExtendedContext): Promise<Record<string, string>> {
+export async function obtenerMesesEnLosQueHuboCobros(ctx: ExtendedContext, ano: string): Promise<Record<string, string>> {
   const resumenes: ListadoResumenes = await getResumenes();
   const result: Record<string, string> = {};
-  resumenes.forEach((resumen: ResumenFirestore) => {
+  const anoNumerico: number = +ano;
+  const resumenesDelAno: ListadoResumenes = resumenes.filter((resumen) => resumen.year === anoNumerico);
+  resumenesDelAno.forEach((resumen: ResumenFirestore) => {
     result[`${resumen.mes}`] = MESES[resumen.mes];
+  });
+  return result;
+}
+
+/**
+ * A la hora de visualizar los cobros realizados, obtenemos los años en los que se generaron resumenes (en teoría si se
+ * generó un resumen, tiene que haberse generado un cobro) para mostrar los cobros realizados en ese año.
+ *
+ * @param {ExtendedContext} ctx context
+ * @return {Promise<Record<string,string>>}
+ */
+export async function obtenerAnosEnLosQueHuboCobros(ctx: ExtendedContext): Promise<Record<string, string>> {
+  const resumenes: ListadoResumenes = await getResumenes();
+  const result: Record<string, string> = {};
+  const anos: Array<number> = [];
+
+  resumenes.filter((resumen: ResumenFirestore) => {
+    if (anos.indexOf(resumen.year) < 0) {
+      anos.push(resumen.year);
+    }
+  });
+
+  anos.forEach((ano: number) => {
+    result[`${ano}`] = `${ano}`;
   });
   return result;
 }

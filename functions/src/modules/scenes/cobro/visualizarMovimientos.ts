@@ -1,14 +1,17 @@
 import {Composer, Markup, Scenes} from "telegraf";
 import {ExtendedContext} from "../../../../config/context/myContext";
-import {obtenerMesesEnLosQueHuboCobros} from "../../../handlers/menus/choices";
+import {obtenerAnosEnLosQueHuboCobros, obtenerMesesEnLosQueHuboCobros} from "../../../handlers/menus/choices";
 import {obtenerCobrosParaMesYSocia} from "../../../services/cobro-service";
 import {armarTextoCobroMes} from "../../../handlers/actions/cobro-actions";
 import {Socias} from "../../enums/socias";
 import {VisualizacionCobroSession} from "../../models/cobro";
 import {avanzar, solicitarIngresoMenu} from "../general";
-
+import {generarBotonesCallback} from "../../utils/menu";
+import {imprimirEnConsola} from "../../utils/general";
+import {TipoImpresionEnConsola} from "../../enums/tipoImpresionEnConsola";
 
 const seleccionarTipoVisualizacion = async (ctx: ExtendedContext) => {
+  imprimirEnConsola("Visualización cobro -> solicitar tipo visualizacion", TipoImpresionEnConsola.DEBUG);
   if (ctx.scene.session.visualizacionCobro) {
     ctx.scene.session.visualizacionCobro = {...ctx.scene.session.visualizacionCobro};
   }
@@ -22,38 +25,32 @@ const seleccionarTipoVisualizacion = async (ctx: ExtendedContext) => {
 };
 
 /**
- * Valida el nombre ingresado y solicita el ingreso del telefono
+ * Valida la visualizacion deseada (mes/socia) y solicita ingresar el año para ver los cobros
  */
 const validarSeleccionYMostrarOpciones = new Composer<ExtendedContext>();
 validarSeleccionYMostrarOpciones.hears(["salir", "Salir", "cancelar", "Cancelar"], async (ctx) => leaveScene(ctx));
-validarSeleccionYMostrarOpciones.on("message", async (ctx: any) => {
-  await ctx.reply("Por favor, selecciona una de las opciones. No entiendo si escribís.");
-  await ctx.reply(
-    "¿Cómo querés ver los cobros?",
-    Markup.inlineKeyboard([
-      Markup.button.callback("Por mes", "mensual"),
-      Markup.button.callback("Por socia", "socia"),
-    ]));
-  return ctx.wizard.selectStep(1);
-});
+validarSeleccionYMostrarOpciones.on("message", async (ctx: any) => volverAlInicio(ctx));
 
+/**
+ * Guardar mes seleccionado y saltar a la elección del año
+ */
 validarSeleccionYMostrarOpciones.action("mensual", async (ctx) => {
-  const meses: Record<string, string> = await obtenerMesesEnLosQueHuboCobros(ctx);
-  const botones: Array<any> = [];
-  for (const mes in meses) {
-    if (meses.hasOwnProperty(mes)) {
-      botones.push(Markup.button.callback(meses[mes], mes));
-    }
-  }
+  imprimirEnConsola("Visualizacion cobros -> mensual", TipoImpresionEnConsola.DEBUG);
+  const anos: Record<string, string> = await obtenerAnosEnLosQueHuboCobros(ctx);
+  const botones: Array<any> = generarBotonesCallback(anos);
 
   await ctx.editMessageText(
-    "Selecciona el mes para ver los cobros",
+    "Selecciona el año para ver los cobros",
     Markup.inlineKeyboard(botones, {columns: 2})
   );
   return ctx.wizard.selectStep(3);
 });
 
+/**
+ * Mostrar socias para elegir.
+ */
 validarSeleccionYMostrarOpciones.action("socia", async (ctx) => {
+  imprimirEnConsola("Visualizacion cobro -> socia", TipoImpresionEnConsola.DEBUG);
   await ctx.editMessageText("Elegí la socia para ver los cobros realizados",
     Markup.inlineKeyboard([
       Markup.button.callback("Fer", Socias.FER),
@@ -65,66 +62,63 @@ validarSeleccionYMostrarOpciones.action("socia", async (ctx) => {
 /**
  * Valida la asignación del cobro y pregunta si se dividió el pago
  */
-const validarEleccionSociaYMostrarMeses = new Composer<ExtendedContext>();
-validarEleccionSociaYMostrarMeses.hears(["salir", "Salir", "cancelar", "Cancelar"], async (ctx) => leaveScene(ctx));
+const validarEleccionSociaYSeleccionarAno = new Composer<ExtendedContext>();
+validarEleccionSociaYSeleccionarAno.hears(["salir", "Salir", "cancelar", "Cancelar"], async (ctx) => leaveScene(ctx));
 
-validarEleccionSociaYMostrarMeses.on("message", async (ctx: any) => {
-  await ctx.reply("Por favor, selecciona una de opciones de abajo");
-  ctx.reply(
-    "¿Cómo querés ver los cobros? ",
-    Markup.inlineKeyboard([
-      Markup.button.callback("Por mes", "mensual"),
-      Markup.button.callback("Por socia", "socia"),
-    ]));
-  return ctx.wizard.selectStep(1);
-});
+validarEleccionSociaYSeleccionarAno.on("message", async (ctx: any) => volverAlInicio(ctx));
 
-validarEleccionSociaYMostrarMeses.action(Socias.FER, async (ctx) => {
-  if (ctx.callbackQuery ) {
+validarEleccionSociaYSeleccionarAno.on("callback_query", async (ctx: any) => {
+  if (ctx.callbackQuery) {
+    const sociaElegida: Socias = ctx.update.callback_query.data;
+    imprimirEnConsola("Visualizacion cobros -> socia elegida", TipoImpresionEnConsola.DEBUG, {sociaElegida});
     const visualizacionCobro: VisualizacionCobroSession = {
-      socia: Socias.FER,
+      socia: sociaElegida,
     };
     ctx.session.visualizacionCobro = visualizacionCobro;
-    const meses: Record<string, string> = await obtenerMesesEnLosQueHuboCobros(ctx);
-    const botones: Array<any> = [];
-
-    for (const mes in meses) {
-      if (meses.hasOwnProperty(mes)) {
-        botones.push(Markup.button.callback(meses[mes], mes));
-      }
-    }
+    const anos: Record<string, string> = await obtenerAnosEnLosQueHuboCobros(ctx);
+    const botones: Array<any> = generarBotonesCallback(anos);
 
     await ctx.editMessageText(
-      "Selecciona el mes para ver los cobros de Fer",
-      Markup.inlineKeyboard(botones, {columns: 2}));
-
-
+      `¿Para que año querés ver los cobros de ${sociaElegida}?`,
+      Markup.inlineKeyboard(botones, {columns: 2})
+    );
     return avanzar(ctx);
   }
 });
 
-validarEleccionSociaYMostrarMeses.action(Socias.FLOR, async (ctx) => {
-  if (ctx.callbackQuery ) {
-    const visualizacionCobro: VisualizacionCobroSession = {
-      socia: Socias.FLOR,
-    };
-    ctx.session.visualizacionCobro = visualizacionCobro;
-    const meses: Record<string, string> = await obtenerMesesEnLosQueHuboCobros(ctx);
-    const botones: Array<any> = [];
 
-    for (const mes in meses) {
-      if (meses.hasOwnProperty(mes)) {
-        botones.push(Markup.button.callback(meses[mes], mes));
-      }
-    }
+/**
+ * Mostrar los meses en los que hubo cobros en el año seleccionado
+ */
+const validarAnoYSeleccionarMeses = new Composer<ExtendedContext>();
+validarAnoYSeleccionarMeses.hears(["salir", "Salir", "cancelar", "Cancelar"], async (ctx) => leaveScene(ctx));
+validarAnoYSeleccionarMeses.on("callback_query", async (ctx: any) => {
+  if (ctx.callbackQuery) {
+    const anoSeleccionado = ctx.update.callback_query.data;
+    const visualizacionCobro: VisualizacionCobroSession = ctx.session.visualizacionCobro ?
+      {
+        ...ctx.session.visualizacionCobro,
+        anoSeleccionado: anoSeleccionado,
+      } :
+      {
+        anoSeleccionado,
+      };
+
+    imprimirEnConsola("Visualizacion cobros -> seleccionar mes", TipoImpresionEnConsola.INFO, {visualizacionCtx: visualizacionCobro});
+    ctx.session.visualizacionCobro = visualizacionCobro;
+
+    const mesesEnLosQueHuboCobros: Record<string, string> = await obtenerMesesEnLosQueHuboCobros(ctx, anoSeleccionado);
+    const botones: Array<any> = generarBotonesCallback(mesesEnLosQueHuboCobros);
+    const textoPreguntandoPorSocia: string = "socia" in visualizacionCobro ? ` de ${visualizacionCobro.socia}` : "";
 
     await ctx.editMessageText(
-      "Selecciona el mes para ver los cobros de Flor",
+      `¿Para qué mes del ${anoSeleccionado} querés ver los cobros ${textoPreguntandoPorSocia}?`,
       Markup.inlineKeyboard(botones, {columns: 2}));
-
-    return avanzar(ctx);
   }
+  return avanzar(ctx);
 });
+
+validarAnoYSeleccionarMeses.on("message", async (ctx: any) => volverAlInicio(ctx));
 
 /**
  * Muestra los cobros del mes seleccionado
@@ -140,14 +134,14 @@ mostrarCobros.on("callback_query", async (ctx: any) => {
         ...ctx.session.visualizacionCobro,
         mesSeleccionado: mesSeleccionado,
       } :
-      undefined
-    ;
+      undefined;
 
+    imprimirEnConsola("Visualizacion cobros -> mostrar cobros", TipoImpresionEnConsola.DEBUG, {visualizacionCtx: visualizacionCobro});
     const cobrosMesSeleccionado = ctx.session.visualizacionCobro ?
-      await obtenerCobrosParaMesYSocia(`${+mesSeleccionado+1}`, visualizacionCobro.socia) :
-      await obtenerCobrosParaMesYSocia(`${+mesSeleccionado+1}`);
+      await obtenerCobrosParaMesYSocia(`${+mesSeleccionado + 1}`, visualizacionCobro.anoSeleccionado!, visualizacionCobro.socia) :
+      await obtenerCobrosParaMesYSocia(`${+mesSeleccionado + 1}`, visualizacionCobro.anoSeleccionado!);
 
-    const cuerpoMensajeCobros: string = armarTextoCobroMes(cobrosMesSeleccionado, +mesSeleccionado+1);
+    const cuerpoMensajeCobros: string = armarTextoCobroMes(cobrosMesSeleccionado, +mesSeleccionado + 1, visualizacionCobro.anoSeleccionado!);
     await ctx.editMessageText(cuerpoMensajeCobros, {parse_mode: "HTML"});
     delete ctx.session.visualizacionCobro;
     solicitarIngresoMenu(ctx);
@@ -155,26 +149,14 @@ mostrarCobros.on("callback_query", async (ctx: any) => {
   }
 });
 
-mostrarCobros.on("message", async (ctx: any) => {
-  await ctx.reply("Por favor, selecciona una de las opciones de abajo");
-  if (ctx.session.visualizacionCobro && "socia" in ctx.session.visualizacionCobro) {
-    delete ctx.session.visualizacionCobro.socia;
-  }
-  ctx.reply(
-    "¿Cómo querés ver los cobros? ",
-    Markup.inlineKeyboard([
-      Markup.button.callback("Por mes", "mensual"),
-      Markup.button.callback("Por socia", "socia"),
-    ]));
-  return ctx.wizard.selectStep(1);
-});
-
+mostrarCobros.on("message", async (ctx: any) => volverAlInicio(ctx));
 
 export const wizardMovimientosCobro = new Scenes.WizardScene(
   "visualizar-movimientos-wizard",
   seleccionarTipoVisualizacion,
   validarSeleccionYMostrarOpciones,
-  validarEleccionSociaYMostrarMeses,
+  validarEleccionSociaYSeleccionarAno,
+  validarAnoYSeleccionarMeses,
   mostrarCobros,
 );
 
@@ -183,6 +165,26 @@ const leaveScene = async (ctx: any) => {
   solicitarIngresoMenu(ctx);
   delete ctx.session.cobro;
   return ctx.scene.leave();
+};
+
+/**
+ * Cuando se recibe un update distinto al que debería recibirse, o sucede algún error, o debemos reiniciar el proceso
+ * eliminamos la session y volvemos al primer paso del wizard.
+ * @param {ExtendedContext} ctx context
+ * @return {any}
+ */
+const volverAlInicio = async (ctx: ExtendedContext) => {
+  await ctx.reply("Por favor, selecciona una de las opciones de abajo.  No entiendo si escribís.");
+  if (ctx.session.visualizacionCobro && "socia" in ctx.session.visualizacionCobro) {
+    delete ctx.session.visualizacionCobro;
+  }
+  ctx.reply(
+    "¿Cómo querés ver los cobros? ",
+    Markup.inlineKeyboard([
+      Markup.button.callback("Por mes", "mensual"),
+      Markup.button.callback("Por socia", "socia"),
+    ]));
+  return ctx.wizard.selectStep(1);
 };
 
 

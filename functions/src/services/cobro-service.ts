@@ -43,15 +43,15 @@ export async function registrarCobro(ctx: ExtendedContext) {
 /**
  * Para visualizar los cobros realizados en un mes, debo obtener todos los cobros realizados en ese mes
  * @param {string} indiceMes seleccionado
+ * @param {string} ano seleccionado
  * @param {Socias} socia seleccionada
  * @return {ResumenesCobro} con los cobros correspondientes al mes seleccionado
  */
-export async function obtenerCobrosParaMesYSocia(indiceMes: string, socia?: Socias): Promise<ResumenesCobro> {
+export async function obtenerCobrosParaMesYSocia(indiceMes: string, ano: string, socia?: Socias): Promise<ResumenesCobro> {
   const rangoCobros = calcularMesInicialYFinal(indiceMes);
 
-
-  const start = new Date(`2021-${rangoCobros.inicial}-01`);
-  const end = +rangoCobros.final !== 1 ? new Date(`2021-${rangoCobros.final}-01`) : new Date(`2022-${rangoCobros.final}-01`);
+  const start = new Date(`${ano}-${rangoCobros.inicial}-01`);
+  const end = +rangoCobros.final !== 1 ? new Date(`${ano}-${rangoCobros.final}-01`) : new Date(`${+ano + 1}-${rangoCobros.final}-01`);
 
   let cobrosRef = db.collection(CollectionName.COBRO)
     .where("fechaCobro", ">", start)
