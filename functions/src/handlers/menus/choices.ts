@@ -41,14 +41,15 @@ export async function obtenerListadoClientes(ctx: ExtendedContext): Promise<Reco
  * @param {ExtendedContext} ctx Actualización en curso
  * @return {Promise<Record<string,string>>} opciones para los botones
  */
-export async function obtenerListadoResumenes(ctx:ExtendedContext): Promise<Record<string, string>> {
-  const resumenes: ListadoResumenes = await getResumenes();
-  ctx.session = await {...ctx.session, resumenes: resumenes};
-  const result: Record<string, string> = {};
-  resumenes.forEach((resumen: ResumenFirestore) => {
-    result[`${resumen.uid}`] = MESES[resumen.mes];
-  });
-  return result;
+export async function obtenerListadoResumenes(ctx: ExtendedContext): Promise<Record<string, string>> {
+  const anoSeleccionado: string | undefined = (ctx.session.visualizacionCobro && "anoSeleccionado" in ctx.session.visualizacionCobro) ?
+    ctx.session.visualizacionCobro.anoSeleccionado :
+    undefined;
+
+  const ano: string = anoSeleccionado !== undefined ? anoSeleccionado : "2021";
+
+  const resumenes: Record<string, string> = await obtenerMesesEnLosQueHuboCobros(ctx, ano);
+  return resumenes;
 }
 
 
@@ -110,6 +111,6 @@ export async function obtenerAnosEnLosQueHuboCobros(ctx: ExtendedContext): Promi
  * @return {Record<string,string>}
  */
 export function obtenerSocias(ctx: ExtendedContext): Record<string, string> {
-  const records : Record<string, string> = {"FER": "Fer", "FLOR": "Flor"};
+  const records: Record<string, string> = {"FER": "Fer", "FLOR": "Flor"};
   return records;
 }
