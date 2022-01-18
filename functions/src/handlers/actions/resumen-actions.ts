@@ -1,7 +1,9 @@
 import {ExtendedContext} from "../../../config/context/myContext";
 import {Socias} from "../../modules/enums/socias";
+import {TipoImpresionEnConsola} from "../../modules/enums/tipoImpresionEnConsola";
 import {ResumenFirestore} from "../../modules/models/resumen";
 import {ExtractoResumen} from "../../modules/models/saldoResumen";
+import {imprimirEnConsola} from "../../modules/utils/general";
 import {getResumenByUID} from "../../services/resumen-service";
 import {MESES} from "../menus/choices";
 
@@ -13,13 +15,8 @@ import {MESES} from "../menus/choices";
  * @return {Promise}
  */
 export async function armarResumen(ctx: ExtendedContext, resumenUID: string): Promise<string> {
-  let resumenAPresentar: ResumenFirestore;
-  const {resumenes} = ctx.session;
-  if (resumenes) {
-    resumenAPresentar = resumenes.find((resumen, _) => resumen.uid == resumenUID) as ResumenFirestore;
-  } else {
-    resumenAPresentar = await getResumenByUID(resumenUID);
-  }
+  imprimirEnConsola("Armando resumen", TipoImpresionEnConsola.DEBUG, {resumenUID});
+  const resumenAPresentar: ResumenFirestore = await getResumenByUID(resumenUID);
   const datosExtracto = obtenerDatosExtracto(resumenAPresentar);
 
   ctx.session.datosSaldo = {
