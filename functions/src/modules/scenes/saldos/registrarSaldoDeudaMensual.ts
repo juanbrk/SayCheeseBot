@@ -3,13 +3,13 @@ import {ExtendedContext} from "../../../../config/context/myContext";
 import {Socias} from "../../enums/socias";
 import {SaldoDeudaWizardSession} from "../../models/saldoDeuda";
 import {avanzar, repetirPaso, solicitarIngresoMenu} from "../general";
-
-const regexMontoPagado = /\d+(,\d{1,2})?/;
+import {procesarRegistroSaldo} from "../../../handlers/actions/saldo-actions";
+import {regexMontoPagado} from "../../utils/regexs";
 
 const seleccionarSocia = async (ctx: ExtendedContext) => {
-  if (ctx.callbackQuery && ctx.session.datosSaldo) {
+  if (ctx.callbackQuery && ctx.session.datosSaldoMensual) {
     const datosSaldo: SaldoDeudaWizardSession = {
-      ...ctx.session.datosSaldo,
+      ...ctx.session.datosSaldoMensual,
       datosConfirmados: false,
       registradoPor: `${ctx.callbackQuery.from.first_name}`,
     };
@@ -246,7 +246,7 @@ chequearConfirmacionRegistrarSaldoYPresentarRestante.action("reingresarMonto", a
   return ctx.wizard.selectStep(3);
 });
 
-import {procesarRegistroSaldo} from "../../../handlers/actions/saldo-actions";
+
 chequearConfirmacionRegistrarSaldoYPresentarRestante.action("registrarSaldo", async (ctx: any) => {
   if (ctx.callbackQuery && ctx.scene.session.datosSaldoDeuda) {
     const datosSaldo: SaldoDeudaWizardSession = {
@@ -262,6 +262,7 @@ chequearConfirmacionRegistrarSaldoYPresentarRestante.action("registrarSaldo", as
 });
 
 
+// ! SIN USAR POR AHORA, SOLO SALDAREMOS DEUDAS TOTALES Y NO MENSUALES
 export const wizardSaldarDeuda = new Scenes.WizardScene(
   "saldar-deuda-wizard",
   seleccionarSocia,
@@ -273,9 +274,9 @@ export const wizardSaldarDeuda = new Scenes.WizardScene(
 
 const leaveScene = async (ctx: ExtendedContext) => {
   await ctx.reply("Cancelaste el saldo de la deuda. No se guardo ningún cambio, la que debe sigue debiendo y la que adeuda se sigue haciendo la bobina");
-  if (ctx.session.resumenes && ctx.session.datosSaldo) {
+  if (ctx.session.resumenes && ctx.session.datosSaldoMensual) {
     delete ctx.session.resumenes;
-    delete ctx.session.datosSaldo;
+    delete ctx.session.datosSaldoMensual;
   }
   solicitarIngresoMenu(ctx);
   return ctx.scene.leave();

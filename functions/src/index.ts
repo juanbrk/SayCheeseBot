@@ -4,21 +4,20 @@ import {ExtendedContext} from "../config/context/myContext";
 import functions = require("firebase-functions");
 import {MenuMiddleware} from "telegraf-inline-menu/dist/source";
 import {messageHandler} from "./handlers/updates/message";
-
-
 import {onBalanceCreated} from "./controllers/balance-controller";
-
+import {onResumenAlterado} from "./controllers/resumen-controller";
 import {menu} from "./handlers/menus/index";
 import admin = require("firebase-admin");
 import firestoreSession = require("telegraf-session-firestore");
 import {superWizard} from "./modules/scenes/registrarCliente";
 import {cobroWizard} from "./modules/scenes/registrarCobro";
 import {wizardNuevoPago} from "./modules/scenes/pagos/registrarNuevoPago";
-import {wizardSaldarDeuda} from "./modules/scenes/saldos/registrarSaldoDeuda";
+import {wizardSaldarDeuda} from "./modules/scenes/saldos/registrarSaldoDeudaMensual";
 import {wizardMovimientosCobro} from "./modules/scenes/cobro/visualizarMovimientos";
+import {wizardSaldoDeudaTotal} from "./modules/scenes/saldos/registrarSaldoDeudaTotal";
 
 admin.initializeApp();
-const stage = new Scenes.Stage<ExtendedContext>([superWizard, cobroWizard, wizardNuevoPago, wizardSaldarDeuda, wizardMovimientosCobro]);
+const stage = new Scenes.Stage<ExtendedContext>([superWizard, cobroWizard, wizardNuevoPago, wizardSaldarDeuda, wizardMovimientosCobro, wizardSaldoDeudaTotal]);
 export const db = admin.firestore();
 const telegramToken: string = functions.config().telegram.token;
 if (telegramToken === undefined) {
@@ -67,5 +66,6 @@ exports.api = functions.https.onRequest((req: Request, res: Response) => bot.han
 // Listeners
 
 exports.onBalanceCreated = onBalanceCreated;
+exports.onResumenAlterado = onResumenAlterado;
 
 

@@ -29,7 +29,7 @@ export const resumenFactory = (
   const totalPagado = !seGeneroAPartirDeUnCobro ? documentoBalance.transaccion.monto : 0;
   const florDebeAFer = seLeDebeAFlor ? 0 : documentoBalance.leCorrespondeAFlor;
   const ferDebeAFlor = seLeDebeAFlor ? documentoBalance.leCorrespondeAFer : 0;
-  const correspondeACadaSocia = seGeneroAPartirDeUnCobro ? documentoBalance.transaccion.monto / 2: 0;
+  const correspondeACadaSocia = seGeneroAPartirDeUnCobro ? documentoBalance.transaccion.monto / 2 : 0;
   const totalCobradoPorFer = seGeneroAPartirDeUnCobro && transaccionRealizadaPorFer ? totalCobrado : 0;
   const totalCobradoPorFlor = seGeneroAPartirDeUnCobro && !transaccionRealizadaPorFer ? totalCobrado : 0;
   const uid = `${mes}_${año}_${tipoResumen}`.toLowerCase();
@@ -52,6 +52,7 @@ export const resumenFactory = (
     uid,
     cantidadDeCobros,
     cantidadDePagos,
+    saldado: false,
   };
 };
 
@@ -73,20 +74,21 @@ export const actualizacionResumenFactory = (
   const ferDebeAFlor = seLeDebeAFlor ? documentoBalance.leCorrespondeAFer : 0;
   const transaccionRealizadaPorFer = documentoBalance.transaccion.realizadoPor == Socias.FER;
   const seActualizaDebidoAUnCobro = documentoBalance.tipoTransaccion == TipoTransaccion.COBRO;
-
+  const esAjuste = documentoBalance.tipoTransaccion == TipoTransaccion.SALDO;
+  const saldoDeResumenBalanceado: boolean = (documentoResumen.florDebeAFer + florDebeAFer) - (documentoResumen.ferDebeAFlor + ferDebeAFlor) == 0;
   documentoResumen = {
     ...documentoResumen,
     totalCobrado: seActualizaDebidoAUnCobro ? documentoResumen.totalCobrado + documentoBalance.transaccion.monto : documentoResumen.totalCobrado,
-    totalPagado: !seActualizaDebidoAUnCobro ? documentoResumen.totalPagado + documentoBalance.transaccion.monto : documentoResumen.totalPagado,
+    totalPagado: !seActualizaDebidoAUnCobro && !esAjuste ? documentoResumen.totalPagado + documentoBalance.transaccion.monto : documentoResumen.totalPagado,
     florDebeAFer: documentoResumen.florDebeAFer + florDebeAFer,
     ferDebeAFlor: documentoResumen.ferDebeAFlor + ferDebeAFlor,
     totalCobradoPorFer: seActualizaDebidoAUnCobro && transaccionRealizadaPorFer ? documentoResumen.totalCobradoPorFer + documentoBalance.transaccion.monto : documentoResumen.totalCobradoPorFer,
     totalCobradoPorFlor: seActualizaDebidoAUnCobro && !transaccionRealizadaPorFer ? documentoResumen.totalCobradoPorFlor + documentoBalance.transaccion.monto : documentoResumen.totalCobradoPorFlor,
-    correspondeACadaSocia: seActualizaDebidoAUnCobro ? documentoResumen.correspondeACadaSocia + documentoBalance.transaccion.monto/2: documentoResumen.correspondeACadaSocia,
+    correspondeACadaSocia: seActualizaDebidoAUnCobro ? documentoResumen.correspondeACadaSocia + documentoBalance.transaccion.monto / 2 : documentoResumen.correspondeACadaSocia,
     updatedAt: admin.firestore.Timestamp.fromDate(new Date()),
     cantidadDeCobros: seActualizaDebidoAUnCobro ? documentoResumen.cantidadDeCobros + 1 : documentoResumen.cantidadDeCobros,
-    cantidadDePagos: seActualizaDebidoAUnCobro ? (documentoResumen.cantidadDePagos == undefined ? 0 : documentoResumen.cantidadDePagos ) : (documentoResumen.cantidadDePagos == undefined ? 1 : documentoResumen.cantidadDePagos + 1),
+    cantidadDePagos: !seActualizaDebidoAUnCobro && !esAjuste ? (documentoResumen.cantidadDePagos == undefined ? 1 : documentoResumen.cantidadDePagos + 1) : (documentoResumen.cantidadDePagos == undefined ? 0 : documentoResumen.cantidadDePagos),
+    saldado: saldoDeResumenBalanceado,
   };
-
   return documentoResumen;
 };

@@ -7,6 +7,7 @@ export interface PagoSession {
     asignadoA?: Socias;
     dividieronLaPlata?: boolean;
     datosConfirmados: boolean;
+    esSaldo?: boolean;
 }
 
 export interface PagoFirestore extends PagoSession {

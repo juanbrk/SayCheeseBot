@@ -163,7 +163,10 @@ export const wizardMovimientosCobro = new Scenes.WizardScene(
 const leaveScene = async (ctx: any) => {
   await ctx.reply("Saliste de la visualización de los cobros");
   solicitarIngresoMenu(ctx);
+  
   delete ctx.session.cobro;
+  delete ctx.scene.session.visualizacionCobro
+  
   return ctx.scene.leave();
 };
 

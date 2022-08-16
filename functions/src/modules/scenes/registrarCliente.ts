@@ -101,6 +101,9 @@ export const superWizard = new Scenes.WizardScene(
 
 const leaveScene = async (ctx: any) => {
   await ctx.reply("Cancelaste el registro de un nuevo cliente. Se borraron todos los datos.");
+  
+  delete ctx.scene.session.datosCliente;
+
   solicitarIngresoMenu(ctx);
   return ctx.scene.leave();
 };

@@ -1,6 +1,8 @@
 import {db} from "..";
 import {CollectionName} from "../modules/enums/collectionName";
+import {TipoImpresionEnConsola} from "../modules/enums/tipoImpresionEnConsola";
 import {BalanceFirestore} from "../modules/models/balance";
+import {imprimirEnConsola} from "../modules/utils/general";
 
 
 /**
@@ -16,6 +18,7 @@ import {BalanceFirestore} from "../modules/models/balance";
  * @param {Cliente} cliente que debemos guardar
  */
 export async function registrarBalance(documentoDelBalance: BalanceFirestore) {
+  imprimirEnConsola("Registrar balance", TipoImpresionEnConsola.DEBUG, {documentoDelBalance});
   const {uid} = documentoDelBalance;
   const docRef = db.collection(CollectionName.BALANCE).doc(`${uid}`);
   return docRef.set(documentoDelBalance);

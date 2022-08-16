@@ -92,8 +92,8 @@ const guardarPago = (context: ExtendedContext, valorAGuardar: any, propiedadAGua
       break;
     }
   } else {
-    if (context.session.datosSaldo && propiedadAGuardar == PropiedadesPago.REGISTRADO_POR) {
-      datosSaldoDeuda = {...context.session.datosSaldo, datosConfirmados: false, registradoPor: valorAGuardar};
+    if (context.session.datosSaldoMensual && propiedadAGuardar == PropiedadesPago.REGISTRADO_POR) {
+      datosSaldoDeuda = {...context.session.datosSaldoMensual, datosConfirmados: false, registradoPor: valorAGuardar};
     }
   }
   context.scene.session.datosSaldoDeuda = datosSaldoDeuda;
