@@ -16,6 +16,7 @@ export interface ResumenFirestore {
     uid: string;
     cantidadDeCobros: number;
     cantidadDePagos: number;
+    saldado?: boolean;
 }
 
 

@@ -1,17 +1,28 @@
 import {Socias} from "../enums/socias";
-import {ResumenFirestore} from "./resumen";
+import {ListadoResumenes, ResumenFirestore} from "./resumen";
 
-export interface DatosSaldoSession {
+export interface DatosSaldoMensualSession {
     resumenASaldar: ResumenFirestore;
     sociaQueAdeuda: Socias;
     montoAdeudado: number;
 }
 
-export interface SaldoDeudaWizardSession extends DatosSaldoSession{
+export interface DatosSaldoAnualSession {
+    resumenesParaSaldar: ListadoResumenes;
+}
+
+export interface SaldoDeudaWizardSession extends DatosSaldoMensualSession{
     registradoPor: string;
     monto?: number;
     asignadoA?: Socias;
     datosConfirmados: boolean;
     saldoRestante?: number
+}
+
+export interface SaldoDeudaTotalWizardSession extends DatosSaldoAnualSession {
+    montoDeudaFinal: number;
+    deudora: Socias;
+    montoASaldar?: number;
+    registradoPor?: string;
 }
 

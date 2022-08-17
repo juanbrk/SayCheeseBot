@@ -1,9 +1,11 @@
 import admin = require("firebase-admin");
 import {Socias} from "../enums/socias";
+import {TipoImpresionEnConsola} from "../enums/tipoImpresionEnConsola";
 import {TipoTransaccion} from "../enums/tipoTransaccion";
 import {BalanceFirestore} from "../models/balance";
 import {CobroFirestore} from "../models/cobro";
 import {PagoAsEntity, PagoFirestore} from "../models/pago";
+import {imprimirEnConsola} from "../utils/general";
 import {cobroAsEntityFactory} from "./cobroAsEntityFactory";
 import {pagoAsEntityFactory} from "./pagosFactory";
 
@@ -148,10 +150,13 @@ export const balanceFactoryFromPago = (pago: PagoFirestore) : BalanceFirestore =
  * @return {BalanceFirestore}
  */
 export const balanceFactoryFromSaldo = (pago: PagoFirestore) : BalanceFirestore => {
+  imprimirEnConsola("Balance from saldo", TipoImpresionEnConsola.DEBUG, {pago});
   const año: number = new Date().getFullYear();
   const mes: number = new Date().getMonth();
 
-  const pagoAsEntity : PagoAsEntity = pagoAsEntityFactory(pago.monto!, pago.uid, pago.asignadoA!);
+  const sociaQueSaldo: Socias = pago.registradoPor == Socias.FER ? Socias.FER : Socias.FLOR;
+
+  const pagoAsEntity : PagoAsEntity = pagoAsEntityFactory(pago.monto!, pago.uid, sociaQueSaldo);
   const {leCorrespondeAFer, leCorrespondeAFlor} = asignarCuantoLeCorrespondeACadaSocia();
   const uid = generarUidDelBalance();
 

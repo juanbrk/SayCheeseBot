@@ -10,17 +10,25 @@ import {PagoAsEntity, PagoFirestore, PagoSession} from "../models/pago";
  * @return {PagoFirestore}
  */
 export const pagosFactory = (ctx: ExtendedContext, uid: string): PagoFirestore => {
-  let datosPago:PagoSession;
-
+  let datosPago: PagoSession = {} as PagoSession;
   if (ctx.scene.session.datosPago) {
     datosPago = ctx.scene.session.datosPago;
-  } else if (ctx.scene.session.datosSaldoDeuda) {
+  } else if (ctx.scene.session.datosSaldoDeuda) { // TODO VER SI SE SIGUE USANDO
     const datosSaldo = ctx.scene.session.datosSaldoDeuda;
     datosPago = {
       datosConfirmados: datosSaldo.datosConfirmados,
       monto: datosSaldo.monto,
       registradoPor: datosSaldo.registradoPor,
       asignadoA: datosSaldo.asignadoA,
+      esSaldo: true,
+    };
+  } else if (ctx.scene.session.datosSaldoTotalDeuda) {
+    const datosSaldo = ctx.scene.session.datosSaldoTotalDeuda;
+    datosPago = {
+      datosConfirmados: true,
+      monto: datosSaldo.montoASaldar,
+      registradoPor: Socias.FER,
+      esSaldo: true,
     };
   }
   const dateCreated = new Date();
@@ -28,7 +36,7 @@ export const pagosFactory = (ctx: ExtendedContext, uid: string): PagoFirestore =
   const pagoUid = uid;
 
   return {
-    ...datosPago!,
+    ...datosPago,
     dateCreated,
     dateUpdated,
     uid: pagoUid,
@@ -44,6 +52,10 @@ export const pagosFactory = (ctx: ExtendedContext, uid: string): PagoFirestore =
  * @return {PagoAsEntity}
  */
 export const pagoAsEntityFactory = (monto: number, uid: string, generadoPor: Socias): PagoAsEntity => {
-  return {monto, uid, realizadoPor: generadoPor};
+  return {
+    monto,
+    uid,
+    realizadoPor: generadoPor,
+  };
 };
 

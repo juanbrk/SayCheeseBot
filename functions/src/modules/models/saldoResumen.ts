@@ -4,4 +4,5 @@ export interface ExtractoResumen {
     montoAdeudado: number;
     sociaQueDebe: Socias;
     sociaAdeudada: Socias;
+    saldado: boolean;
 }

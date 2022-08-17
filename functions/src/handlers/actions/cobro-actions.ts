@@ -7,7 +7,6 @@ import {MyWizardSession, Session} from "../../modules/models/session";
 import {getClienteEntity} from "../../services/cliente-service";
 import {obtenerCobrosParaMesYSocia, registrarCobro} from "../../services/cobro-service";
 import {MESES} from "../menus/choices";
-
 import DateTime = require("luxon");
 
 const regexMontoPagado = /\d+(,\d{1,2})?/;
@@ -56,7 +55,7 @@ export async function iniciarVisualizacionCobroSocia(ctx: ExtendedContext, socia
  *  string en la asignación
  *  boolean en la division
  */
-export async function procesarRegistroCobro(ctx: ExtendedContext, valorAguardar?: Socias|boolean) {
+export async function procesarRegistroCobro(ctx: ExtendedContext, valorAguardar?: Socias | boolean) {
   const {session} = ctx.scene;
   if (ctx.message && session.datosCobro) {
     const ingresoMonto = session.datosCobro.monto && !session.datosCobro.motivo;
@@ -65,7 +64,7 @@ export async function procesarRegistroCobro(ctx: ExtendedContext, valorAguardar?
     if (ingresoMonto && session.datosCobro && "text" in ctx.message) {
       const montoEsValido = regexMontoPagado.test(ctx.message.text);
       const montoComoNumero: number = +(ctx.message.text.replace(",", "."));
-      if (montoEsValido && montoComoNumero> 0) {
+      if (montoEsValido && montoComoNumero > 0) {
         return guardarPropiedadCobro(ctx, session, PropiedadesCobro.MONTO);
       } else {
         await ctx.reply("Si vas a registrar un cobro, asegurate de ingresar sólo números. Te acepto (como mucho) una coma.");
@@ -79,7 +78,7 @@ export async function procesarRegistroCobro(ctx: ExtendedContext, valorAguardar?
     }
   } else if (ctx.callbackQuery && session.datosCobro) {
     const realizoAsignacion = typeof valorAguardar === "string";
-    const registraronDivision =typeof valorAguardar === "boolean";
+    const registraronDivision = typeof valorAguardar === "boolean";
     const losDatosSonCorrectos = session.datosCobro.datosConfirmados;
 
     if (realizoAsignacion && valorAguardar) {
@@ -187,7 +186,7 @@ export const armarTextoCobroMes = (cobrosDelMes: ResumenesCobro, indiceMesSelecc
     });
   }
 
-  const encabezado = `🧾 Estos son los cobros del mes de ${ MESES[indiceMesSeleccionado-1]} del ${anoSeleccionado}:`;
+  const encabezado = `🧾 Estos son los cobros del mes de ${MESES[indiceMesSeleccionado - 1]} del ${anoSeleccionado}:`;
 
   return `${encabezado}
   ${cuerpo}.`;
@@ -200,9 +199,8 @@ export const armarTextoCobroMes = (cobrosDelMes: ResumenesCobro, indiceMesSelecc
  * @param {ResumenCobro} cobro A partir del cual armar el texto
  * @return {string}
  */
-const armarResumenCobro = (cobro: ResumenCobro) : string => {
+const armarResumenCobro = (cobro: ResumenCobro): string => {
   const cobroAsNumber = +cobro.monto!;
-
   const fechaDatetime = DateTime.DateTime.fromMillis(cobro.fechaCobro.toMillis()).toLocaleString({locale: "es-AR"});
 
   return ` 
@@ -210,6 +208,7 @@ const armarResumenCobro = (cobro: ResumenCobro) : string => {
   <b>Fecha:</b> ${fechaDatetime}
   <b>Monto</b>: $${new Intl.NumberFormat("de-DE").format(cobroAsNumber)};
   <b>Motivo</b>: ${cobro.motivo}
+  <b>Cliente</b>: ${cobro.cliente}
   <b>Quien lo registró</b>: ${cobro.registradoPor}
   <b>Quien lo cobró</b>: ${cobro.cobradoPor}
   <b>¿Está dividido?</b>: ${cobro.dividieronLaPlata ? "Si" : "No"}

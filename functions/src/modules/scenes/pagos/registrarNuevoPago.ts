@@ -286,7 +286,10 @@ export const wizardNuevoPago = new Scenes.WizardScene(
 const leaveScene = async (ctx: any) => {
   await ctx.reply("Cancelaste el registro de un nuevo pago. Se borraron todos los datos.");
   solicitarIngresoMenu(ctx);
+  
   delete ctx.session.cobro;
+  delete ctx.scene.session.datosPago;
+
   return ctx.scene.leave();
 };
 

@@ -7,6 +7,9 @@ node_modules/
 #seed
 seed/
 
+# macOs DS files
+*.DS_Store
+
 #json
 a.json
 package-lock.json

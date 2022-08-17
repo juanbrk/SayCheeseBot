@@ -5,9 +5,12 @@ import {balanceFactoryFromCobro} from "../modules/factories/balanceFactory";
 import {BalanceFirestore} from "../modules/models/balance";
 import {CobroFirestore, ResumenCobro, ResumenesCobro} from "../modules/models/cobro";
 import {registrarBalance} from "./balance-service";
-
 import DateTime = require("luxon");
 import {Socias} from "../modules/enums/socias";
+import {SearchRequestDTO} from "../modules/models/DTOs/searchRequestDto";
+import {Filter} from "../modules/models/filter";
+import {QueryOperators} from "../modules/enums/QueryOperators";
+import {actualizarEntidad, buscarDocumentos} from "./firestore-service";
 
 /**
  *
@@ -20,7 +23,7 @@ export async function registrarCobro(ctx: ExtendedContext) {
     const uid = `${ctx.scene.session.datosCobro.cliente.uid}_${ctx.scene.session.datosCobro.motivo!.replace(/ /g, "_").toLowerCase()}_${ctx.scene.session.datosCobro.asignadoA!.toLowerCase()}_${DateTime.DateTime.utc().toFormat("yMMddHHmmss")}`;
     const docRef = db.collection(CollectionName.COBRO).doc(`${uid}`);
     if (datosCobro.registradoPor && datosCobro.monto && datosCobro.asignadoA) {
-      const documentoCobro: CobroFirestore= {
+      const documentoCobro: CobroFirestore = {
         uid: uid,
         registradoPor: datosCobro.registradoPor,
         cobradoPor: datosCobro.asignadoA,
@@ -65,9 +68,9 @@ export async function obtenerCobrosParaMesYSocia(indiceMes: string, ano: string,
   }
 
   const cobrosSnapshot = await cobrosRef.get();
-  const cobros : ResumenesCobro= [];
+  const cobros: ResumenesCobro = [];
   cobrosSnapshot.forEach((doc) => {
-    const cobro : ResumenCobro = {
+    const cobro: ResumenCobro = {
       fechaCobro: doc.data().fechaCobro,
       cliente: doc.data().cliente.nombre,
       datosConfirmados: true,
@@ -110,3 +113,30 @@ function calcularMesInicialYFinal(indiceMes: string) {
     final: mesFinal,
   };
 }
+
+/**
+ * Cuando un resumen es saldado en su totalidad, debemos recorrer sus cobros y reflejar la situación en los mismos
+ *
+ * @param {number} mes en el cual deben saldarse todos los cobros
+ * @param {number} year en el cual deben saldarse todos los cobros
+ */
+export const saldarCobrosDeMes = async (mes: number, year: number) => {
+  const fechaInicioMes = new Date(`${year}-${mes + 1}-01`);
+  const fechaFinalMes = new Date(`${year}-${mes + 1}-31`);
+
+  const cobrosSearchRequest: SearchRequestDTO = {
+    coleccion: CollectionName.COBRO,
+    filtros: [
+      new Filter("fechaCobro", QueryOperators.GTE, fechaInicioMes),
+      new Filter("fechaCobro", QueryOperators.LTE, fechaFinalMes),
+      new Filter("estaDividido", QueryOperators.EQ, false),
+    ],
+  };
+
+  const cobrosDelMesASaldar: CobroFirestore[] = await buscarDocumentos(db, cobrosSearchRequest);
+
+  for (const cobroASaldar of cobrosDelMesASaldar) {
+    cobroASaldar.estaDividido = true;
+    actualizarEntidad(db, CollectionName.COBRO, cobroASaldar.uid, cobroASaldar);
+  }
+};

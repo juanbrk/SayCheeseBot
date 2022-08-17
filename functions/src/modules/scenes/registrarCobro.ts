@@ -297,7 +297,10 @@ export const cobroWizard = new Scenes.WizardScene(
 const leaveScene = async (ctx: any) => {
   await ctx.reply("Cancelaste el registro de un nuevo cobro. Se borraron todos los datos.");
   solicitarIngresoMenu(ctx);
+
   delete ctx.session.cobro;
+  delete ctx.scene.session.datosCobro ;
+  
   return ctx.scene.leave();
 };
 
