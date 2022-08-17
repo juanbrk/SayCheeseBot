@@ -1,15 +1,15 @@
-import { Composer, Markup, Scenes } from "telegraf";
-import { ExtendedContext } from "../../../../config/context/myContext";
-import { ListadoResumenes } from "../../models/resumen";
-import { avanzar, repetirPaso, solicitarIngresoMenu } from "../general";
-import { obtenerDeudaFinal } from "../../utils/resumen";
-import { armarMiniResumenSaldoDeuda } from "../../../handlers/actions/resumen-actions";
-import { Socias } from "../../enums/socias";
-import { obtenerResumenesSinSaldar, registrarSaldo, saldarResumen } from "../../../services/resumen-service";
-import { regexMontoPagado } from "../../utils/regexs";
-import { saldarDeudaParcial } from "../../utils/saldoDeuda";
-import { imprimirEnConsola } from "../../utils/general";
-import { TipoImpresionEnConsola } from "../../enums/tipoImpresionEnConsola";
+import {Composer, Markup, Scenes} from "telegraf";
+import {ExtendedContext} from "../../../../config/context/myContext";
+import {ListadoResumenes} from "../../models/resumen";
+import {avanzar, repetirPaso, solicitarIngresoMenu} from "../general";
+import {obtenerDeudaFinal} from "../../utils/resumen";
+import {armarMiniResumenSaldoDeuda} from "../../../handlers/actions/resumen-actions";
+import {Socias} from "../../enums/socias";
+import {obtenerResumenesSinSaldar, registrarSaldo, saldarResumen} from "../../../services/resumen-service";
+import {regexMontoPagado} from "../../utils/regexs";
+import {saldarDeudaParcial} from "../../utils/saldoDeuda";
+import {imprimirEnConsola} from "../../utils/general";
+import {TipoImpresionEnConsola} from "../../enums/tipoImpresionEnConsola";
 
 
 // * Mostrar mini resumen y saldo
@@ -31,7 +31,7 @@ const primerPaso = (ctx: ExtendedContext) => {
       cuerpoMensaje += armarMiniResumenSaldoDeuda(resumen);
     });
 
-    const { deudora, montoDeuda } = obtenerDeudaFinal(resumenesSinSaldar);
+    const {deudora, montoDeuda} = obtenerDeudaFinal(resumenesSinSaldar);
 
     ctx.scene.session.datosSaldoTotalDeuda = {
       resumenesParaSaldar: resumenesSinSaldar,
@@ -83,20 +83,20 @@ segundoPaso.on("message", async (ctx: any) => {
 // * solicitar pago total o parcial
 segundoPaso.action("saldarDeuda", async (ctx) => {
   if (ctx.callbackQuery && ctx.scene.session.datosSaldoTotalDeuda) {
-    const { montoDeudaFinal, deudora } = ctx.scene.session.datosSaldoTotalDeuda;
+    const {montoDeudaFinal, deudora} = ctx.scene.session.datosSaldoTotalDeuda;
     const totalAdeudadoFormateado = montoDeudaFinal.toLocaleString("es-ar");
     const sociaAdeudada = deudora == Socias.FER ? Socias.FLOR : Socias.FER;
 
     await ctx.editMessageText(
       `¿Quieren saldar el total de la deuda? (_ ${deudora} le debe $${totalAdeudadoFormateado} a ${sociaAdeudada}_)`, {
-      parse_mode: "Markdown",
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: "No, saldar sólo una parte", callback_data: "saldarParcial" }],
-          [{ text: "Si, saldar todo", callback_data: "saldarTotal" }],
-        ],
-      },
-    });
+        parse_mode: "Markdown",
+        reply_markup: {
+          inline_keyboard: [
+            [{text: "No, saldar sólo una parte", callback_data: "saldarParcial"}],
+            [{text: "Si, saldar todo", callback_data: "saldarTotal"}],
+          ],
+        },
+      });
   }
   return avanzar(ctx);
 });
@@ -116,10 +116,10 @@ tercerPaso.on("message", async (ctx: any) => {
 tercerPaso.action("saldarParcial", async (ctx) => {
   imprimirEnConsola("Saldando deuda parcial", TipoImpresionEnConsola.DEBUG);
   if (ctx.callbackQuery && ctx.scene.session.datosSaldoTotalDeuda) {
-    const { montoDeudaFinal, deudora } = ctx.scene.session.datosSaldoTotalDeuda;
+    const {montoDeudaFinal, deudora} = ctx.scene.session.datosSaldoTotalDeuda;
     const totalAdeudadoFormateado = montoDeudaFinal.toLocaleString("es-ar");
     const sociaAdeudada = deudora == Socias.FER ? Socias.FLOR : Socias.FER;
-    ctx.editMessageText(`¿Cuanta deuda van a saldar? (_ ${deudora} le debe $${totalAdeudadoFormateado} a ${sociaAdeudada}_)`, { parse_mode: "Markdown" });
+    ctx.editMessageText(`¿Cuanta deuda van a saldar? (_ ${deudora} le debe $${totalAdeudadoFormateado} a ${sociaAdeudada}_)`, {parse_mode: "Markdown"});
   }
   return avanzar(ctx);
 });
@@ -128,7 +128,7 @@ tercerPaso.action("saldarParcial", async (ctx) => {
 tercerPaso.action("saldarTotal", async (ctx) => {
   imprimirEnConsola("Saldando deuda total", TipoImpresionEnConsola.DEBUG);
   if (ctx.callbackQuery && ctx.scene.session.datosSaldoTotalDeuda) {
-    const { montoDeudaFinal, deudora } = ctx.scene.session.datosSaldoTotalDeuda;
+    const {montoDeudaFinal, deudora} = ctx.scene.session.datosSaldoTotalDeuda;
     const totalAdeudadoFormateado = montoDeudaFinal.toLocaleString("es-ar");
     const sociaAdeudada = deudora == Socias.FER ? Socias.FLOR : Socias.FER;
     ctx.scene.session.datosSaldoTotalDeuda.montoASaldar = montoDeudaFinal;
@@ -139,14 +139,14 @@ tercerPaso.action("saldarTotal", async (ctx) => {
       Si confirman, las cuentas vuelven a cero y nadie le debe nada a nadie.
       
       <b>¿Confirmas el pago?</b>`, {
-      parse_mode: "HTML",
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: "No, cambiar monto", callback_data: "reingresarMonto" }],
-          [{ text: "Si, saldar deuda", callback_data: "registrarSaldo" }],
-        ],
-      },
-    });
+        parse_mode: "HTML",
+        reply_markup: {
+          inline_keyboard: [
+            [{text: "No, cambiar monto", callback_data: "reingresarMonto"}],
+            [{text: "Si, saldar deuda", callback_data: "registrarSaldo"}],
+          ],
+        },
+      });
   }
   return ctx.wizard.selectStep(4);
 });
@@ -157,9 +157,9 @@ const cuartoPaso = new Composer<ExtendedContext>();
 cuartoPaso.hears(["salir", "Salir", "cancelar", "Cancelar"], async (ctx) => leaveScene(ctx));
 cuartoPaso.on("message", async (ctx: any) => {
   if (ctx.message && ctx.scene.session.datosSaldoTotalDeuda) {
-    imprimirEnConsola("Validando monto ingresado", TipoImpresionEnConsola.DEBUG, { montoIngresado: ctx.message });
-    const { text: montoIngresado } = ctx.message;
-    const { deudora, montoDeudaFinal } = ctx.scene.session.datosSaldoTotalDeuda;
+    imprimirEnConsola("Validando monto ingresado", TipoImpresionEnConsola.DEBUG, {montoIngresado: ctx.message});
+    const {text: montoIngresado} = ctx.message;
+    const {deudora, montoDeudaFinal} = ctx.scene.session.datosSaldoTotalDeuda;
     const montoIngresadoEsNumero = regexMontoPagado.test(`${montoIngresado}`);
 
     if (!montoIngresadoEsNumero) {
@@ -184,14 +184,14 @@ cuartoPaso.on("message", async (ctx: any) => {
       `💰 Vas a pagar $*${montoIngresadoFormateado}* de los $*${totalAdeudadoFormateado}* que debés. Después del pago ${deudora} *continuará debiendo: $${saldoRestanteFormateado}*
     
     *¿Confirmas el pago?*`, {
-      parse_mode: "Markdown",
-      reply_markup: {
-        inline_keyboard: [
-          [{ text: "No, cambiar monto", callback_data: "reingresarMonto" }],
-          [{ text: "Si, registrar pago", callback_data: "registrarSaldo" }],
-        ],
-      },
-    });
+        parse_mode: "Markdown",
+        reply_markup: {
+          inline_keyboard: [
+            [{text: "No, cambiar monto", callback_data: "reingresarMonto"}],
+            [{text: "Si, registrar pago", callback_data: "registrarSaldo"}],
+          ],
+        },
+      });
     return avanzar(ctx);
   }
 });
@@ -206,8 +206,8 @@ quintoPaso.on("message", async (ctx: any) => {
 // * Registrar saldo
 quintoPaso.action("registrarSaldo", async (ctx) => {
   if (ctx.callbackQuery && ctx.scene.session.datosSaldoTotalDeuda) {
-    imprimirEnConsola("Registrando saldo", TipoImpresionEnConsola.DEBUG, { datosSaldoTotal: ctx.scene.session.datosSaldoTotalDeuda });
-    const { montoDeudaFinal, deudora, montoASaldar } = ctx.scene.session.datosSaldoTotalDeuda;
+    imprimirEnConsola("Registrando saldo", TipoImpresionEnConsola.DEBUG, {datosSaldoTotal: ctx.scene.session.datosSaldoTotalDeuda});
+    const {montoDeudaFinal, deudora, montoASaldar} = ctx.scene.session.datosSaldoTotalDeuda;
     const resumenesSinSaldar = await obtenerResumenesSinSaldar();
 
     const totalAdeudadoFormateado = new Intl.NumberFormat("es-AR").format(montoDeudaFinal);
@@ -238,10 +238,10 @@ quintoPaso.action("registrarSaldo", async (ctx) => {
 quintoPaso.action("reingresarMonto", async (ctx) => {
   imprimirEnConsola("Reingresar monto", TipoImpresionEnConsola.DEBUG);
   if (ctx.callbackQuery && ctx.scene.session.datosSaldoTotalDeuda) {
-    const { montoDeudaFinal, deudora } = ctx.scene.session.datosSaldoTotalDeuda;
+    const {montoDeudaFinal, deudora} = ctx.scene.session.datosSaldoTotalDeuda;
     const totalAdeudadoFormateado = montoDeudaFinal.toLocaleString("es-ar");
     const sociaAdeudada = deudora == Socias.FER ? Socias.FLOR : Socias.FER;
-    await ctx.reply(`¿Cuanta deuda van a saldar? (_ ${deudora} le debe $${totalAdeudadoFormateado} a ${sociaAdeudada}_)`, { parse_mode: "Markdown" });
+    await ctx.reply(`¿Cuanta deuda van a saldar? (_ ${deudora} le debe $${totalAdeudadoFormateado} a ${sociaAdeudada}_)`, {parse_mode: "Markdown"});
   }
   return ctx.wizard.selectStep(3);
 });
