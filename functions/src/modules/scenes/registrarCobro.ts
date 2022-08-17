@@ -299,8 +299,8 @@ const leaveScene = async (ctx: any) => {
   solicitarIngresoMenu(ctx);
 
   delete ctx.session.cobro;
-  delete ctx.scene.session.datosCobro ;
-  
+  delete ctx.scene.session.datosCobro;
+
   return ctx.scene.leave();
 };
 
