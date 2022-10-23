@@ -1,16 +1,17 @@
-import {db} from "../index";
-import {CollectionName} from "../modules/enums/collectionName";
-import {ClienteAsEntity, ClienteFirestore, ClientesEntities, ClientesFirestore} from "../modules/models/cliente";
+import { db } from "../index";
+import { CollectionName } from "../modules/enums/collectionName";
+import { QueryOperators } from "../modules/enums/QueryOperators";
+import { ClienteAsEntity, ClienteFirestore, ClientesEntities, ClientesFirestore } from "../modules/models/cliente";
 
 /**
  *
  * @return {Array} clientes in firesotre format
  */
-export async function getClientes() : Promise<ClientesFirestore> {
+export async function getClientes(): Promise<ClientesFirestore> {
   const clientesSnapshot = await db.collection("Cliente").get();
-  const clientes : ClientesFirestore = [];
+  const clientes: ClientesFirestore = [];
   clientesSnapshot.forEach((doc) => {
-    const cliente : ClienteFirestore = {
+    const cliente: ClienteFirestore = {
       nombre: doc.data().nombre,
       telefono: doc.data().telefono,
       registradoPor: doc.data().registradoPor,
@@ -28,10 +29,13 @@ export async function getClientes() : Promise<ClientesFirestore> {
  * @return {Promise<ClientesEntities>}
  */
 export async function getClientesAsEntities(): Promise<ClientesEntities> {
-  const clientesSnapshot = await db.collection(CollectionName.CLIENTE).get();
-  const clientes : ClientesEntities = [];
+  const clientesSnapshot = await db.collection(CollectionName.CLIENTE)
+    .where("visible", QueryOperators.EQ, true)
+    .get();
+
+  const clientes: ClientesEntities = [];
   clientesSnapshot.forEach((doc) => {
-    const cliente : ClienteAsEntity = {
+    const cliente: ClienteAsEntity = {
       nombre: doc.data().nombre,
       uid: doc.data().uid,
     };
@@ -51,7 +55,7 @@ export async function getClienteEntity(clienteUID: string): Promise<ClienteAsEnt
   if (!docCliente.exists) {
     throw new Error(`No se encontró al cliente con el uid ${clienteUID}`);
   } else {
-    const cliente : ClienteAsEntity = {
+    const cliente: ClienteAsEntity = {
       nombre: docCliente.data()!.nombre,
       uid: docCliente.data()!.uid,
     };
@@ -70,7 +74,7 @@ export async function getDatosCliente(clienteUID: string): Promise<ClienteFirest
   if (!docCliente.exists) {
     throw new Error(`No se encontró al cliente con el uid ${clienteUID}`);
   } else {
-    const cliente : ClienteFirestore = {
+    const cliente: ClienteFirestore = {
       nombre: docCliente.data()!.nombre,
       telefono: docCliente.data()!.telefono,
       registradoPor: docCliente.data()!.registradoPor,

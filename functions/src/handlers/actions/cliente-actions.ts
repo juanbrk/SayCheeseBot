@@ -66,6 +66,7 @@ export async function guardarCliente(ctx: ExtendedContext, accion: AccionesClien
       nombre: `${ctx.scene.session.datosCliente.nombre}`,
       telefono: `${ctx.scene.session.datosCliente.telefono}`,
       registradoPor: `${ctx.callbackQuery!.from.first_name}`,
+      visible: true,
       uid: uid!,
     };
 
