@@ -1,23 +1,23 @@
 import admin = require("firebase-admin");
-import { db } from "..";
-import { ExtendedContext } from "../../config/context/myContext";
-import { CollectionName } from "../modules/enums/collectionName";
-import { TipoResumen } from "../modules/enums/resumen";
-import { actualizacionResumenFactory, resumenFactory } from "../modules/factories/resumenFactory";
-import { BalanceFirestore } from "../modules/models/balance";
-import { ListadoResumenes, ResumenFirestore } from "../modules/models/resumen";
-import { imprimirEnConsola } from "../modules/utils/general";
-import { TipoImpresionEnConsola } from "../modules/enums/tipoImpresionEnConsola";
+import {db} from "..";
+import {ExtendedContext} from "../../config/context/myContext";
+import {CollectionName} from "../modules/enums/collectionName";
+import {TipoResumen} from "../modules/enums/resumen";
+import {actualizacionResumenFactory, resumenFactory} from "../modules/factories/resumenFactory";
+import {BalanceFirestore} from "../modules/models/balance";
+import {ListadoResumenes, ResumenFirestore} from "../modules/models/resumen";
+import {imprimirEnConsola} from "../modules/utils/general";
+import {TipoImpresionEnConsola} from "../modules/enums/tipoImpresionEnConsola";
 import DateTime = require("luxon");
-import { Socias } from "../modules/enums/socias";
-import { PagoFirestore } from "../modules/models/pago";
-import { pagosFactory } from "../modules/factories/pagosFactory";
-import { registrarBalance } from "./balance-service";
-import { balanceFactoryFromSaldo } from "../modules/factories/balanceFactory";
-import { QueryOperators } from "../modules/enums/QueryOperators";
-import { TipoTransaccion } from "../modules/enums/tipoTransaccion";
-import { saldarCobrosDeMes } from "./cobro-service";
-import { saldarPagosDeMes } from "./pago-service";
+import {Socias} from "../modules/enums/socias";
+import {PagoFirestore} from "../modules/models/pago";
+import {pagosFactory} from "../modules/factories/pagosFactory";
+import {registrarBalance} from "./balance-service";
+import {balanceFactoryFromSaldo} from "../modules/factories/balanceFactory";
+import {QueryOperators} from "../modules/enums/QueryOperators";
+import {TipoTransaccion} from "../modules/enums/tipoTransaccion";
+import {saldarCobrosDeMes} from "./cobro-service";
+import {saldarPagosDeMes} from "./pago-service";
 
 
 /**
@@ -30,7 +30,7 @@ import { saldarPagosDeMes } from "./pago-service";
  * @return {Promise}
  */
 export async function mandarAlResumen(documentoDelBalance: BalanceFirestore): Promise<any> {
-  const { mes: mesDelBalance, año: añoDelBalance, tipoTransaccion } = documentoDelBalance;
+  const {mes: mesDelBalance, año: añoDelBalance, tipoTransaccion} = documentoDelBalance;
   const resumenRef = db.collection(CollectionName.RESUMEN);
   const doc = await resumenRef.doc(`${mesDelBalance}_${añoDelBalance}_mensual`).get();
   let docDelResumen: ResumenFirestore;
@@ -82,7 +82,7 @@ const generarResumenMensual = async (
  * @return {Promise<FirebaseFirestore.WriteResult>}
  */
 const guardarResumen = async (resumenAGuardar: ResumenFirestore, esActualizacion = false): Promise<FirebaseFirestore.WriteResult> => {
-  const { uid } = resumenAGuardar;
+  const {uid} = resumenAGuardar;
   const docRef = db.collection(CollectionName.RESUMEN).doc(`${uid}`);
   if (!esActualizacion) {
     return docRef.set(resumenAGuardar);
@@ -142,19 +142,19 @@ export const saldarResumenParcial = async (
   saldoPendiente: number,
   sociaDeudora: Socias
 ): Promise<FirebaseFirestore.WriteResult> => {
-  let { ferDebeAFlor, florDebeAFer } = resumenASaldar;
+  let {ferDebeAFlor, florDebeAFer} = resumenASaldar;
 
   switch (sociaDeudora) {
-    case Socias.FER:
-      ferDebeAFlor = saldoPendiente;
-      florDebeAFer = 0;
-      break;
-    case Socias.FLOR:
-      florDebeAFer = saldoPendiente;
-      ferDebeAFlor = 0;
-      break;
-    default:
-      break;
+  case Socias.FER:
+    ferDebeAFlor = saldoPendiente;
+    florDebeAFer = 0;
+    break;
+  case Socias.FLOR:
+    florDebeAFer = saldoPendiente;
+    ferDebeAFlor = 0;
+    break;
+  default:
+    break;
   }
   const docRef = db.collection(CollectionName.RESUMEN).doc(`${resumenASaldar.uid}`);
   const resumenSaldadoParcialmente: ResumenFirestore = {
@@ -175,21 +175,21 @@ export const saldarResumenParcial = async (
  */
 export const saldarResumen = async (resumenASaldar: ResumenFirestore) => {
   const docRef = db.collection(CollectionName.RESUMEN).doc(`${resumenASaldar.uid}`);
-  const { ferDebeAFlor, florDebeAFer } = resumenASaldar;
+  const {ferDebeAFlor, florDebeAFer} = resumenASaldar;
   let montoParaBalancearDeuda = 0;
 
   const montoAdeudadoPorFer = ferDebeAFlor - florDebeAFer;
   if (montoAdeudadoPorFer != 0) {
     const sociaDeudora: Socias = montoAdeudadoPorFer > 0 ? Socias.FER : Socias.FLOR;
     switch (sociaDeudora) {
-      case Socias.FER:
-        montoParaBalancearDeuda = ferDebeAFlor;
-        break;
-      case Socias.FLOR:
-        montoParaBalancearDeuda = florDebeAFer;
-        break;
-      default:
-        break;
+    case Socias.FER:
+      montoParaBalancearDeuda = ferDebeAFlor;
+      break;
+    case Socias.FLOR:
+      montoParaBalancearDeuda = florDebeAFer;
+      break;
+    default:
+      break;
     }
   }
 
@@ -225,7 +225,7 @@ export async function getResumenByUID(resumenUID: string): Promise<ResumenFirest
  */
 export async function registrarSaldo(ctx: ExtendedContext) {
   if (ctx.scene.session.datosSaldoTotalDeuda) {
-    const { datosSaldoTotalDeuda } = ctx.scene.session;
+    const {datosSaldoTotalDeuda} = ctx.scene.session;
     const sociaAdeudada = datosSaldoTotalDeuda.deudora == Socias.FER ? Socias.FLOR : Socias.FER;
     const uid = `saldo-${datosSaldoTotalDeuda.deudora.toLowerCase()}-debe-${sociaAdeudada.toLowerCase()}-${DateTime.DateTime.utc().toFormat("yMMddHHmmss")}`;
 
@@ -239,7 +239,7 @@ export async function registrarSaldo(ctx: ExtendedContext) {
           return registrarBalance(balanceDoc);
         });
     } catch (error) {
-      imprimirEnConsola("Ocurrió un error registrando un nuevo pago", TipoImpresionEnConsola.ERROR, { error });
+      imprimirEnConsola("Ocurrió un error registrando un nuevo pago", TipoImpresionEnConsola.ERROR, {error});
       Promise.reject(error);
     }
   }
@@ -255,7 +255,7 @@ export async function registrarSaldo(ctx: ExtendedContext) {
  */
 export const tratarResumenAlterado = async (resumenAlterado: ResumenFirestore) => {
   if (resumenAlterado.saldado) {
-    const { mes: mesDeLosCobros, year: anoDeLosCobros } = resumenAlterado;
+    const {mes: mesDeLosCobros, year: anoDeLosCobros} = resumenAlterado;
 
     saldarCobrosDeMes(mesDeLosCobros, anoDeLosCobros);
     saldarPagosDeMes(mesDeLosCobros, anoDeLosCobros);

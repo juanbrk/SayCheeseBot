@@ -8,7 +8,8 @@ export interface ClienteFirestore {
     nombre: string,
     telefono: string,
     registradoPor: string,
-    uid: string
+    uid: string,
+    visible: boolean
 }
 
 export interface ClienteAsEntity {
