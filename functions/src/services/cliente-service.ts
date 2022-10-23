@@ -1,7 +1,7 @@
-import { db } from "../index";
-import { CollectionName } from "../modules/enums/collectionName";
-import { QueryOperators } from "../modules/enums/QueryOperators";
-import { ClienteAsEntity, ClienteFirestore, ClientesEntities, ClientesFirestore } from "../modules/models/cliente";
+import {db} from "../index";
+import {CollectionName} from "../modules/enums/collectionName";
+import {QueryOperators} from "../modules/enums/QueryOperators";
+import {ClienteAsEntity, ClienteFirestore, ClientesEntities, ClientesFirestore} from "../modules/models/cliente";
 
 /**
  *
@@ -15,6 +15,7 @@ export async function getClientes(): Promise<ClientesFirestore> {
       nombre: doc.data().nombre,
       telefono: doc.data().telefono,
       registradoPor: doc.data().registradoPor,
+      visible: doc.data().visible,
       uid: doc.data().uid,
     };
     clientes.push(cliente);
@@ -78,6 +79,7 @@ export async function getDatosCliente(clienteUID: string): Promise<ClienteFirest
       nombre: docCliente.data()!.nombre,
       telefono: docCliente.data()!.telefono,
       registradoPor: docCliente.data()!.registradoPor,
+      visible: docCliente.data()!.visible,
       uid: docCliente.data()!.uid,
     };
     return cliente;
