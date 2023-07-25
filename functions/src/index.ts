@@ -15,9 +15,10 @@ import {wizardNuevoPago} from "./modules/scenes/pagos/registrarNuevoPago";
 import {wizardSaldarDeuda} from "./modules/scenes/saldos/registrarSaldoDeudaMensual";
 import {wizardMovimientosCobro} from "./modules/scenes/cobro/visualizarMovimientos";
 import {wizardSaldoDeudaTotal} from "./modules/scenes/saldos/registrarSaldoDeudaTotal";
+import {wizardMovimientosPagos} from "./modules/scenes/pagos/visualizarMovimientosPagos";
 
 admin.initializeApp();
-const stage = new Scenes.Stage<ExtendedContext>([superWizard, cobroWizard, wizardNuevoPago, wizardSaldarDeuda, wizardMovimientosCobro, wizardSaldoDeudaTotal]);
+const stage = new Scenes.Stage<ExtendedContext>([superWizard, cobroWizard, wizardNuevoPago, wizardSaldarDeuda, wizardMovimientosCobro, wizardMovimientosPagos, wizardSaldoDeudaTotal]);
 export const db = admin.firestore();
 const telegramToken: string = functions.config().telegram.token;
 if (telegramToken === undefined) {

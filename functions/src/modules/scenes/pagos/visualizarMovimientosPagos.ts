@@ -1,22 +1,23 @@
 import {Composer, Markup, Scenes} from "telegraf";
 import {ExtendedContext} from "../../../../config/context/myContext";
 import {obtenerAnosEnLosQueHuboMovimientos, obtenerMesesEnLosQueHuboMovimientos} from "../../../handlers/menus/choices";
-import {obtenerCobrosParaMesYSocia} from "../../../services/cobro-service";
-import {armarTextoCobroMes} from "../../../handlers/actions/cobro-actions";
 import {Socias} from "../../enums/socias";
-import {VisualizacionCobroSession} from "../../models/cobro";
+import {VisualizacionPagosSession} from "../../models/pago";
+
 import {avanzar, solicitarIngresoMenu} from "../general";
 import {generarBotonesCallback} from "../../utils/menu";
 import {imprimirEnConsola} from "../../utils/general";
 import {TipoImpresionEnConsola} from "../../enums/tipoImpresionEnConsola";
+import {obtenerPagosParaMesYSocia} from "../../../services/pago-service";
+import {armarTextoPagoMes} from "../../../handlers/actions/pagos-actions";
 
 const seleccionarTipoVisualizacion = async (ctx: ExtendedContext) => {
-  imprimirEnConsola("Visualización cobro -> solicitar tipo visualizacion", TipoImpresionEnConsola.DEBUG);
-  if (ctx.scene.session.visualizacionCobro) {
-    ctx.scene.session.visualizacionCobro = {...ctx.scene.session.visualizacionCobro};
+  imprimirEnConsola("Visualización movimientos pagos -> solicitar tipo visualizacion", TipoImpresionEnConsola.DEBUG);
+  if (ctx.scene.session.visualizacionMovimientosPagos) {
+    ctx.scene.session.visualizacionMovimientosPagos = {...ctx.scene.session.visualizacionMovimientosPagos};
   }
   ctx.editMessageText(
-    "¿Cómo querés ver los cobros? ",
+    "¿Cómo querés ver los pagos? ",
     Markup.inlineKeyboard([
       Markup.button.callback("Por mes", "mensual"),
       Markup.button.callback("Por socia", "socia"),
@@ -25,7 +26,7 @@ const seleccionarTipoVisualizacion = async (ctx: ExtendedContext) => {
 };
 
 /**
- * Valida la visualizacion deseada (mes/socia) y solicita ingresar el año para ver los cobros
+ * Valida la visualizacion deseada (mes/socia) y solicita ingresar el año para ver los pagos
  */
 const validarSeleccionYMostrarOpciones = new Composer<ExtendedContext>();
 validarSeleccionYMostrarOpciones.hears(["salir", "Salir", "cancelar", "Cancelar"], async (ctx) => leaveScene(ctx));
@@ -35,12 +36,12 @@ validarSeleccionYMostrarOpciones.on("message", async (ctx: any) => volverAlInici
  * Guardar mes seleccionado y saltar a la elección del año
  */
 validarSeleccionYMostrarOpciones.action("mensual", async (ctx) => {
-  imprimirEnConsola("Visualizacion cobros -> mensual", TipoImpresionEnConsola.DEBUG);
+  imprimirEnConsola("Visualizacion movimientos pagos -> mensual", TipoImpresionEnConsola.DEBUG);
   const anos: Record<string, string> = await obtenerAnosEnLosQueHuboMovimientos(ctx);
   const botones: Array<any> = generarBotonesCallback(anos);
 
   await ctx.editMessageText(
-    "Selecciona el año para ver los cobros",
+    "Selecciona el año para ver los pagos",
     Markup.inlineKeyboard(botones, {columns: 2})
   );
   return ctx.wizard.selectStep(3);
@@ -50,8 +51,8 @@ validarSeleccionYMostrarOpciones.action("mensual", async (ctx) => {
  * Mostrar socias para elegir.
  */
 validarSeleccionYMostrarOpciones.action("socia", async (ctx) => {
-  imprimirEnConsola("Visualizacion cobro -> socia", TipoImpresionEnConsola.DEBUG);
-  await ctx.editMessageText("Elegí la socia para ver los cobros realizados",
+  imprimirEnConsola("Visualizacion movimientos pagos -> socia", TipoImpresionEnConsola.DEBUG);
+  await ctx.editMessageText("Elegí la socia para ver los pagos realizados",
     Markup.inlineKeyboard([
       Markup.button.callback("Fer", Socias.FER),
       Markup.button.callback("Flor", Socias.FLOR),
@@ -60,7 +61,7 @@ validarSeleccionYMostrarOpciones.action("socia", async (ctx) => {
 });
 
 /**
- * Valida la asignación del cobro y pregunta si se dividió el pago
+ * Valida la asignación del pago y pregunta si se dividió el pago
  */
 const validarEleccionSociaYSeleccionarAno = new Composer<ExtendedContext>();
 validarEleccionSociaYSeleccionarAno.hears(["salir", "Salir", "cancelar", "Cancelar"], async (ctx) => leaveScene(ctx));
@@ -70,16 +71,16 @@ validarEleccionSociaYSeleccionarAno.on("message", async (ctx: any) => volverAlIn
 validarEleccionSociaYSeleccionarAno.on("callback_query", async (ctx: any) => {
   if (ctx.callbackQuery) {
     const sociaElegida: Socias = ctx.update.callback_query.data;
-    imprimirEnConsola("Visualizacion cobros -> socia elegida", TipoImpresionEnConsola.DEBUG, {sociaElegida});
-    const visualizacionCobro: VisualizacionCobroSession = {
+    imprimirEnConsola("Visualizacion movimientos pagos -> socia elegida", TipoImpresionEnConsola.DEBUG, {sociaElegida});
+    const visualizacionMovimientosPagos: VisualizacionPagosSession = {
       socia: sociaElegida,
     };
-    ctx.session.visualizacionCobro = visualizacionCobro;
+    ctx.session.visualizacionMovimientosPagos = visualizacionMovimientosPagos;
     const anos: Record<string, string> = await obtenerAnosEnLosQueHuboMovimientos(ctx);
     const botones: Array<any> = generarBotonesCallback(anos);
 
     await ctx.editMessageText(
-      `¿Para que año querés ver los cobros de ${sociaElegida}?`,
+      `¿Para que año querés ver los pagos de ${sociaElegida}?`,
       Markup.inlineKeyboard(botones, {columns: 2})
     );
     return avanzar(ctx);
@@ -88,31 +89,31 @@ validarEleccionSociaYSeleccionarAno.on("callback_query", async (ctx: any) => {
 
 
 /**
- * Mostrar los meses en los que hubo cobros en el año seleccionado
+ * Mostrar los meses en los que hubo pagos en el año seleccionado
  */
 const validarAnoYSeleccionarMeses = new Composer<ExtendedContext>();
 validarAnoYSeleccionarMeses.hears(["salir", "Salir", "cancelar", "Cancelar"], async (ctx) => leaveScene(ctx));
 validarAnoYSeleccionarMeses.on("callback_query", async (ctx: any) => {
   if (ctx.callbackQuery) {
     const anoSeleccionado = ctx.update.callback_query.data;
-    const visualizacionCobro: VisualizacionCobroSession = ctx.session.visualizacionCobro ?
+    const visualizacionMovimientosPagos: VisualizacionPagosSession = ctx.session.visualizacionMovimientosPagos ?
       {
-        ...ctx.session.visualizacionCobro,
+        ...ctx.session.visualizacionMovimientosPagos,
         anoSeleccionado: anoSeleccionado,
       } :
       {
         anoSeleccionado,
       };
 
-    imprimirEnConsola("Visualizacion cobros -> seleccionar mes", TipoImpresionEnConsola.INFO, {visualizacionCtx: visualizacionCobro});
-    ctx.session.visualizacionCobro = visualizacionCobro;
+    imprimirEnConsola("Visualizacion movimientos pagos -> seleccionar mes", TipoImpresionEnConsola.INFO, {visualizacionCtx: visualizacionMovimientosPagos});
+    ctx.session.visualizacionMovimientosPagos = visualizacionMovimientosPagos;
 
-    const mesesEnLosQueHuboCobros: Record<string, string> = await obtenerMesesEnLosQueHuboMovimientos(ctx, anoSeleccionado);
-    const botones: Array<any> = generarBotonesCallback(mesesEnLosQueHuboCobros);
-    const textoPreguntandoPorSocia: string = "socia" in visualizacionCobro ? ` de ${visualizacionCobro.socia}` : "";
+    const mesesEnLosQueHuboPagos: Record<string, string> = await obtenerMesesEnLosQueHuboMovimientos(ctx, anoSeleccionado);
+    const botones: Array<any> = generarBotonesCallback(mesesEnLosQueHuboPagos);
+    const textoPreguntandoPorSocia: string = "socia" in visualizacionMovimientosPagos ? ` de ${visualizacionMovimientosPagos.socia}` : "";
 
     await ctx.editMessageText(
-      `¿Para qué mes del ${anoSeleccionado} querés ver los cobros ${textoPreguntandoPorSocia}?`,
+      `¿Para qué mes del ${anoSeleccionado} querés ver los pagos ${textoPreguntandoPorSocia}?`,
       Markup.inlineKeyboard(botones, {columns: 2}));
   }
   return avanzar(ctx);
@@ -121,51 +122,51 @@ validarAnoYSeleccionarMeses.on("callback_query", async (ctx: any) => {
 validarAnoYSeleccionarMeses.on("message", async (ctx: any) => volverAlInicio(ctx));
 
 /**
- * Muestra los cobros del mes seleccionado
+ * Muestra los pagos del mes seleccionado
  */
-const mostrarCobros = new Composer<ExtendedContext>();
-mostrarCobros.hears(["salir", "Salir", "cancelar", "Cancelar"], async (ctx) => leaveScene(ctx));
-mostrarCobros.on("callback_query", async (ctx: any) => {
+const mostrarPagos = new Composer<ExtendedContext>();
+mostrarPagos.hears(["salir", "Salir", "cancelar", "Cancelar"], async (ctx) => leaveScene(ctx));
+mostrarPagos.on("callback_query", async (ctx: any) => {
   if (ctx.callbackQuery) {
     const mesSeleccionado = ctx.update.callback_query.data;
 
-    const visualizacionCobro: VisualizacionCobroSession = ctx.session.visualizacionCobro ?
+    const visualizacionMovimientosPagos: VisualizacionPagosSession = ctx.session.visualizacionMovimientosPagos ?
       {
-        ...ctx.session.visualizacionCobro,
+        ...ctx.session.visualizacionMovimientosPagos,
         mesSeleccionado: mesSeleccionado,
       } :
       undefined;
 
-    imprimirEnConsola("Visualizacion cobros -> mostrar cobros", TipoImpresionEnConsola.DEBUG, {visualizacionCtx: visualizacionCobro});
-    const cobrosMesSeleccionado = ctx.session.visualizacionCobro ?
-      await obtenerCobrosParaMesYSocia(`${+mesSeleccionado + 1}`, visualizacionCobro.anoSeleccionado!, visualizacionCobro.socia) :
-      await obtenerCobrosParaMesYSocia(`${+mesSeleccionado + 1}`, visualizacionCobro.anoSeleccionado!);
+    imprimirEnConsola("Visualizacion movimientos pagos -> mostrar pagos mes seleccionado", TipoImpresionEnConsola.DEBUG, {visualizacionCtx: visualizacionMovimientosPagos});
+    const pagosMesSeleccionado = ctx.session.visualizacionMovimientosPagos ?
+      await obtenerPagosParaMesYSocia(`${+mesSeleccionado + 1}`, visualizacionMovimientosPagos.anoSeleccionado!, visualizacionMovimientosPagos.socia) :
+      await obtenerPagosParaMesYSocia(`${+mesSeleccionado + 1}`, visualizacionMovimientosPagos.anoSeleccionado!);
 
-    const cuerpoMensajeCobros: string = armarTextoCobroMes(cobrosMesSeleccionado, +mesSeleccionado + 1, visualizacionCobro.anoSeleccionado!);
-    await ctx.editMessageText(cuerpoMensajeCobros, {parse_mode: "HTML"});
-    delete ctx.session.visualizacionCobro;
+    const cuerpoMensajePagos: string = armarTextoPagoMes(pagosMesSeleccionado, +mesSeleccionado + 1, visualizacionMovimientosPagos.anoSeleccionado!);
+    await ctx.editMessageText(cuerpoMensajePagos, {parse_mode: "HTML"});
+    delete ctx.session.visualizacionMovimientosPagos;
     solicitarIngresoMenu(ctx);
     return ctx.scene.leave();
   }
 });
 
-mostrarCobros.on("message", async (ctx: any) => volverAlInicio(ctx));
+mostrarPagos.on("message", async (ctx: any) => volverAlInicio(ctx));
 
-export const wizardMovimientosCobro = new Scenes.WizardScene(
-  "visualizar-movimientos-wizard",
+export const wizardMovimientosPagos = new Scenes.WizardScene(
+  "visualizar-movimientos-pagos-wizard",
   seleccionarTipoVisualizacion,
   validarSeleccionYMostrarOpciones,
   validarEleccionSociaYSeleccionarAno,
   validarAnoYSeleccionarMeses,
-  mostrarCobros,
+  mostrarPagos,
 );
 
 const leaveScene = async (ctx: any) => {
-  await ctx.reply("Saliste de la visualización de los cobros");
+  await ctx.reply("Saliste de la visualización de los pagos");
   solicitarIngresoMenu(ctx);
 
-  delete ctx.session.cobro;
-  delete ctx.scene.session.visualizacionCobro;
+  //   delete ctx.session.pago; // ? no lo cree todavia
+  delete ctx.scene.session.visualizacionMovimientosPagos;
 
   return ctx.scene.leave();
 };
@@ -178,11 +179,11 @@ const leaveScene = async (ctx: any) => {
  */
 const volverAlInicio = async (ctx: ExtendedContext) => {
   await ctx.reply("Por favor, selecciona una de las opciones de abajo.  No entiendo si escribís.");
-  if (ctx.session.visualizacionCobro && "socia" in ctx.session.visualizacionCobro) {
-    delete ctx.session.visualizacionCobro;
+  if (ctx.session.visualizacionMovimientosPagos && "socia" in ctx.session.visualizacionMovimientosPagos) {
+    delete ctx.session.visualizacionMovimientosPagos;
   }
   ctx.reply(
-    "¿Cómo querés ver los cobros? ",
+    "¿Cómo querés ver los pagos? ",
     Markup.inlineKeyboard([
       Markup.button.callback("Por mes", "mensual"),
       Markup.button.callback("Por socia", "socia"),

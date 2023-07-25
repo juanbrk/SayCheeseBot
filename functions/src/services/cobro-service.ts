@@ -11,6 +11,7 @@ import {SearchRequestDTO} from "../modules/models/DTOs/searchRequestDto";
 import {Filter} from "../modules/models/filter";
 import {QueryOperators} from "../modules/enums/QueryOperators";
 import {actualizarEntidad, buscarDocumentos} from "./firestore-service";
+import {calcularMesInicialYFinal} from "./util-service";
 
 /**
  *
@@ -83,35 +84,6 @@ export async function obtenerCobrosParaMesYSocia(indiceMes: string, ano: string,
     cobros.push(cobro);
   });
   return cobros;
-}
-
-/**
- * Cuando se visualizan los cobros para un mes, se debe calcular el rango de fechas en el cual mostrar los
- * cobros, que corresponde a todo un mes.
- *
- * @param {string} indiceMes del mes seleccionado por el usuario
- * @return {any} con el rango de fechas de cobro
- */
-function calcularMesInicialYFinal(indiceMes: string) {
-  const indiceNumerico = +indiceMes;
-  let mesInicio = indiceMes;
-  let mesFinal = `${indiceNumerico + 1}`;
-  if (indiceNumerico < 10) {
-    mesInicio = `0${indiceMes}`;
-  }
-
-  if (indiceNumerico + 1 < 10) {
-    mesFinal = `0${indiceNumerico + 1}`;
-  }
-
-  if (indiceNumerico + 1 > 12) {
-    mesFinal = "01";
-  }
-
-  return {
-    inicial: mesInicio,
-    final: mesFinal,
-  };
 }
 
 /**
