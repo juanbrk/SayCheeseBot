@@ -14,4 +14,13 @@ menu.interact(
       return false;
     },
   });
+menu.interact(
+  "Visualizar movimientos",
+  "movimientosPagos",
+  {
+    do: (ctx) => {
+      ctx.scene.enter("visualizar-movimientos-pagos-wizard");
+      return false;
+    },
+  });
 menu.manualRow(botonesVueltaAtras);

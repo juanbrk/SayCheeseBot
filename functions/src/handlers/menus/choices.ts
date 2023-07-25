@@ -48,7 +48,7 @@ export async function obtenerListadoResumenes(ctx: ExtendedContext): Promise<Rec
 
   const ano: string = anoSeleccionado !== undefined ? anoSeleccionado : "2021";
 
-  const resumenes: Record<string, string> = await obtenerMesesEnLosQueHuboCobros(ctx, ano);
+  const resumenes: Record<string, string> = await obtenerMesesEnLosQueHuboMovimientos(ctx, ano);
   return resumenes;
 }
 
@@ -65,12 +65,12 @@ export async function obtenerCamposCliente(ctx: ExtendedContext): Promise<Record
 }
 
 /**
- * A la hora de visualizar los cobros realizados, obtenemos los meses en los que se generaron resumenes (en teoría si se
- * generó un resumen, tiene que haberse generado un cobro) para mostrar los cobros realizados en ese mes.
+ * A la hora de visualizar los cobros o pagos realizados, obtenemos los meses en los que se generaron resumenes (en teoría si se
+ * generó un resumen, tiene que haberse generado un cobro|pago) para mostrar los movimientos realizados en ese mes.
  * @param {ExtendedContext} ctx context
  * @param {string} ano en el que se realizaron los cobros
  */
-export async function obtenerMesesEnLosQueHuboCobros(ctx: ExtendedContext, ano: string): Promise<Record<string, string>> {
+export async function obtenerMesesEnLosQueHuboMovimientos(ctx: ExtendedContext, ano: string): Promise<Record<string, string>> {
   const resumenes: ListadoResumenes = await getResumenes();
   const result: Record<string, string> = {};
   const anoNumerico: number = +ano;
@@ -88,7 +88,7 @@ export async function obtenerMesesEnLosQueHuboCobros(ctx: ExtendedContext, ano: 
  * @param {ExtendedContext} ctx context
  * @return {Promise<Record<string,string>>}
  */
-export async function obtenerAnosEnLosQueHuboCobros(ctx: ExtendedContext): Promise<Record<string, string>> {
+export async function obtenerAnosEnLosQueHuboMovimientos(ctx: ExtendedContext): Promise<Record<string, string>> {
   const resumenes: ListadoResumenes = await getResumenes();
   const result: Record<string, string> = {};
   const anos: Array<number> = [];

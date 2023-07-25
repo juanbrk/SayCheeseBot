@@ -1,8 +1,11 @@
 import {ExtendedContext} from "../../../config/context/myContext";
 import {PropiedadesPago} from "../../modules/enums/pago";
 import {Socias} from "../../modules/enums/socias";
-import {PagoSession} from "../../modules/models/pago";
+import {PagoSession, ResumenesPago, ResumenPago} from "../../modules/models/pago";
 import {registrarPago} from "../../services/pago-service";
+import {MESES} from "../menus/choices";
+import DateTime = require("luxon");
+
 const regexMontoPagado = /\d+(,\d{1,2})?/;
 
 /**
@@ -13,7 +16,7 @@ const regexMontoPagado = /\d+(,\d{1,2})?/;
  * @param {PagoSession} pagoEnProceso Actualización en curso
  * @return {Promise}
  */
-export async function procesarRegistroPago( ctx: ExtendedContext, pagoEnProceso: PagoSession) {
+export async function procesarRegistroPago(ctx: ExtendedContext, pagoEnProceso: PagoSession) {
   const ingresoMonto = pagoEnProceso.monto && pagoEnProceso.motivo == undefined;
   const ingresoMotivo = pagoEnProceso.motivo && pagoEnProceso.asignadoA == undefined;
   const seAsignoElPago = pagoEnProceso.asignadoA && pagoEnProceso.dividieronLaPlata == undefined;
@@ -24,7 +27,7 @@ export async function procesarRegistroPago( ctx: ExtendedContext, pagoEnProceso:
     const montoEsValido = regexMontoPagado.test(`${pagoEnProceso.monto}`);
     const montoComoNumero: number = +`${pagoEnProceso.monto}`.replace(",", ".");
 
-    if (montoEsValido && montoComoNumero> 0) {
+    if (montoEsValido && montoComoNumero > 0) {
       return guardarPago(ctx, montoComoNumero, PropiedadesPago.MONTO);
     } else {
       await ctx.reply("Si vas a registrar un cobro, asegurate de ingresar sólo números. Te acepto (como mucho) una coma.");
@@ -41,7 +44,7 @@ export async function procesarRegistroPago( ctx: ExtendedContext, pagoEnProceso:
     return guardarPago(ctx, pagoEnProceso.asignadoA, PropiedadesPago.ASIGNADO_A);
   }
 
-  if (dividieronLaPlata && pagoEnProceso.dividieronLaPlata !== undefined ) {
+  if (dividieronLaPlata && pagoEnProceso.dividieronLaPlata !== undefined) {
     return guardarPago(ctx, pagoEnProceso.dividieronLaPlata, PropiedadesPago.ESTA_DIVIDIDO);
   }
 
@@ -62,6 +65,32 @@ export async function procesarRegistroPago( ctx: ExtendedContext, pagoEnProceso:
   }
   return;
 }
+
+/**
+ * Cuando se visualizan los pagos realizados en un mes, estos se presentan en un mensaje que contiene un encabezado
+ * y un cuerpo. En el encabezado va el mes al que corresponden los pagos y en el cuerpo van los pagos
+ * con toda la información sobre el pago para una facil lectura
+ *
+ * @param {ResumenesPago} pagosDelMes Todos los pagos correspondientes a un mes
+ * @param {number} indiceMesSeleccionado El valor numerico del mes seleccionado en el menu
+ * @param {string} anoSeleccionado Año para el cual se seleccionó la visualización de los pagos
+ * @return {string}
+ */
+export const armarTextoPagoMes = (pagosDelMes: ResumenesPago, indiceMesSeleccionado: number, anoSeleccionado: string): string => {
+  let cuerpo = "";
+  if (pagosDelMes.length < 1) {
+    cuerpo = "Todavía no hay pagos para el mes seleccionado";
+  } else {
+    pagosDelMes.forEach((pago) => {
+      cuerpo += armarResumenPago(pago);
+    });
+  }
+
+  const encabezado = `🧾 Estos son los pagos del mes de ${MESES[indiceMesSeleccionado - 1]} del ${anoSeleccionado}:`;
+
+  return `${encabezado}
+  ${cuerpo}.`;
+};
 
 const guardarPago = (context: ExtendedContext, valorAGuardar: any, propiedadAGuardar: PropiedadesPago) => {
   let {datosPago} = context.scene.session;
@@ -89,4 +118,27 @@ const guardarPago = (context: ExtendedContext, valorAGuardar: any, propiedadAGua
   }
   context.scene.session.datosPago = datosPago;
   return true;
+};
+
+/**
+ * Al visualizar los pagos de un mes en particular, debemos preparar el pago como viene de firestore
+ * a un mensaje con el formato que permita visualizar la información del pago de una manera mas clara
+ *
+ * @param {ResumenPago} pago A partir del cual armar el texto
+ * @return {string}
+ */
+const armarResumenPago = (pago: ResumenPago): string => {
+  const pagoAsNumber = +pago.monto!;
+  const fechaDatetime = DateTime.DateTime.fromMillis(pago.fechaPago.toMillis()).toLocaleString({locale: "es-AR"});
+
+  return ` 
+  -----------------------------
+  <b>Fecha:</b> ${fechaDatetime}
+  <b>Monto</b>: $${new Intl.NumberFormat("de-DE").format(pagoAsNumber)};
+  <b>Motivo</b>: ${pago.esSaldo ? "Saldo deuda" : pago.motivo ?? ""}
+  <b>Lo registró</b>: ${pago.registradoPor}
+  <b>¿Es saldo de deuda?</b>: ${pago.esSaldo ? "Si" : "No"}
+  ${!pago.esSaldo ? `<b>¿Está dividido?</b>: ${pago.dividieronLaPlata ? "Si" : "No"}` : ""}
+  ${!pago.esSaldo ? `<b>Pagó</b>: ${pago.asignadoA}` : ""}
+  `;
 };
