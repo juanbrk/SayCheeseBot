@@ -1,7 +1,7 @@
 import {Socias} from "../enums/socias";
 import {ClienteAsEntity} from "./cliente";
 
-import admin = require("firebase-admin");
+import {Timestamp} from "firebase-admin/firestore";
 import {Meses} from "../enums/meses";
 
 export interface CobroSession {
@@ -23,7 +23,7 @@ export interface VisualizacionCobroSession{
 }
 
 export interface ResumenCobro extends CobroSession {
-    fechaCobro: admin.firestore.Timestamp;
+    fechaCobro: Timestamp;
 }
 
 

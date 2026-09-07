@@ -14,3 +14,9 @@ seed/
 a.json
 package-lock.json
 *.log
+
+#ticket tracking (local, nunca se commitea)
+TICKET.md
+
+#gate de validación (centinela efímero del guard de iteración)
+.claude/.awaiting-validation.json

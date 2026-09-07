@@ -20,7 +20,7 @@ const seleccionarSocia = async (ctx: ExtendedContext) => {
   ctx.editMessageText(
     "¿Quien va a pagar?",
     Markup.inlineKeyboard([
-      Markup.button.callback("Fer", "adeudaFer"),
+      Markup.button.callback("Marian", "adeudaFer"),
       Markup.button.callback("Flor", "adeudaFlor"),
     ]));
   return avanzar(ctx);
@@ -36,7 +36,7 @@ validarSeleccionYChequearDeuda.on("message", async (ctx: any) => {
   await ctx.reply(
     "¿Quien va a pagar?",
     Markup.inlineKeyboard([
-      Markup.button.callback("Fer", "adeudaFer"),
+      Markup.button.callback("Marian", "adeudaFer"),
       Markup.button.callback("Flor", "adeudaFlor"),
     ]));
   return ctx.wizard.selectStep(1);
@@ -47,7 +47,7 @@ validarSeleccionYChequearDeuda.action("adeudaFer", async (ctx) => {
     // chequear si adeuda
     const datosSaldo: SaldoDeudaWizardSession = {
       ...ctx.scene.session.datosSaldoDeuda,
-      asignadoA: Socias.FER,
+      asignadoA: Socias.MARIAN,
     };
     await procesarRegistroSaldo(ctx, datosSaldo);
 
@@ -93,7 +93,7 @@ validarSeleccionYChequearDeuda.action("adeudaFlor", async (ctx) => {
       // si adeuda preguntar cuanto quiere pagar
       const totalAdeudadoFormateado = new Intl.NumberFormat("de-DE").format(ctx.scene.session.datosSaldoDeuda.montoAdeudado);
       await ctx.editMessageText(
-        `¿Querés pagar todo lo que le debés a Fer? (_Le debés $${totalAdeudadoFormateado}_)`, {
+        `¿Querés pagar todo lo que le debés a Marian? (_Le debés $${totalAdeudadoFormateado}_)`, {
           parse_mode: "Markdown",
           reply_markup: {
             inline_keyboard: [
@@ -105,7 +105,7 @@ validarSeleccionYChequearDeuda.action("adeudaFlor", async (ctx) => {
     } else {
       // Si no adeuda solicitar seleccion socia
       await ctx.editMessageText(
-        "De momento no tenés deudas, ¿Estás intentando registrar el pago de deuda de Fer? ",
+        "De momento no tenés deudas, ¿Estás intentando registrar el pago de deuda de Marian? ",
         Markup.inlineKeyboard([
           Markup.button.callback("No, salir del registro", "salir"),
           Markup.button.callback("Si, me equivoqué!", "volverARegistrar"),
@@ -157,7 +157,7 @@ validarSeleccionYSolicitarCuantoDeseaPagar.action("volverARegistrar", async (ctx
   await ctx.editMessageText(
     "¿Quien va a pagar?",
     Markup.inlineKeyboard([
-      Markup.button.callback("Fer", "adeudaFer"),
+      Markup.button.callback("Marian", "adeudaFer"),
       Markup.button.callback("Flor", "adeudaFlor"),
     ]));
   return ctx.wizard.selectStep(1);

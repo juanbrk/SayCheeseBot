@@ -1,5 +1,5 @@
 import {TipoImpresionEnConsola} from "../enums/tipoImpresionEnConsola";
-import functions = require("firebase-functions");
+import functions = require("firebase-functions/v1");
 
 /**
  * Imprime en consola usando el Google logger SDK

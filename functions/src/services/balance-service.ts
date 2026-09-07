@@ -1,4 +1,4 @@
-import {db} from "..";
+import {db} from "../firebase";
 import {CollectionName} from "../modules/enums/collectionName";
 import {TipoImpresionEnConsola} from "../modules/enums/tipoImpresionEnConsola";
 import {BalanceFirestore} from "../modules/models/balance";

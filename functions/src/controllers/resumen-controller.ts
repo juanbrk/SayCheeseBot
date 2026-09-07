@@ -1,4 +1,4 @@
-import functions = require("firebase-functions");
+import functions = require("firebase-functions/v1");
 import {CollectionName} from "../modules/enums/collectionName";
 import {ResumenFirestore} from "../modules/models/resumen";
 import {tratarResumenAlterado} from "../services/resumen-service";

@@ -2,7 +2,7 @@ import {ExtendedContext} from "../../../config/context/myContext";
 import {PropiedadesPago} from "../../modules/enums/pago";
 import {Socias} from "../../modules/enums/socias";
 import {SaldoDeudaWizardSession} from "../../modules/models/saldoDeuda";
-import functions = require("firebase-functions");
+import functions = require("firebase-functions/v1");
 import {registrarSaldo} from "../../services/resumen-service";
 /**
  * Necesitamos procesar el flujo de registro de un pago para saldar deudas, validando de que ingresaron correctamente

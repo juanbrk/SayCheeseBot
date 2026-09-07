@@ -24,10 +24,10 @@ export const generarResumenMensualUID = (mesDelResumen: number, anoDelResumen: s
 export const encontrarDeudoraResumen = (resumenASaldar: ResumenFirestore): Socias => {
   const {ferDebeAFlor, florDebeAFer} = resumenASaldar;
   const montoAdeudadoPorFer = ferDebeAFlor - florDebeAFer;
-  let deudoraDelResumen = Socias.FER;
+  let deudoraDelResumen = Socias.MARIAN;
 
   if (montoAdeudadoPorFer > 0) {
-    deudoraDelResumen = Socias.FER;
+    deudoraDelResumen = Socias.MARIAN;
   } else {
     deudoraDelResumen = Socias.FLOR;
   }
@@ -79,21 +79,21 @@ export const obtenerDeudaFinal = (resumenesConDeuda: ListadoResumenes): any => {
   let montoAdeudaFer = 0;
   let montoAdeudaFlor = 0;
 
-  let deudora = Socias.FER;
+  let deudora = Socias.MARIAN;
   let montoDeuda = 0;
 
   resumenesConDeuda.forEach((resumen: ResumenFirestore) => {
     const datosExtracto = obtenerDatosExtracto(resumen);
 
-    if (datosExtracto.sociaQueDebe === Socias.FER) {
+    if (datosExtracto.sociaQueDebe === Socias.MARIAN) {
       montoAdeudaFer += datosExtracto.montoAdeudado;
     } else {
       montoAdeudaFlor += datosExtracto.montoAdeudado;
     }
   });
 
-  deudora = montoAdeudaFlor > montoAdeudaFer ? Socias.FLOR : Socias.FER;
-  montoDeuda = deudora === Socias.FER ? montoAdeudaFer - montoAdeudaFlor : montoAdeudaFlor - montoAdeudaFer;
+  deudora = montoAdeudaFlor > montoAdeudaFer ? Socias.FLOR : Socias.MARIAN;
+  montoDeuda = deudora === Socias.MARIAN ? montoAdeudaFer - montoAdeudaFlor : montoAdeudaFlor - montoAdeudaFer;
 
   return {
     deudora,

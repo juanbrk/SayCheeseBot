@@ -53,7 +53,7 @@ validarSeleccionYMostrarOpciones.action("socia", async (ctx) => {
   imprimirEnConsola("Visualizacion cobro -> socia", TipoImpresionEnConsola.DEBUG);
   await ctx.editMessageText("Elegí la socia para ver los cobros realizados",
     Markup.inlineKeyboard([
-      Markup.button.callback("Fer", Socias.FER),
+      Markup.button.callback("Marian", Socias.MARIAN),
       Markup.button.callback("Flor", Socias.FLOR),
     ]));
   return avanzar(ctx);

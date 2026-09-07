@@ -1,4 +1,4 @@
-import admin = require("firebase-admin");
+import {Timestamp} from "firebase-admin/firestore";
 import {Socias} from "../enums/socias";
 import {TipoImpresionEnConsola} from "../enums/tipoImpresionEnConsola";
 import {TipoTransaccion} from "../enums/tipoTransaccion";
@@ -37,9 +37,9 @@ export const balanceFactoryFromCobro = (cobro: CobroFirestore) => {
     let leCorrespondeAFlor;
     const elCobroEstaDividido = cobro.estaDividido;
     const laMitadDeLoCobrado: number = cobro.monto / 2;
-    const cobroFer = cobro.cobradoPor == Socias.FER;
+    const cobroMarian = cobro.cobradoPor == Socias.MARIAN;
 
-    if (cobroFer) {
+    if (cobroMarian) {
       leCorrespondeAFer = elCobroEstaDividido ? 0 : laMitadDeLoCobrado;
       leCorrespondeAFlor = elCobroEstaDividido ? 0 : laMitadDeLoCobrado * -1;
     } else {
@@ -58,7 +58,7 @@ export const balanceFactoryFromCobro = (cobro: CobroFirestore) => {
    */
   function generarUidDelBalance() {
     const timestamp = Date.now();
-    const quienRealizoElCobro = cobro.registradoPor == Socias.FER ? Socias.FER.toLocaleLowerCase() : Socias.FLOR.toLowerCase();
+    const quienRealizoElCobro = cobro.registradoPor == Socias.MARIAN ? Socias.MARIAN.toLocaleLowerCase() : Socias.FLOR.toLowerCase();
     const clienteUID = cobro.cliente.uid;
 
     return `${timestamp}-${quienRealizoElCobro}-${clienteUID}`;
@@ -70,7 +70,7 @@ export const balanceFactoryFromCobro = (cobro: CobroFirestore) => {
     tipoTransaccion: TipoTransaccion.COBRO,
     leCorrespondeAFer,
     leCorrespondeAFlor,
-    fechaGenerado: admin.firestore.Timestamp.fromDate(new Date()),
+    fechaGenerado: Timestamp.fromDate(new Date()),
     año,
     mes,
     uid,
@@ -101,9 +101,9 @@ export const balanceFactoryFromPago = (pago: PagoFirestore) : BalanceFirestore =
     let leCorrespondeAFlor = 0;
     const elPagoEstaDividido = pago.dividieronLaPlata;
     const laMitadDeLoPagado: number = pago.monto! / 2;
-    const pagoFer = pago.asignadoA == Socias.FER;
+    const pagoMarian = pago.asignadoA == Socias.MARIAN;
     if (!elPagoEstaDividido) {
-      if (pagoFer) {
+      if (pagoMarian) {
         leCorrespondeAFer = laMitadDeLoPagado * -1;
         leCorrespondeAFlor = laMitadDeLoPagado;
       } else {
@@ -124,7 +124,7 @@ export const balanceFactoryFromPago = (pago: PagoFirestore) : BalanceFirestore =
    */
   function generarUidDelBalance() {
     const timestamp = Date.now();
-    const quienPago = pago.asignadoA == Socias.FER ? Socias.FER.toLocaleLowerCase() : Socias.FLOR.toLowerCase();
+    const quienPago = pago.asignadoA == Socias.MARIAN ? Socias.MARIAN.toLocaleLowerCase() : Socias.FLOR.toLowerCase();
     const pagoUID = pago.motivo!.replace(/ /g, "_").toLowerCase();
 
     return `${timestamp}-${quienPago}-${pagoUID}`;
@@ -135,7 +135,7 @@ export const balanceFactoryFromPago = (pago: PagoFirestore) : BalanceFirestore =
     tipoTransaccion: TipoTransaccion.PAGO,
     leCorrespondeAFer,
     leCorrespondeAFlor,
-    fechaGenerado: admin.firestore.Timestamp.fromDate(new Date()),
+    fechaGenerado: Timestamp.fromDate(new Date()),
     año,
     mes,
     uid,
@@ -154,7 +154,7 @@ export const balanceFactoryFromSaldo = (pago: PagoFirestore) : BalanceFirestore 
   const año: number = new Date().getFullYear();
   const mes: number = new Date().getMonth();
 
-  const sociaQueSaldo: Socias = pago.registradoPor == Socias.FER ? Socias.FER : Socias.FLOR;
+  const sociaQueSaldo: Socias = pago.registradoPor == Socias.MARIAN ? Socias.MARIAN : Socias.FLOR;
 
   const pagoAsEntity : PagoAsEntity = pagoAsEntityFactory(pago.monto!, pago.uid, sociaQueSaldo);
   const {leCorrespondeAFer, leCorrespondeAFlor} = asignarCuantoLeCorrespondeACadaSocia();
@@ -173,9 +173,9 @@ export const balanceFactoryFromSaldo = (pago: PagoFirestore) : BalanceFirestore 
     let leCorrespondeAFer = 0;
     let leCorrespondeAFlor = 0;
     const montoPagado: number = pago.monto!;
-    const pagoFer = pago.asignadoA == Socias.FER;
+    const pagoMarian = pago.asignadoA == Socias.MARIAN;
 
-    if (pagoFer) { // Fer es deudora y saldó
+    if (pagoMarian) { // Marian es deudora y saldó
       leCorrespondeAFer = montoPagado * -1;
       leCorrespondeAFlor = montoPagado;
     } else {
@@ -195,7 +195,7 @@ export const balanceFactoryFromSaldo = (pago: PagoFirestore) : BalanceFirestore 
    */
   function generarUidDelBalance() {
     const timestamp = Date.now();
-    const quienPago = pago.asignadoA == Socias.FER ? Socias.FER.toLocaleLowerCase() : Socias.FLOR.toLowerCase();
+    const quienPago = pago.asignadoA == Socias.MARIAN ? Socias.MARIAN.toLocaleLowerCase() : Socias.FLOR.toLowerCase();
     const pagoUID = "saldo";
 
     return `${timestamp}-${quienPago}-${pagoUID}`;
@@ -206,7 +206,7 @@ export const balanceFactoryFromSaldo = (pago: PagoFirestore) : BalanceFirestore 
     tipoTransaccion: TipoTransaccion.SALDO,
     leCorrespondeAFer,
     leCorrespondeAFlor,
-    fechaGenerado: admin.firestore.Timestamp.fromDate(new Date()),
+    fechaGenerado: Timestamp.fromDate(new Date()),
     año,
     mes,
     uid,

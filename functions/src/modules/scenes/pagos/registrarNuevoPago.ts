@@ -72,7 +72,7 @@ validarMotivoYSolicitarAsignacion.on("message", async (ctx: any) => {
   await ctx.reply(
     "¿Quien hizo el pago?",
     Markup.inlineKeyboard([
-      Markup.button.callback("Fer", "pagoFer"),
+      Markup.button.callback("Marian", "pagoFer"),
       Markup.button.callback("Flor", "pagoFlor"),
     ]));
   return avanzar(ctx);
@@ -90,7 +90,7 @@ validarAsignacionYSolicitarDivision.on("message", async (ctx: any) => {
   await ctx.reply(
     "¿Quién hizo el pago?",
     Markup.inlineKeyboard([
-      Markup.button.callback("Fer", "pagoFer"),
+      Markup.button.callback("Marian", "pagoFer"),
       Markup.button.callback("Flor", "pagoFlor"),
     ])); (ctx);
   return ctx.wizard.selectStep(3);
@@ -100,7 +100,7 @@ validarAsignacionYSolicitarDivision.action("pagoFer", async (ctx) => {
   if (ctx.callbackQuery && ctx.scene.session.datosPago) {
     const pago: PagoSession = {
       ...ctx.scene.session.datosPago,
-      asignadoA: Socias.FER,
+      asignadoA: Socias.MARIAN,
     };
     const registrarAsignacion = await procesarRegistroPago(ctx, pago);
     if (!registrarAsignacion) {

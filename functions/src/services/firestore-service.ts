@@ -1,5 +1,4 @@
-import admin = require("firebase-admin");
-import Firestore = admin.firestore.Firestore;
+import {Firestore} from "firebase-admin/firestore";
 import {TipoImpresionEnConsola} from "../modules/enums/tipoImpresionEnConsola";
 import {SearchRequestDTO} from "../modules/models/DTOs/searchRequestDto";
 import {imprimirEnConsola} from "../modules/utils/general";

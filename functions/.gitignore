@@ -6,8 +6,11 @@ lib/**/*.js.map
 
 src/*.js
 
-#dotenv
+#dotenv — el patron `.env` a secas SOLO matchea el nombre exacto.
+# Sin `.env.*` se commiteaban .env.test, .env.prod y .env.local (token de produccion).
 .env
+.env.*
+!.env.example
 
 #runtime environmental configuration files
 config.json

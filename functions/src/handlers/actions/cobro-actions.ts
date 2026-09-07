@@ -5,7 +5,7 @@ import {ClienteAsEntity} from "../../modules/models/cliente";
 import {ResumenCobro, ResumenesCobro} from "../../modules/models/cobro";
 import {MyWizardSession, Session} from "../../modules/models/session";
 import {getClienteEntity} from "../../services/cliente-service";
-import {obtenerCobrosParaMesYSocia, registrarCobro} from "../../services/cobro-service";
+import {registrarCobro} from "../../services/cobro-service";
 import {MESES} from "../menus/choices";
 import DateTime = require("luxon");
 
@@ -153,20 +153,6 @@ function guardarPropiedadCobro(ctx: ExtendedContext, sessionActual: MyWizardSess
 }
 
 /**
- * Luego de que el usuario seleccione un mes para el que visualizar todos los cobros, se le deben mostrar
- * los cobros del mes en un mensaje.
- *
- * @param {ExtendedContext} ctx context
- * @param {string} indiceMes mes elegido en el menu
- * @return {string}
- */
-export async function presentarCobrosMes(ctx: ExtendedContext, indiceMes: string): Promise<string> {
-  const cobrosMesSeleccionado = await obtenerCobrosParaMesYSocia(indiceMes, "2021");
-  const cuerpoMensajeCobros = armarTextoCobroMes(cobrosMesSeleccionado, +indiceMes, "2021");
-  return cuerpoMensajeCobros;
-}
-
-/**
  * Cuando se visualizan los cobros de un mes, estos se presentan en un mensaje que contiene un encabezado
  * y un cuerpo. En el encabezado va el mes al que corresponden los cobros y en el cuerpo van los cobros
  * con toda la información sobre el cobro para una facil lectura
@@ -201,7 +187,7 @@ export const armarTextoCobroMes = (cobrosDelMes: ResumenesCobro, indiceMesSelecc
  */
 const armarResumenCobro = (cobro: ResumenCobro): string => {
   const cobroAsNumber = +cobro.monto!;
-  const fechaDatetime = DateTime.DateTime.fromMillis(cobro.fechaCobro.toMillis()).toLocaleString({locale: "es-AR"});
+  const fechaDatetime = DateTime.DateTime.fromMillis(cobro.fechaCobro.toMillis()).setLocale("es-AR").toLocaleString();
 
   return ` 
   -----------------------------

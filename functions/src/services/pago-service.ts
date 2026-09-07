@@ -1,10 +1,10 @@
-import {db} from "..";
+import {db} from "../firebase";
 import {ExtendedContext} from "../../config/context/myContext";
 import {CollectionName} from "../modules/enums/collectionName";
 import {pagosFactory} from "../modules/factories/pagosFactory";
 import {PagoFirestore, ResumenesPago, ResumenPago} from "../modules/models/pago";
 
-import functions = require("firebase-functions");
+import functions = require("firebase-functions/v1");
 import DateTime = require("luxon");
 import {BalanceFirestore} from "../modules/models/balance";
 import {balanceFactoryFromPago} from "../modules/factories/balanceFactory";
@@ -29,15 +29,15 @@ export async function registrarPago(ctx: ExtendedContext) {
     const pagoRef = db.collection(CollectionName.PAGO).doc(`${uid}`);
 
     try {
-      pagoRef.set(documentoPago)
-        .then(() => {
-          const balanceDoc: BalanceFirestore = balanceFactoryFromPago(documentoPago);
-          return registrarBalance(balanceDoc);
-        });
+      // Con `await` la escritura entra de verdad en el try/catch: sin esperarla, el
+      // catch sólo veía errores síncronos y una falla de Firestore pasaba de largo.
+      await pagoRef.set(documentoPago);
+      const balanceDoc: BalanceFirestore = balanceFactoryFromPago(documentoPago);
+      await registrarBalance(balanceDoc);
       return ctx.reply("Ya está registrado el nuevo pago");
     } catch (error) {
-      functions.logger.log("Ocurrió un error registrando un nuevo pago", error);
-      Promise.reject(error);
+      functions.logger.error("Ocurrió un error registrando un nuevo pago", error);
+      throw error; // antes era `Promise.reject(error)` suelto → unhandled rejection
     }
   }
   return;
@@ -50,24 +50,30 @@ export async function registrarPago(ctx: ExtendedContext) {
  * @param {number} year en el cual deben saldarse todos los pagos
  */
 export const saldarPagosDeMes = async (mes: number, year: number) => {
-  const fechaInicioMes = new Date(`${year}-${mes + 1}-01`);
-  const fechaFinalMes = new Date(`${year}-${mes + 1}-31`);
+  // Mismo criterio que saldarCobrosDeMes: `mes` viene 0-indexado y la cota superior es
+  // exclusiva (el 1° del mes siguiente). El día 31 anterior era inválido en febrero y en
+  // los meses de 30 días.
+  const fechaInicioMes = new Date(year, mes, 1);
+  const fechaFinalMes = new Date(year, mes + 1, 1);
 
   const pagosSearchRequest: SearchRequestDTO = {
     coleccion: CollectionName.PAGO,
     filtros: [
       new Filter("dateCreated", QueryOperators.GTE, fechaInicioMes),
-      new Filter("dateCreated", QueryOperators.LTE, fechaFinalMes),
+      new Filter("dateCreated", QueryOperators.LT, fechaFinalMes),
       new Filter("dividieronLaPlata", QueryOperators.EQ, false),
     ],
   };
 
   const pagosDelMesASaldar: PagoFirestore[] = await buscarDocumentos(db, pagosSearchRequest);
 
-  for (const pagosASaldar of pagosDelMesASaldar) {
-    pagosASaldar.dividieronLaPlata = true;
-    actualizarEntidad(db, CollectionName.PAGO, pagosASaldar.uid, pagosASaldar);
-  }
+  // Con `await`: antes eran N promesas sueltas que podían perderse.
+  await Promise.all(
+    pagosDelMesASaldar.map((pagoASaldar) => {
+      pagoASaldar.dividieronLaPlata = true;
+      return actualizarEntidad(db, CollectionName.PAGO, pagoASaldar.uid, pagoASaldar);
+    })
+  );
 };
 
 /**
@@ -100,7 +106,9 @@ export async function obtenerPagosParaMesYSocia(indiceMes: string, ano: string, 
     const pago: ResumenPago = {
       fechaPago: doc.data().dateCreated,
       datosConfirmados: true,
-      dividieronLaPlata: doc.data().estaDividido,
+      // `estaDividido` es un campo de Cobro, no de Pago: acá siempre daba undefined y
+      // la vista mostraba "No" aunque el pago estuviera dividido.
+      dividieronLaPlata: doc.data().dividieronLaPlata,
       monto: doc.data().monto,
       motivo: doc.data().motivo,
       registradoPor: doc.data().registradoPor,

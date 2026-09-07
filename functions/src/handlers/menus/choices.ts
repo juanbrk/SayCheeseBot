@@ -46,7 +46,7 @@ export async function obtenerListadoResumenes(ctx: ExtendedContext): Promise<Rec
     ctx.session.visualizacionCobro.anoSeleccionado :
     undefined;
 
-  const ano: string = anoSeleccionado !== undefined ? anoSeleccionado : "2021";
+  const ano: string = anoSeleccionado !== undefined ? anoSeleccionado : `${new Date().getFullYear()}`;
 
   const resumenes: Record<string, string> = await obtenerMesesEnLosQueHuboMovimientos(ctx, ano);
   return resumenes;
@@ -103,14 +103,4 @@ export async function obtenerAnosEnLosQueHuboMovimientos(ctx: ExtendedContext): 
     result[`${ano}`] = `${ano}`;
   });
   return result;
-}
-
-/**
- * Necesitamos obtener las socias para mostrarlas en las opciones del menú
- * @param {ExtendedContext} ctx
- * @return {Record<string,string>}
- */
-export function obtenerSocias(ctx: ExtendedContext): Record<string, string> {
-  const records: Record<string, string> = {"FER": "Fer", "FLOR": "Flor"};
-  return records;
 }

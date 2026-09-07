@@ -1,4 +1,4 @@
-import {db} from "..";
+import {db} from "../firebase";
 import {Choices} from "../modules/enums/choices";
 import {CollectionName} from "../modules/enums/collectionName";
 

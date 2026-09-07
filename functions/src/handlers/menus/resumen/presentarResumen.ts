@@ -7,7 +7,7 @@ import {botonesVueltaAtras} from "../general";
 import {generarResumenMensualUID} from "../../../modules/utils/resumen";
 
 import {MESES} from "../choices";
-import {db} from "../../..";
+import {db} from "../../../firebase";
 import {CollectionName} from "../../../modules/enums/collectionName";
 /**
  * Presentamos el resumen del mes y año seleccionado, y la opción de saldar deudas.
@@ -15,7 +15,7 @@ import {CollectionName} from "../../../modules/enums/collectionName";
 export const menu = new MenuTemplate<ExtendedContext>(async (ctx) => {
   const indiceMesSeleccionado: number = +ctx.match![2];
   const mesEnPalabras: string = MESES[indiceMesSeleccionado];
-  const anoSeleccionado: string = (ctx.session.visualizacionCobro && "anoSeleccionado" in ctx.session.visualizacionCobro) ? ctx.session.visualizacionCobro.anoSeleccionado! : "2021";
+  const anoSeleccionado: string = (ctx.session.visualizacionCobro && "anoSeleccionado" in ctx.session.visualizacionCobro) ? ctx.session.visualizacionCobro.anoSeleccionado! : `${new Date().getFullYear()}`;
 
   const refResumenesAnteriores = await db.collection(CollectionName.RESUMEN).where("mes", "<", indiceMesSeleccionado).where("year", "==", (+anoSeleccionado)).get();
   const resumenesAnteriores: any[] = [];

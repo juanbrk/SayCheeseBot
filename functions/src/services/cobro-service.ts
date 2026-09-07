@@ -1,5 +1,5 @@
 import {ExtendedContext} from "../../config/context/myContext";
-import {db} from "../../src/index";
+import {db} from "../firebase";
 import {CollectionName} from "../modules/enums/collectionName";
 import {balanceFactoryFromCobro} from "../modules/factories/balanceFactory";
 import {BalanceFirestore} from "../modules/models/balance";
@@ -34,11 +34,12 @@ export async function registrarCobro(ctx: ExtendedContext) {
         fechaCobro: new Date(),
         motivo: datosCobro.motivo!,
       };
-      docRef.set(documentoCobro)
-        .then(() => {
-          const balanceDoc: BalanceFirestore = balanceFactoryFromCobro(documentoCobro);
-          return registrarBalance(balanceDoc);
-        });
+      // Con `await`: sin esperar, se le respondía "se registró el cobro" al usuario
+      // antes de que la escritura —y el Balance que dispara todo el pipeline de
+      // resúmenes— hubiera llegado a Firestore.
+      await docRef.set(documentoCobro);
+      const balanceDoc: BalanceFirestore = balanceFactoryFromCobro(documentoCobro);
+      await registrarBalance(balanceDoc);
     }
   }
   return ctx.reply(`${"Se registró correctamente el cobro a"} ${ctx.session.cobro!.cliente.nombre!}`);
@@ -93,22 +94,30 @@ export async function obtenerCobrosParaMesYSocia(indiceMes: string, ano: string,
  * @param {number} year en el cual deben saldarse todos los cobros
  */
 export const saldarCobrosDeMes = async (mes: number, year: number) => {
-  const fechaInicioMes = new Date(`${year}-${mes + 1}-01`);
-  const fechaFinalMes = new Date(`${year}-${mes + 1}-31`);
+  // `mes` viene 0-indexado (sale de Date.getMonth()). La cota superior es exclusiva: el
+  // 1° del mes siguiente. Antes se armaba el día 31, inválido en febrero y en todos los
+  // meses de 30 días — y de paso el string quedaba ISO o no según el mes tuviera dos
+  // dígitos, así que la zona horaria cambiaba sola de mes a mes.
+  const fechaInicioMes = new Date(year, mes, 1);
+  const fechaFinalMes = new Date(year, mes + 1, 1);
 
   const cobrosSearchRequest: SearchRequestDTO = {
     coleccion: CollectionName.COBRO,
     filtros: [
       new Filter("fechaCobro", QueryOperators.GTE, fechaInicioMes),
-      new Filter("fechaCobro", QueryOperators.LTE, fechaFinalMes),
+      new Filter("fechaCobro", QueryOperators.LT, fechaFinalMes),
       new Filter("estaDividido", QueryOperators.EQ, false),
     ],
   };
 
   const cobrosDelMesASaldar: CobroFirestore[] = await buscarDocumentos(db, cobrosSearchRequest);
 
-  for (const cobroASaldar of cobrosDelMesASaldar) {
-    cobroASaldar.estaDividido = true;
-    actualizarEntidad(db, CollectionName.COBRO, cobroASaldar.uid, cobroASaldar);
-  }
+  // Con `await`: antes se disparaban N promesas sueltas y la función resolvía sin
+  // esperarlas, así que las escrituras se perdían si la instancia se congelaba.
+  await Promise.all(
+    cobrosDelMesASaldar.map((cobroASaldar) => {
+      cobroASaldar.estaDividido = true;
+      return actualizarEntidad(db, CollectionName.COBRO, cobroASaldar.uid, cobroASaldar);
+    })
+  );
 };

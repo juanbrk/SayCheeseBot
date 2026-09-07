@@ -129,7 +129,7 @@ const guardarPago = (context: ExtendedContext, valorAGuardar: any, propiedadAGua
  */
 const armarResumenPago = (pago: ResumenPago): string => {
   const pagoAsNumber = +pago.monto!;
-  const fechaDatetime = DateTime.DateTime.fromMillis(pago.fechaPago.toMillis()).toLocaleString({locale: "es-AR"});
+  const fechaDatetime = DateTime.DateTime.fromMillis(pago.fechaPago.toMillis()).setLocale("es-AR").toLocaleString();
 
   return ` 
   -----------------------------

@@ -1,5 +1,5 @@
-import admin = require("firebase-admin");
-import {db} from "..";
+import {Timestamp} from "firebase-admin/firestore";
+import {db} from "../firebase";
 import {ExtendedContext} from "../../config/context/myContext";
 import {CollectionName} from "../modules/enums/collectionName";
 import {TipoResumen} from "../modules/enums/resumen";
@@ -145,7 +145,7 @@ export const saldarResumenParcial = async (
   let {ferDebeAFlor, florDebeAFer} = resumenASaldar;
 
   switch (sociaDeudora) {
-  case Socias.FER:
+  case Socias.MARIAN:
     ferDebeAFlor = saldoPendiente;
     florDebeAFer = 0;
     break;
@@ -161,7 +161,7 @@ export const saldarResumenParcial = async (
     ...resumenASaldar,
     florDebeAFer: florDebeAFer,
     ferDebeAFlor: ferDebeAFlor,
-    updatedAt: admin.firestore.Timestamp.fromDate(new Date()),
+    updatedAt: Timestamp.fromDate(new Date()),
   };
 
   return docRef.update(resumenSaldadoParcialmente);
@@ -180,9 +180,9 @@ export const saldarResumen = async (resumenASaldar: ResumenFirestore) => {
 
   const montoAdeudadoPorFer = ferDebeAFlor - florDebeAFer;
   if (montoAdeudadoPorFer != 0) {
-    const sociaDeudora: Socias = montoAdeudadoPorFer > 0 ? Socias.FER : Socias.FLOR;
+    const sociaDeudora: Socias = montoAdeudadoPorFer > 0 ? Socias.MARIAN : Socias.FLOR;
     switch (sociaDeudora) {
-    case Socias.FER:
+    case Socias.MARIAN:
       montoParaBalancearDeuda = ferDebeAFlor;
       break;
     case Socias.FLOR:
@@ -226,21 +226,20 @@ export async function getResumenByUID(resumenUID: string): Promise<ResumenFirest
 export async function registrarSaldo(ctx: ExtendedContext) {
   if (ctx.scene.session.datosSaldoTotalDeuda) {
     const {datosSaldoTotalDeuda} = ctx.scene.session;
-    const sociaAdeudada = datosSaldoTotalDeuda.deudora == Socias.FER ? Socias.FLOR : Socias.FER;
+    const sociaAdeudada = datosSaldoTotalDeuda.deudora == Socias.MARIAN ? Socias.FLOR : Socias.MARIAN;
     const uid = `saldo-${datosSaldoTotalDeuda.deudora.toLowerCase()}-debe-${sociaAdeudada.toLowerCase()}-${DateTime.DateTime.utc().toFormat("yMMddHHmmss")}`;
 
     const documentoPago: PagoFirestore = pagosFactory(ctx, uid);
     const pagoRef = db.collection(CollectionName.PAGO).doc(`${uid}`);
 
     try {
-      pagoRef.set(documentoPago)
-        .then(() => {
-          const balanceDoc: BalanceFirestore = balanceFactoryFromSaldo(documentoPago);
-          return registrarBalance(balanceDoc);
-        });
+      // Con `await` la escritura entra de verdad en el try/catch (ver registrarPago).
+      await pagoRef.set(documentoPago);
+      const balanceDoc: BalanceFirestore = balanceFactoryFromSaldo(documentoPago);
+      await registrarBalance(balanceDoc);
     } catch (error) {
-      imprimirEnConsola("Ocurrió un error registrando un nuevo pago", TipoImpresionEnConsola.ERROR, {error});
-      Promise.reject(error);
+      imprimirEnConsola("Ocurrió un error registrando el saldo", TipoImpresionEnConsola.ERROR, {error});
+      throw error; // antes era `Promise.reject(error)` suelto → unhandled rejection
     }
   }
   return ctx.reply("Ya está registrado el saldo");
@@ -257,7 +256,12 @@ export const tratarResumenAlterado = async (resumenAlterado: ResumenFirestore) =
   if (resumenAlterado.saldado) {
     const {mes: mesDeLosCobros, year: anoDeLosCobros} = resumenAlterado;
 
-    saldarCobrosDeMes(mesDeLosCobros, anoDeLosCobros);
-    saldarPagosDeMes(mesDeLosCobros, anoDeLosCobros);
+    // Con `await`: esta función la devuelve directamente el trigger onUpdate, así que
+    // sin esperar acá la promesa resolvía enseguida, la plataforma daba la invocación
+    // por terminada y podía congelar la instancia con las escrituras todavía en vuelo.
+    await Promise.all([
+      saldarCobrosDeMes(mesDeLosCobros, anoDeLosCobros),
+      saldarPagosDeMes(mesDeLosCobros, anoDeLosCobros),
+    ]);
   }
 };

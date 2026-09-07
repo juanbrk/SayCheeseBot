@@ -1,4 +1,4 @@
-import {db} from "../index";
+import {db} from "../firebase";
 import {CollectionName} from "../modules/enums/collectionName";
 import {QueryOperators} from "../modules/enums/QueryOperators";
 import {ClienteAsEntity, ClienteFirestore, ClientesEntities, ClientesFirestore} from "../modules/models/cliente";

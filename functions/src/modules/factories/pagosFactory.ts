@@ -27,7 +27,13 @@ export const pagosFactory = (ctx: ExtendedContext, uid: string): PagoFirestore =
     datosPago = {
       datosConfirmados: true,
       monto: datosSaldo.montoASaldar,
-      registradoPor: Socias.FER,
+      // Quien salda es siempre la deudora. Antes acá había una socia hardcodeada, así
+      // que TODO saldo quedaba a nombre de la misma persona sin importar quién pagara,
+      // y balanceFactory.ts lo leía de vuelta para decidir a quién acreditar: la deuda
+      // terminaba invertida. `deudora` es el dato autoritativo y ya viene tipado como
+      // Socias — a diferencia de `registradoPor` del wizard, que es el first_name de
+      // Telegram y no coincide necesariamente con el valor del enum.
+      registradoPor: datosSaldo.deudora,
       esSaldo: true,
     };
   }

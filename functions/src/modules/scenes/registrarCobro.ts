@@ -60,7 +60,7 @@ asignarCobro.on("message", async (ctx: any) => {
   await ctx.reply(
     "¿Quien cobro la plata?",
     Markup.inlineKeyboard([
-      Markup.button.callback("Fer", "cobroFer"),
+      Markup.button.callback("Marian", "cobroFer"),
       Markup.button.callback("Flor", "cobroFlor"),
     ]));
   return avanzar(ctx);
@@ -81,7 +81,7 @@ obtenerDivision.on("message", async (ctx: any) => {
   await ctx.reply(
     "¿Quien cobro la plata?",
     Markup.inlineKeyboard([
-      Markup.button.callback("Fer", "cobroFer"),
+      Markup.button.callback("Marian", "cobroFer"),
       Markup.button.callback("Flor", "cobroFlor"),
     ])); (ctx);
   return ctx.wizard.selectStep(3);
@@ -89,7 +89,7 @@ obtenerDivision.on("message", async (ctx: any) => {
 
 obtenerDivision.action("cobroFer", async (ctx) => {
   if (ctx.callbackQuery && ctx.scene.session.datosCobro) {
-    await procesarRegistroCobro(ctx, Socias.FER);
+    await procesarRegistroCobro(ctx, Socias.MARIAN);
     await ctx.editMessageText(
       "¿Ya dividieron la plata entre ustedes?",
       Markup.inlineKeyboard([
@@ -102,7 +102,7 @@ obtenerDivision.action("cobroFer", async (ctx) => {
   await ctx.reply(
     "¿Quien cobro la plata?",
     Markup.inlineKeyboard([
-      Markup.button.callback("Fer", "cobroFer"),
+      Markup.button.callback("Marian", "cobroFer"),
       Markup.button.callback("Flor", "cobroFlor"),
     ]));
   return repetirPaso(ctx);
@@ -123,7 +123,7 @@ obtenerDivision.action("cobroFlor", async (ctx) => {
   await ctx.reply(
     "¿Quien cobro la plata?",
     Markup.inlineKeyboard([
-      Markup.button.callback("Fer", "cobroFer"),
+      Markup.button.callback("Marian", "cobroFer"),
       Markup.button.callback("Flor", "cobroFlor"),
     ]));
   return repetirPaso(ctx);

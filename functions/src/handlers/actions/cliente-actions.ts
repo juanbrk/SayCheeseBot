@@ -1,7 +1,7 @@
 import {ExtendedContext} from "../../../config/context/myContext";
 import {PropiedadesCliente} from "../../modules/enums/cliente";
 import {MyWizardSession, Session} from "../../modules/models/session";
-import {db} from "../../index";
+import {db} from "../../firebase";
 import {ClienteFirestore} from "../../modules/models/cliente";
 import {AccionesCliente} from "../../modules/enums/accionesCliente";
 import {CollectionName} from "../../modules/enums/collectionName";

@@ -41,7 +41,7 @@ const primerPaso = (ctx: ExtendedContext) => {
 
     delete ctx.session.datosSaldoTotal;
 
-    const sociaAdeudada = deudora == Socias.FER ? Socias.FLOR : Socias.FER;
+    const sociaAdeudada = deudora == Socias.MARIAN ? Socias.FLOR : Socias.MARIAN;
     cuerpoMensaje += `---------------
   
     ✨ SALDO FINAL ✨
@@ -85,7 +85,7 @@ segundoPaso.action("saldarDeuda", async (ctx) => {
   if (ctx.callbackQuery && ctx.scene.session.datosSaldoTotalDeuda) {
     const {montoDeudaFinal, deudora} = ctx.scene.session.datosSaldoTotalDeuda;
     const totalAdeudadoFormateado = montoDeudaFinal.toLocaleString("es-ar");
-    const sociaAdeudada = deudora == Socias.FER ? Socias.FLOR : Socias.FER;
+    const sociaAdeudada = deudora == Socias.MARIAN ? Socias.FLOR : Socias.MARIAN;
 
     await ctx.editMessageText(
       `¿Quieren saldar el total de la deuda? (_ ${deudora} le debe $${totalAdeudadoFormateado} a ${sociaAdeudada}_)`, {
@@ -118,7 +118,7 @@ tercerPaso.action("saldarParcial", async (ctx) => {
   if (ctx.callbackQuery && ctx.scene.session.datosSaldoTotalDeuda) {
     const {montoDeudaFinal, deudora} = ctx.scene.session.datosSaldoTotalDeuda;
     const totalAdeudadoFormateado = montoDeudaFinal.toLocaleString("es-ar");
-    const sociaAdeudada = deudora == Socias.FER ? Socias.FLOR : Socias.FER;
+    const sociaAdeudada = deudora == Socias.MARIAN ? Socias.FLOR : Socias.MARIAN;
     ctx.editMessageText(`¿Cuanta deuda van a saldar? (_ ${deudora} le debe $${totalAdeudadoFormateado} a ${sociaAdeudada}_)`, {parse_mode: "Markdown"});
   }
   return avanzar(ctx);
@@ -130,7 +130,7 @@ tercerPaso.action("saldarTotal", async (ctx) => {
   if (ctx.callbackQuery && ctx.scene.session.datosSaldoTotalDeuda) {
     const {montoDeudaFinal, deudora} = ctx.scene.session.datosSaldoTotalDeuda;
     const totalAdeudadoFormateado = montoDeudaFinal.toLocaleString("es-ar");
-    const sociaAdeudada = deudora == Socias.FER ? Socias.FLOR : Socias.FER;
+    const sociaAdeudada = deudora == Socias.MARIAN ? Socias.FLOR : Socias.MARIAN;
     ctx.scene.session.datosSaldoTotalDeuda.montoASaldar = montoDeudaFinal;
 
     ctx.editMessageText(
@@ -211,7 +211,7 @@ quintoPaso.action("registrarSaldo", async (ctx) => {
     const resumenesSinSaldar = await obtenerResumenesSinSaldar();
 
     const totalAdeudadoFormateado = new Intl.NumberFormat("es-AR").format(montoDeudaFinal);
-    const sociaAdeudada = deudora == Socias.FER ? Socias.FLOR : Socias.FER;
+    const sociaAdeudada = deudora == Socias.MARIAN ? Socias.FLOR : Socias.MARIAN;
     ctx.scene.session.datosSaldoTotalDeuda.registradoPor = ctx.callbackQuery.from.first_name;
 
     if (montoASaldar != undefined && montoASaldar < montoDeudaFinal) {
@@ -240,7 +240,7 @@ quintoPaso.action("reingresarMonto", async (ctx) => {
   if (ctx.callbackQuery && ctx.scene.session.datosSaldoTotalDeuda) {
     const {montoDeudaFinal, deudora} = ctx.scene.session.datosSaldoTotalDeuda;
     const totalAdeudadoFormateado = montoDeudaFinal.toLocaleString("es-ar");
-    const sociaAdeudada = deudora == Socias.FER ? Socias.FLOR : Socias.FER;
+    const sociaAdeudada = deudora == Socias.MARIAN ? Socias.FLOR : Socias.MARIAN;
     await ctx.reply(`¿Cuanta deuda van a saldar? (_ ${deudora} le debe $${totalAdeudadoFormateado} a ${sociaAdeudada}_)`, {parse_mode: "Markdown"});
   }
   return ctx.wizard.selectStep(3);

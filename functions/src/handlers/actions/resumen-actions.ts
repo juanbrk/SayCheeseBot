@@ -57,8 +57,8 @@ export function armarMiniResumenSaldoDeuda(resumen: ResumenFirestore): string {
 export const obtenerDatosExtracto = (resumen: ResumenFirestore): ExtractoResumen => {
   // llevar saldos a cero
   const {florDebeAFer, ferDebeAFlor} = resumen;
-  const sociaQueDebe: Socias = florDebeAFer > ferDebeAFlor ? Socias.FLOR : Socias.FER;
-  const sociaAdeudada: Socias = sociaQueDebe == Socias.FLOR ? Socias.FER : Socias.FLOR;
+  const sociaQueDebe: Socias = florDebeAFer > ferDebeAFlor ? Socias.FLOR : Socias.MARIAN;
+  const sociaAdeudada: Socias = sociaQueDebe == Socias.FLOR ? Socias.MARIAN : Socias.FLOR;
   const montoAdeudado: number = sociaQueDebe == Socias.FLOR ? florDebeAFer - ferDebeAFlor : ferDebeAFlor - florDebeAFer;
   const saldado: boolean = resumen.saldado ? resumen.saldado : false;
   return {
@@ -97,7 +97,7 @@ const armarCuerpoExtracto = (resumen: ResumenFirestore, datosExtracto: ExtractoR
     🏦 <b>Total cobrado en el mes</b>: $${totalCobrado}
     💸 <b>Total pagado en el mes</b>: $${totalPagado}
     
-    🏷️ <b>Total cobrado por Fer</b>: $${totalCobradoPorFer}
+    🏷️ <b>Total cobrado por ${Socias.MARIAN}</b>: $${totalCobradoPorFer}
     🏷️ <b>Total cobrado por Flor</b>: $${totalCobradoPorFlor}
     
     💵 <b>Sueldo bruto de ambas: </b>: $${correspondeACadaSocia}
