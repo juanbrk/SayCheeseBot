@@ -3,6 +3,8 @@ import {TipoImpresionEnConsola} from "../modules/enums/tipoImpresionEnConsola";
 import {SearchRequestDTO} from "../modules/models/DTOs/searchRequestDto";
 import {imprimirEnConsola} from "../modules/utils/general";
 import {CollectionName} from "../modules/enums/collectionName";
+import {Filter} from "../modules/models/filter";
+import {QueryOperators} from "../modules/enums/QueryOperators";
 
 /**
  * Permite buscar y filtrar documentos en firestore. Segun lo pasado en la searchRequest, permite:
@@ -73,4 +75,53 @@ export const actualizarEntidad = async <T>(
     .collection(tipoColeccion)
     .doc(docUID)
     .update(cuerpo);
+};
+
+/**
+ * Cuando se salda un Resumen, hay que marcar como saldados todos los documentos (Cobro o
+ * Pago) del mes que todavía no lo estaban. `saldarCobrosDeMes` y `saldarPagosDeMes` hacían
+ * exactamente este mismo cálculo de rango de fechas + búsqueda + actualización en paralelo,
+ * con sólo el nombre de la colección y del campo booleano cambiando entre las dos.
+ *
+ * `mes` viene 0-indexado (sale de `Date.getMonth()`). La cota superior es exclusiva: el 1°
+ * del mes siguiente — un día 31 a mano es inválido en febrero y en los meses de 30 días.
+ *
+ * @param {Firestore} firestore db
+ * @param {CollectionName} coleccion COBRO o PAGO
+ * @param {string} campoFecha nombre del campo de fecha por el que filtrar (`fechaCobro` / `dateCreated`)
+ * @param {string} campoDividido nombre del campo booleano a poner en `true` (`estaDividido` / `dividieronLaPlata`)
+ * @param {number} mes 0-indexado
+ * @param {number} year
+ * @return {Promise<void>}
+ */
+export const saldarColeccionDeMes = async <T extends {uid: string}>(
+  firestore: Firestore,
+  coleccion: CollectionName,
+  campoFecha: string,
+  campoDividido: string,
+  mes: number,
+  year: number
+): Promise<void> => {
+  const fechaInicioMes = new Date(year, mes, 1);
+  const fechaFinalMes = new Date(year, mes + 1, 1);
+
+  const searchRequest: SearchRequestDTO = {
+    coleccion,
+    filtros: [
+      new Filter(campoFecha, QueryOperators.GTE, fechaInicioMes),
+      new Filter(campoFecha, QueryOperators.LT, fechaFinalMes),
+      new Filter(campoDividido, QueryOperators.EQ, false),
+    ],
+  };
+
+  const documentosASaldar: T[] = await buscarDocumentos(firestore, searchRequest);
+
+  // Con `await`: antes eran N promesas sueltas que podían perderse si la instancia se
+  // congelaba a mitad de camino.
+  await Promise.all(
+    documentosASaldar.map((documento) => {
+      (documento as any)[campoDividido] = true;
+      return actualizarEntidad(firestore, coleccion, documento.uid, documento);
+    })
+  );
 };

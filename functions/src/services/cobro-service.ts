@@ -7,10 +7,7 @@ import {CobroFirestore, ResumenCobro, ResumenesCobro} from "../modules/models/co
 import {registrarBalance} from "./balance-service";
 import DateTime = require("luxon");
 import {Socias} from "../modules/enums/socias";
-import {SearchRequestDTO} from "../modules/models/DTOs/searchRequestDto";
-import {Filter} from "../modules/models/filter";
-import {QueryOperators} from "../modules/enums/QueryOperators";
-import {actualizarEntidad, buscarDocumentos} from "./firestore-service";
+import {saldarColeccionDeMes} from "./firestore-service";
 import {calcularMesInicialYFinal} from "./util-service";
 
 /**
@@ -94,30 +91,5 @@ export async function obtenerCobrosParaMesYSocia(indiceMes: string, ano: string,
  * @param {number} year en el cual deben saldarse todos los cobros
  */
 export const saldarCobrosDeMes = async (mes: number, year: number) => {
-  // `mes` viene 0-indexado (sale de Date.getMonth()). La cota superior es exclusiva: el
-  // 1° del mes siguiente. Antes se armaba el día 31, inválido en febrero y en todos los
-  // meses de 30 días — y de paso el string quedaba ISO o no según el mes tuviera dos
-  // dígitos, así que la zona horaria cambiaba sola de mes a mes.
-  const fechaInicioMes = new Date(year, mes, 1);
-  const fechaFinalMes = new Date(year, mes + 1, 1);
-
-  const cobrosSearchRequest: SearchRequestDTO = {
-    coleccion: CollectionName.COBRO,
-    filtros: [
-      new Filter("fechaCobro", QueryOperators.GTE, fechaInicioMes),
-      new Filter("fechaCobro", QueryOperators.LT, fechaFinalMes),
-      new Filter("estaDividido", QueryOperators.EQ, false),
-    ],
-  };
-
-  const cobrosDelMesASaldar: CobroFirestore[] = await buscarDocumentos(db, cobrosSearchRequest);
-
-  // Con `await`: antes se disparaban N promesas sueltas y la función resolvía sin
-  // esperarlas, así que las escrituras se perdían si la instancia se congelaba.
-  await Promise.all(
-    cobrosDelMesASaldar.map((cobroASaldar) => {
-      cobroASaldar.estaDividido = true;
-      return actualizarEntidad(db, CollectionName.COBRO, cobroASaldar.uid, cobroASaldar);
-    })
-  );
+  await saldarColeccionDeMes<CobroFirestore>(db, CollectionName.COBRO, "fechaCobro", "estaDividido", mes, year);
 };

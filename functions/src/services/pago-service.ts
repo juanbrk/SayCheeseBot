@@ -9,10 +9,7 @@ import DateTime = require("luxon");
 import {BalanceFirestore} from "../modules/models/balance";
 import {balanceFactoryFromPago} from "../modules/factories/balanceFactory";
 import {registrarBalance} from "./balance-service";
-import {Filter} from "../modules/models/filter";
-import {QueryOperators} from "../modules/enums/QueryOperators";
-import {SearchRequestDTO} from "../modules/models/DTOs/searchRequestDto";
-import {actualizarEntidad, buscarDocumentos} from "./firestore-service";
+import {saldarColeccionDeMes} from "./firestore-service";
 import {Socias} from "../modules/enums/socias";
 import {calcularMesInicialYFinal} from "./util-service";
 
@@ -50,30 +47,7 @@ export async function registrarPago(ctx: ExtendedContext) {
  * @param {number} year en el cual deben saldarse todos los pagos
  */
 export const saldarPagosDeMes = async (mes: number, year: number) => {
-  // Mismo criterio que saldarCobrosDeMes: `mes` viene 0-indexado y la cota superior es
-  // exclusiva (el 1° del mes siguiente). El día 31 anterior era inválido en febrero y en
-  // los meses de 30 días.
-  const fechaInicioMes = new Date(year, mes, 1);
-  const fechaFinalMes = new Date(year, mes + 1, 1);
-
-  const pagosSearchRequest: SearchRequestDTO = {
-    coleccion: CollectionName.PAGO,
-    filtros: [
-      new Filter("dateCreated", QueryOperators.GTE, fechaInicioMes),
-      new Filter("dateCreated", QueryOperators.LT, fechaFinalMes),
-      new Filter("dividieronLaPlata", QueryOperators.EQ, false),
-    ],
-  };
-
-  const pagosDelMesASaldar: PagoFirestore[] = await buscarDocumentos(db, pagosSearchRequest);
-
-  // Con `await`: antes eran N promesas sueltas que podían perderse.
-  await Promise.all(
-    pagosDelMesASaldar.map((pagoASaldar) => {
-      pagoASaldar.dividieronLaPlata = true;
-      return actualizarEntidad(db, CollectionName.PAGO, pagoASaldar.uid, pagoASaldar);
-    })
-  );
+  await saldarColeccionDeMes<PagoFirestore>(db, CollectionName.PAGO, "dateCreated", "dividieronLaPlata", mes, year);
 };
 
 /**
