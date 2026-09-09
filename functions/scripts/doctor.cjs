@@ -57,6 +57,19 @@ function leerToken() {
   return m ? m[1].replace(/^["']|["']$/g, "") : null;
 }
 
+/** Lee TELEGRAM_ALLOWED_IDS de functions/.env sin cargar dependencias. */
+function leerIdsPermitidos() {
+  const envPath = path.join(RAIZ, ".env");
+  if (!fs.existsSync(envPath)) return null;
+  const m = fs.readFileSync(envPath, "utf8").match(/^\s*TELEGRAM_ALLOWED_IDS\s*=\s*(.+?)\s*$/m);
+  if (!m) return null;
+  return m[1]
+    .replace(/^["']|["']$/g, "")
+    .split(",")
+    .map((id) => id.trim())
+    .filter(Boolean);
+}
+
 function getJSON(url) {
   return new Promise((resolve) => {
     https
@@ -108,6 +121,22 @@ async function preflight() {
 
   const token = leerToken();
   chequear(!!token, "functions/.env tiene TELEGRAM_TOKEN", "falta functions/.env o la variable TELEGRAM_TOKEN");
+
+  const idsPermitidos = leerIdsPermitidos();
+  chequear(
+    !!idsPermitidos && idsPermitidos.length > 0,
+    `TELEGRAM_ALLOWED_IDS cargado (${idsPermitidos ? idsPermitidos.length : 0} id(s))`,
+    "falta TELEGRAM_ALLOWED_IDS o está vacío — el bot va a rechazar a TODOS (fail-closed, ver A1)"
+  );
+  if (idsPermitidos) {
+    const idsInvalidos = idsPermitidos.filter((id) => !/^\d+$/.test(id));
+    chequear(
+      idsInvalidos.length === 0,
+      "todos los ids son numéricos",
+      `hay ids no numéricos en TELEGRAM_ALLOWED_IDS: ${idsInvalidos.join(", ")}`
+    );
+  }
+
   if (token) {
     const esPlaceholder = /DUMMY|PLACEHOLDER|DISCOVERY|123456:/i.test(token);
     chequear(!esPlaceholder, "el token no es un placeholder", "el token sigue siendo el placeholder de prueba — pegá el de @BotFather");
@@ -193,6 +222,51 @@ async function seed() {
   }
   info("A propósito NO se siembran Cobro/Pago/Balance/Resumen: ese pipeline se valida");
   info("desde cero, cargándolo a mano desde el bot en cada sesión de prueba.");
+}
+
+// ────────────────────────────────────────────────────────────────── vaciar ──
+/**
+ * Borra TODO el contenido de las 7 colecciones antes del primer deploy con
+ * Marian — arranca sin el historial de Fer. Sin `--confirmar` sólo cuenta
+ * documentos, no borra nada: corré primero en dry-run y mirá los números.
+ */
+async function vaciar() {
+  const confirmar = process.argv.includes("--confirmar");
+  const db = firestore();
+
+  titulo(confirmar ? `VACIAR — borrando de PRODUCCIÓN (${PROJECT_ID})` : "VACIAR — dry-run, no se borra nada");
+  if (!confirmar) {
+    aviso("Modo dry-run. Para borrar de verdad: `node functions/scripts/doctor.cjs vaciar --confirmar`");
+  } else {
+    aviso(`Proyecto: ${PROJECT_ID}. Esto borra TODO de las ${COLECCIONES.length} colecciones. No hay vuelta atrás.`);
+  }
+  console.log("");
+
+  let total = 0;
+  for (const c of COLECCIONES) {
+    const snap = await db.collection(c).get();
+    total += snap.size;
+    if (!confirmar || snap.size === 0) {
+      console.log(`  ${c.padEnd(10)} ${String(snap.size).padStart(4)} docs`);
+      continue;
+    }
+    // Firestore no acepta más de 500 escrituras por batch.
+    const docs = snap.docs;
+    for (let i = 0; i < docs.length; i += 400) {
+      const batch = db.batch();
+      for (const doc of docs.slice(i, i + 400)) batch.delete(doc.ref);
+      await batch.commit();
+    }
+    ok(`${c.padEnd(10)} ${String(snap.size).padStart(4)} docs borrados`);
+  }
+
+  console.log("");
+  if (!confirmar) {
+    info(`Total a borrar: ${total} doc(s) en ${COLECCIONES.length} colecciones.`);
+    info("Nada se tocó todavía. Revisá los números y corré con `--confirmar` cuando estés seguro.");
+  } else {
+    ok(`Listo: ${total} doc(s) borrados de ${COLECCIONES.length} colecciones en ${PROJECT_ID}.`);
+  }
 }
 
 // ────────────────────────────────────────────────────────────────── estado ──
@@ -311,15 +385,17 @@ async function estado() {
 // ──────────────────────────────────────────────────────────────────── main ──
 (async () => {
   const cmd = process.argv[2];
-  const comandos = { preflight, webhook, seed, estado };
+  const comandos = { preflight, webhook, seed, estado, vaciar };
   if (!comandos[cmd]) {
     console.log(`
 SayCheeseBot doctor — verificación instrumentada
 
-  node functions/scripts/doctor.cjs preflight   antes de desplegar
-  node functions/scripts/doctor.cjs webhook     después de registrar el webhook
-  node functions/scripts/doctor.cjs seed        re-sembrar Choices/camposCliente + Cliente base
-  node functions/scripts/doctor.cjs estado      después de usar el bot: verifica las cuentas
+  node functions/scripts/doctor.cjs preflight        antes de desplegar
+  node functions/scripts/doctor.cjs vaciar            dry-run: cuenta docs de las 7 colecciones, no borra
+  node functions/scripts/doctor.cjs vaciar --confirmar   borra TODO de producción — sin vuelta atrás
+  node functions/scripts/doctor.cjs webhook          después de registrar el webhook
+  node functions/scripts/doctor.cjs seed             re-sembrar Choices/camposCliente + Cliente base
+  node functions/scripts/doctor.cjs estado           después de usar el bot: verifica las cuentas
 
 Requiere Node 22 (nvm use 22) y ADC (gcloud auth application-default login).
 `);

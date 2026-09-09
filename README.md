@@ -33,6 +33,11 @@ cp functions/.env.example functions/.env
 `functions/.env` está gitignoreado. **No existe más `functions.config()`** — Firebase lo
 dio de baja; el token se lee de `process.env.TELEGRAM_TOKEN`.
 
+En el mismo `.env`, completar también `TELEGRAM_ALLOWED_IDS` con los ids numéricos de
+Telegram de Flor y Marian (coma-separados, sin espacios). Sin esto el bot **rechaza a
+todo el mundo** — es fail-closed a propósito, ver A1 en `TICKET.md`. Para conseguir cada
+id: que le escriban a [@userinfobot](https://t.me/userinfobot) desde su cuenta.
+
 ### 3. Instalar y compilar
 
 ```bash
@@ -179,12 +184,14 @@ ni re-registrar el webhook en cada sesión.
    ```
    TELEGRAM_TOKEN=<token de @botito_testitoBot>
    TELEGRAM_TOKEN_TEST=<el mismo token>
+   TELEGRAM_ALLOWED_IDS=<tu id de Telegram>
    ```
 
    `TELEGRAM_TOKEN` ahí (no en `.env`) hace que la function `api` emulada use el token de
    test en vez del de producción. `TELEGRAM_TOKEN_TEST` es lo único que lee `dev.ts` —
    nunca lee `TELEGRAM_TOKEN` a secas, para que el token de prod no pueda llegar por un
-   typo o un copy-paste.
+   typo o un copy-paste. `TELEGRAM_ALLOWED_IDS` hace falta desde que existe la allowlist
+   (A1): sin tu id acá, `@botito_testitoBot` te va a ignorar a vos también.
 3. `firebase-tools` tiene que estar instalado bajo Node 22 (no alcanza con tenerlo bajo
    otra versión de `nvm`): `nvm use 22 && npm install -g firebase-tools`.
 

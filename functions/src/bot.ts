@@ -3,6 +3,7 @@ import {ExtendedContext} from "../config/context/myContext";
 import functions = require("firebase-functions/v1");
 import {MenuMiddleware} from "telegraf-inline-menu/dist/source";
 import {messageHandler} from "./handlers/updates/message";
+import {soloUsuariosPermitidos} from "./handlers/middlewares";
 import {menu} from "./handlers/menus/index";
 import {db} from "./firebase";
 import firestoreSession = require("telegraf-session-firestore");
@@ -55,6 +56,9 @@ export function crearBot(token: string): Telegraf<ExtendedContext> {
   const bot = new Telegraf<ExtendedContext>(token, {telegram: {webhookReply: true}});
 
   // --------------------------- MIDDLEWARE -------------------------------
+  // Va primero: sin allowlist, un usuario no autorizado igual generaría un doc en
+  // `sessions` y entraría a las scenes antes de que nada lo frene.
+  bot.use(soloUsuariosPermitidos());
   bot.use(firestoreSession(db.collection("sessions")));
   bot.use(stage.middleware());
 
