@@ -13,6 +13,62 @@
           "order": "ASCENDING"
         }
       ]
+    },
+    {
+      "collectionGroup": "Cobro",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "estaDividido",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "fechaCobro",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "Pago",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "dividieronLaPlata",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "dateCreated",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "Resumen",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "saldado",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "createdAt",
+          "order": "ASCENDING"
+        }
+      ]
+    },
+    {
+      "collectionGroup": "Resumen",
+      "queryScope": "COLLECTION",
+      "fields": [
+        {
+          "fieldPath": "year",
+          "order": "ASCENDING"
+        },
+        {
+          "fieldPath": "mes",
+          "order": "ASCENDING"
+        }
+      ]
     }
   ],
   "fieldOverrides": []

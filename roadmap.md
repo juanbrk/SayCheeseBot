@@ -44,7 +44,7 @@ Detalle y `file:line` de cada uno en `TICKET.md` (sección Pendientes) y en el p
 | **S5.4** `dividieronLaPlata` no se lee al visualizar pagos | ERROR | ✅ hecho | ⬜️ |
 | **S5.5** Fallbacks hardcodeados a `"2021"` | ERROR | ✅ hecho | ⬜️ |
 | **S5.6** `setMyCommands()` en module load | ERROR | ✅ hecho | ⬜️ |
-| **S7** Deploy + registro del webhook + `README.md` | AUTOMATIZACIÓN | 🟡 pendiente (requiere token/deploy) | ⬜️ |
+| **S7** Deploy + registro del webhook + `README.md` | AUTOMATIZACIÓN | ✅ hecho | ⬜️ |
 
 ## Diferido — sin fecha
 
@@ -52,24 +52,24 @@ Cada uno corresponde a un `[D#]` de la sección Diferido de `TICKET.md`.
 
 | Item | Tipo | Estado | Trello |
 |---|---|---|---|
-| **D1** Renombrar los campos Firestore `ferDebeAFlor` / `florDebeAFer` / `totalCobradoPorFer` / `leCorrespondeAFer` | DEUDA TECNICA | ⚪️ | ⬜️ |
-| **D2** Migrar los triggers v1 → v2 | DEUDA TECNICA | ⚪️ | ⬜️ |
-| **D3** Reparar el toolchain de ESLint y devolver `lint` al predeploy | DEUDA TECNICA | ⚪️ | ⬜️ |
+| **D1** Renombrar los campos Firestore `ferDebeAFlor` / `florDebeAFer` / `totalCobradoPorFer` / `leCorrespondeAFer` | DEUDA TECNICA | ⚪️ | ✅ `9olUsdIJ` |
+| **D2** Migrar los triggers v1 → v2 | DEUDA TECNICA | ⚪️ | ✅ `9olUsdIJ` |
+| **D3** Reparar el toolchain de ESLint y devolver `lint` al predeploy | DEUDA TECNICA | ⚪️ | ✅ `9olUsdIJ` |
 | **D4** `firestore.rules` protege `clientes`, colección inexistente (la real es `Cliente`) | ERROR | ⚪️ | ⬜️ |
-| **D5** Tests + CI | DEUDA TECNICA | ⚪️ | ⬜️ |
+| **D5** Tests + CI | DEUDA TECNICA | ⚪️ | ✅ `9olUsdIJ` |
 | **D6** Resucitar `saldar-deuda-wizard` (saldo mensual, hoy inalcanzable) | FUNCIONALIDAD | ⚪️ | ⬜️ |
 | **D7** Des-hardcodear el modelo de dos socias | FUNCIONALIDAD | ⚪️ | ⬜️ |
-| **D8** ~25 `ctx.reply` / `answerCbQuery` sin `await` en las scenes | DEUDA TECNICA | ⚪️ | ⬜️ |
-| **D9** La colección `sessions` no tiene TTL ni limpieza — crece sin límite | DEUDA TECNICA | ⚪️ | ⬜️ |
+| **D8** ~25 `ctx.reply` / `answerCbQuery` sin `await` en las scenes | DEUDA TECNICA | ⚪️ | ✅ `9olUsdIJ` |
+| **D9** La colección `sessions` no tiene TTL ni limpieza — crece sin límite | DEUDA TECNICA | ⚪️ | ✅ `9olUsdIJ` |
 | **D10** Deuda exactamente cero elige deudora arbitraria | ERROR | ⚪️ | ⬜️ |
 | **D11** Mover el token a Secret Manager | MEJORA | ⚪️ | ⬜️ |
-| **D12** Borrar el `package.json` suelto de la raíz | DEUDA TECNICA | ⚪️ | ⬜️ |
-| **D13** Normalizar los imports de `telegraf-inline-menu` (10 por `dist/source`, 6 por la raíz) | DEUDA TECNICA | ⚪️ | ⬜️ |
-| **D14** `telegraf-inline-menu@6.3.0` está deprecado por el autor ("moved to grammY") | DEUDA TECNICA | ⚪️ | ⬜️ |
+| **D12** Borrar el `package.json` suelto de la raíz | DEUDA TECNICA | ⚪️ | ✅ `9olUsdIJ` |
+| **D13** Normalizar los imports de `telegraf-inline-menu` (10 por `dist/source`, 6 por la raíz) | DEUDA TECNICA | ⚪️ | ✅ `9olUsdIJ` |
+| **D14** `telegraf-inline-menu@6.3.0` está deprecado por el autor ("moved to grammY") | DEUDA TECNICA | ⚪️ | ✅ `9olUsdIJ` |
 | **D15** El gate sólo se arma si Claude marca la tarea `completed` — no hay disparador por volumen de cambios | AUTOMATIZACIÓN | ⚪️ | ⬜️ |
 | **D16** `pagosFactory` no setea `dividieronLaPlata` en pagos de saldo, y `saldarPagosDeMes` filtra por `== false`: nunca los alcanza | ERROR | ⚪️ | ⬜️ |
 | **D17** Portar los hooks de calidad de código de kakebot-backend (merge aditivo sobre `settings.json`) | DEUDA TECNICA | ⚪️ | ✅ `jsanyyE6` |
-| **D18** `.eslintrc.js` y `.eslintignore` quedaron huérfanos al sacar lint del deploy | DEUDA TECNICA | ⚪️ | ⬜️ |
+| **D18** `.eslintrc.js` y `.eslintignore` quedaron huérfanos al sacar lint del deploy | DEUDA TECNICA | ⚪️ | ✅ `9olUsdIJ` |
 
 ---
 
