@@ -149,11 +149,3 @@ repo ni su `TICKET.md`. Se puede correr las veces que haga falta.
 Claude Code.
 
 ---
-
-## Roadmap
-
-`roadmap.md` (este sí se commitea) lleva el registro de qué trabajo tiene tarjeta de
-Trello y qué trabajo todavía no. Board destino: **Estudio Lata**.
-
-Al diferir algo desde `TICKET.md`, agregarlo también como fila en `roadmap.md` — si no,
-se pierde en un archivo que no se versiona.
