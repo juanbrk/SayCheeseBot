@@ -7,6 +7,11 @@ Registra cobros a clientes y pagos, y calcula quién le debe cuánto a quién ca
 `functions/`. El idioma del dominio es español y así se mantiene: `Cobro`, `Pago`,
 `Balance`, `Resumen`, `Socias`.
 
+Las convenciones de código (los 14 invariantes de scene, las 2 reglas de firma, la regla
+de listas, y lo que deliberadamente no se impone) viven en
+`.claude/rules/convenciones-codigo.md`. Los hooks de `.claude/hooks/` que las imponen
+citan ese archivo como fuente de verdad.
+
 ---
 
 ## Ticket Tracking (TICKET.md)

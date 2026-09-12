@@ -38,6 +38,20 @@
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/gate-on-task-complete.cjs\""
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/typecheck-feedback.cjs\"",
+            "timeout": 60
+          },
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/env-change-guard.cjs\""
+          }
+        ]
       }
     ],
     "UserPromptSubmit": [

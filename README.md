@@ -291,8 +291,8 @@ Colecciones: `Cliente`, `Cobro`, `Pago`, `Balance`, `Resumen`, `Choices`, `sessi
   `Cliente`). Hoy es inocuo porque el Admin SDK saltea las reglas. Anotado como **D4**.
 - **Sobre el lint:** `npm run build` es `tsc` a secas y `predeploy` ya no corre lint. El
   stack viejo (`eslint@7` + `@typescript-eslint@3` + `eslint-config-google`) no parsea
-  TypeScript moderno y bloqueaba el deploy. `.eslintrc.js` sigue en el repo como semilla
-  para cuando se retome: es **D3** en `roadmap.md`.
+  TypeScript moderno y bloqueaba el deploy, así que `.eslintrc.js`, `.eslintignore` y
+  `tsconfig.dev.json` se borraron por huérfanos. Retomarlo es **D3** en `roadmap.md`.
 
 ---
 
