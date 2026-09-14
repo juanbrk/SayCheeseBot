@@ -1,5 +1,8 @@
+import {ExtendedContext} from "../../../config/context/myContext";
+import {PropiedadesCobro} from "../enums/cobro";
 import {Socias} from "../enums/socias";
 import {ClienteAsEntity} from "./cliente";
+import {MyWizardSession} from "./session";
 
 import {Timestamp} from "firebase-admin/firestore";
 import {Meses} from "../enums/meses";
@@ -13,6 +16,13 @@ export interface CobroSession {
     asignadoA?: Socias;
     dividieronLaPlata?: boolean;
     datosConfirmados: boolean;
+}
+
+export interface GuardarPropiedadCobroParams {
+    ctx: ExtendedContext;
+    sessionActual: MyWizardSession;
+    propiedadAGuardar: PropiedadesCobro;
+    valorAguardar?: Socias | boolean;
 }
 
 export interface VisualizacionCobroSession{
