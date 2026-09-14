@@ -36,6 +36,24 @@
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-list-bullets.cjs\""
           }
         ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-firmas.cjs\""
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-scene-wizard.cjs\""
+          }
+        ]
       }
     ],
     "PostToolUse": [
@@ -68,6 +86,15 @@
           {
             "type": "command",
             "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/env-change-guard.cjs\""
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$CLAUDE_PROJECT_DIR/.claude/hooks/check-scene-wizard.cjs\""
           }
         ]
       }
