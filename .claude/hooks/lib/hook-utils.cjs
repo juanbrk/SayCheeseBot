@@ -107,6 +107,23 @@ function writeAdditionalContext(hookEventName, additionalContext) {
   );
 }
 
+/**
+ * Junta todo el texto nuevo que un tool call `Edit|Write|MultiEdit` está por escribir,
+ * sea cual sea la forma del payload (Write: `content`; Edit: `new_string`; MultiEdit:
+ * `edits[]`). Sirve para hooks que sólo necesitan ver el diff que se está por escribir,
+ * no el archivo mergeado — a diferencia de check-scene-wizard, que sí necesita
+ * reconstruir el archivo completo y por eso no usa este helper.
+ * @param {object} toolInput
+ * @return {string}
+ */
+function textoNuevo(toolInput) {
+  if (typeof toolInput.content === "string") return toolInput.content;
+  if (Array.isArray(toolInput.edits)) {
+    return toolInput.edits.map((e) => e.new_string || "").join("\n");
+  }
+  return toolInput.new_string || "";
+}
+
 module.exports = {
   real,
   git,
@@ -114,4 +131,5 @@ module.exports = {
   readPayload,
   resolveEditedPath,
   writeAdditionalContext,
+  textoNuevo,
 };

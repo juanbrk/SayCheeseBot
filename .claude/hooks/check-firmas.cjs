@@ -30,7 +30,7 @@
  * Exit 2 + stderr para bloquear (sólo PreToolUse); exit 0 en cualquier otro camino.
  */
 
-const { readPayload } = require("./lib/hook-utils.cjs");
+const { readPayload, textoNuevo } = require("./lib/hook-utils.cjs");
 const { findViolations, stripStringsAndComments } = require("./lib/params-rule.cjs");
 
 const TIPO_INLINE = /\}[ \t]*:[ \t]*\{/;
@@ -41,20 +41,6 @@ function esArchivoTypeScript(filePath) {
     filePath.endsWith(".ts") &&
     !filePath.endsWith(".d.ts")
   );
-}
-
-/**
- * Junta todo el texto nuevo que el tool call está por escribir, sea cual sea la forma
- * del payload (Write: `content`; Edit: `new_string`; MultiEdit: `edits[]`).
- * @param {object} toolInput
- * @return {string}
- */
-function textoNuevo(toolInput) {
-  if (typeof toolInput.content === "string") return toolInput.content;
-  if (Array.isArray(toolInput.edits)) {
-    return toolInput.edits.map((e) => e.new_string || "").join("\n");
-  }
-  return toolInput.new_string || "";
 }
 
 /** @param {string} contenido @return {string[]} */

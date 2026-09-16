@@ -29,6 +29,7 @@
  */
 
 const fs = require("fs");
+const { textoNuevo } = require("./lib/hook-utils.cjs");
 
 /** Caracteres de árbol y el bullet no-convencional, cada uno con su nombre para el mensaje. */
 const CARACTERES_PROHIBIDOS = [
@@ -40,20 +41,6 @@ const CARACTERES_PROHIBIDOS = [
 
 function esArchivoTypeScript(filePath) {
   return typeof filePath === "string" && filePath.endsWith(".ts");
-}
-
-/**
- * Junta todo el texto nuevo que el tool call está por escribir, sea cual sea la
- * forma del payload (Write: `content`; Edit: `new_string`; MultiEdit: `edits[]`).
- * @param {object} toolInput
- * @return {string}
- */
-function textoNuevo(toolInput) {
-  if (typeof toolInput.content === "string") return toolInput.content;
-  if (Array.isArray(toolInput.edits)) {
-    return toolInput.edits.map((e) => e.new_string || "").join("\n");
-  }
-  return toolInput.new_string || "";
 }
 
 function encontrarViolaciones(contenido) {
