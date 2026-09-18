@@ -1,5 +1,13 @@
 # Session Log
 
+## 2026-09-18: GitHub Action para deploy automático de Cloud Functions
+
+### Completado
+- Creado `.github/workflows/deploy-functions.yml` adaptado de kakebot: trigger `master`, WIF auth, 2 env vars (`TELEGRAM_TOKEN`, `TELEGRAM_ALLOWED_IDS`), sin `setWebhook` ni `NODE_ENV`
+
+### Pendiente
+- Configurar WIF en GCP, agregar secrets en GitHub, y verificar primer deploy verde (pasos manuales documentados en TICKET.md)
+
 ## 2026-09-10 – 2026-09-18: Portar hooks de feedback de código desde kakebot-backend — completo
 
 ### Completado
