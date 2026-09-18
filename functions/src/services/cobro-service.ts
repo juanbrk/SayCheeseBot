@@ -91,5 +91,12 @@ export async function obtenerCobrosParaMesYSocia(indiceMes: string, ano: string,
  * @param {number} year en el cual deben saldarse todos los cobros
  */
 export const saldarCobrosDeMes = async (mes: number, year: number) => {
-  await saldarColeccionDeMes<CobroFirestore>(db, CollectionName.COBRO, "fechaCobro", "estaDividido", mes, year);
+  await saldarColeccionDeMes<CobroFirestore>({
+    firestore: db,
+    coleccion: CollectionName.COBRO,
+    campoFecha: "fechaCobro",
+    campoDividido: "estaDividido",
+    mes,
+    year,
+  });
 };

@@ -124,6 +124,29 @@ function textoNuevo(toolInput) {
   return toolInput.new_string || "";
 }
 
+/**
+ * true si `textoNuevo(toolInput)` devuelve el archivo entero (payload de `Write`), false
+ * si devuelve sólo un fragmento (`Edit`: un `new_string`; `MultiEdit`: varios
+ * concatenados). Lo usan los hooks que reportan números de línea: sobre un fragmento la
+ * línea contada NO es la línea del archivo, y decir "línea 2" cuando en el archivo cae en
+ * la 112 es el mismo defecto de líneas corridas que params-rule.cjs vino a arreglar.
+ * @param {object} toolInput
+ * @return {boolean}
+ */
+function esArchivoCompleto(toolInput) {
+  return typeof toolInput.content === "string";
+}
+
+/**
+ * Sufijo para los mensajes de violación con número de línea: vacío cuando la línea es la
+ * del archivo, aclaratorio cuando es la del fragmento que se está por escribir.
+ * @param {object} toolInput
+ * @return {string}
+ */
+function sufijoDeLinea(toolInput) {
+  return esArchivoCompleto(toolInput) ? "" : " del texto nuevo";
+}
+
 module.exports = {
   real,
   git,
@@ -132,4 +155,6 @@ module.exports = {
   resolveEditedPath,
   writeAdditionalContext,
   textoNuevo,
+  esArchivoCompleto,
+  sufijoDeLinea,
 };

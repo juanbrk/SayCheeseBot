@@ -32,12 +32,20 @@
  * viva, esta invocación sale en silencio: la corrida en curso va a reportar sobre un
  * árbol que ya incluye este último cambio (o la siguiente invocación lo hará).
  *
+ * Tanto el lock como el `--tsBuildInfoFile` llevan un hash de la raíz resuelta en el
+ * nombre. Con un nombre fijo los comparten TODOS los worktrees del repo (hoy hay 2), y
+ * eso rompe las dos premisas de arriba: el lock de un worktree apaga en silencio el
+ * chequeo del otro — donde la corrida en vuelo NO va a reportar sobre este árbol, porque
+ * es otro árbol — y el buildinfo compartido se pisa al alternar, perdiendo el warm de
+ * ~1.3s que justifica correr tsc en cada edición.
+ *
  * `--noEmit` es obligatorio: sin él el hook emitiría a functions/lib/ y competiría con
  * el `tsc -w` que `scripts/go.sh` ya corre en paralelo durante desarrollo.
  *
  * Exit 0 siempre — PostToolUse no puede bloquear.
  */
 
+const crypto = require("crypto");
 const fs = require("fs");
 const os = require("os");
 const path = require("path");
@@ -51,8 +59,17 @@ const {
 
 const TIMEOUT_MS = 60000;
 const MAX_LINES = 25;
-const LOCK_PATH = path.join(os.tmpdir(), "saycheesebot-typecheck.lock");
-const TSBUILDINFO_PATH = path.join(os.tmpdir(), "saycheesebot-tsc.tsbuildinfo");
+
+/**
+ * Hash corto de la raíz del worktree, para que dos worktrees del mismo repo no compartan
+ * ni lock ni buildinfo. La raíz ya viene normalizada por `resolveRoot` (realpath), así
+ * que dos invocaciones sobre el mismo worktree dan siempre el mismo hash.
+ * @param {string} root raíz real del repo
+ * @return {string} 8 hex chars
+ */
+function hashDeRaiz(root) {
+  return crypto.createHash("sha1").update(root).digest("hex").slice(0, 8);
+}
 
 /**
  * `functions/` sin restringirse a `src/`: ver el arreglo 2 del encabezado.
@@ -70,13 +87,14 @@ function isCheckableFile(root, edited) {
 }
 
 /**
- * true si hay una corrida de tsc de este hook todavía viva.
+ * true si hay una corrida de tsc de este hook todavía viva **sobre este worktree**.
+ * @param {string} lockPath ruta del lock de este worktree
  * @return {boolean}
  */
-function otraCorridaEnCurso() {
+function otraCorridaEnCurso(lockPath) {
   let pid;
   try {
-    pid = parseInt(fs.readFileSync(LOCK_PATH, "utf8"), 10);
+    pid = parseInt(fs.readFileSync(lockPath, "utf8"), 10);
   } catch (_) {
     return false;
   }
@@ -107,14 +125,18 @@ function main() {
   const tscBin = path.join(functionsDir, "node_modules", ".bin", "tsc");
   if (!fs.existsSync(tscBin)) return; // sin build de deps no hay con qué chequear
 
-  if (otraCorridaEnCurso()) return;
+  const sufijo = hashDeRaiz(root);
+  const lockPath = path.join(os.tmpdir(), `saycheesebot-typecheck-${sufijo}.lock`);
+  const tsBuildInfoPath = path.join(os.tmpdir(), `saycheesebot-tsc-${sufijo}.tsbuildinfo`);
+
+  if (otraCorridaEnCurso(lockPath)) return;
 
   try {
-    fs.writeFileSync(LOCK_PATH, String(process.pid));
+    fs.writeFileSync(lockPath, String(process.pid));
 
     const result = spawnSync(
       tscBin,
-      ["--noEmit", "--incremental", "--tsBuildInfoFile", TSBUILDINFO_PATH],
+      ["--noEmit", "--incremental", "--tsBuildInfoFile", tsBuildInfoPath],
       { cwd: functionsDir, encoding: "utf8", timeout: TIMEOUT_MS }
     );
 
@@ -132,7 +154,7 @@ function main() {
     // status === 0 → silencio: no hay nada que agregar al contexto.
   } finally {
     try {
-      fs.unlinkSync(LOCK_PATH);
+      fs.unlinkSync(lockPath);
     } catch (_) {
       /* no-op */
     }

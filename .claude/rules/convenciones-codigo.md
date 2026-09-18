@@ -94,6 +94,29 @@ Impuestas por `check-firmas.cjs` + `lib/params-rule.cjs`, `PreToolUse`, bloquean
    (`handlers/actions/cobro-actions.ts:112`, no la línea 85 que reportaría el stripper de
    comentarios de kakebot sin corregir — colapsa cada bloque `/* */` a una línea y corre
    el conteo). P6 la lleva a 0.
+
+   **Vale para las cuatro formas de definir una función**, no sólo para la declaración
+   `function f(...)`: asignación a un nombre (`const f = (...) =>`, `const f = function
+   (...)`), método de clase o de objeto literal, y propiedad con arrow (`f: (...) => …`).
+   La forma no cambia el olor que la regla persigue — una firma posicional larga es igual
+   de frágil se escriba como se escriba —, y acotarla a `function` cubriría poco: este
+   árbol define 24 funciones con la forma `const x = async (...) => {}`.
+
+   Lo único deliberadamente afuera son los **callbacks anónimos inline**
+   (`.reduce((acc, cur, idx, arr) => …)`): su aridad no la elige quien los escribe sino la
+   API que los invoca, así que un parámetro objeto no es un arreglo disponible.
+
+   Llevar la cobertura a las cuatro formas costó convertir 3 firmas que la versión acotada
+   no veía, todas a un parámetro objeto con su interfaz aparte:
+
+   | Firma | Params | Interfaz |
+   |---|---|---|
+   | `resumenFactory` (`modules/factories/resumenFactory.ts`) | 4 | `ResumenFactoryParams` en `models/resumen.ts` |
+   | `actualizarEntidad` (`services/firestore-service.ts`) | 4 | `ActualizarEntidadParams` en `models/DTOs/firestoreServiceDto.ts` |
+   | `saldarColeccionDeMes` (`services/firestore-service.ts`) | 6 | `SaldarColeccionDeMesParams`, mismo archivo |
+
+   Con esas 3 convertidas, la regla ampliada vuelve a dar **0 violaciones** contra las 88
+   fuentes del árbol.
 2. **Tipo inline en la misma línea que el parámetro** (patrón `}: {` en una firma) — se
    detecta con el regex anclado a la línea `/\}[ \t]*:[ \t]*\{/`, **no** `/\}\s*:\s*\{/`
    de kakebot. La versión de kakebot usa `\s`, que incluye `\n`, y matchea de punta a

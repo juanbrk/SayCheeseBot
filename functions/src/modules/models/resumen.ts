@@ -1,4 +1,12 @@
 import {TipoResumen} from "../enums/resumen";
+import {BalanceFirestore} from "./balance";
+
+export interface ResumenFactoryParams {
+    mesDelResumen: number;
+    añoDelResumen: number;
+    tipoResumen: TipoResumen;
+    documentoBalance: BalanceFirestore;
+}
 
 export interface ResumenFirestore {
     mes: number;

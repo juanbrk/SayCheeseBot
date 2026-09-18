@@ -27,10 +27,16 @@
  * check-list-bullets — no el archivo mergeado: la firma que se está escribiendo hoy
  * está contenida en el diff de hoy.
  *
+ * Consecuencia directa: sobre un payload `Edit`/`MultiEdit` el número de línea es el del
+ * fragmento, no el del archivo — una firma que en el archivo cae en la 112 se cuenta como
+ * línea 2. Por eso el mensaje lleva el sufijo " del texto nuevo" salvo en `Write`, donde
+ * `content` sí es el archivo entero. Reportarlo a secas sería reintroducir por otra
+ * puerta el defecto de líneas corridas que motivó el fork de params-rule.cjs.
+ *
  * Exit 2 + stderr para bloquear (sólo PreToolUse); exit 0 en cualquier otro camino.
  */
 
-const { readPayload, textoNuevo } = require("./lib/hook-utils.cjs");
+const { readPayload, textoNuevo, sufijoDeLinea } = require("./lib/hook-utils.cjs");
 const { findViolations, stripStringsAndComments } = require("./lib/params-rule.cjs");
 
 const TIPO_INLINE = /\}[ \t]*:[ \t]*\{/;
@@ -43,14 +49,15 @@ function esArchivoTypeScript(filePath) {
   );
 }
 
-/** @param {string} contenido @return {string[]} */
-function violacionesTipoInline(contenido) {
+/** @param {string} contenido @param {string} sufijoLinea @return {string[]} */
+function violacionesTipoInline(contenido, sufijoLinea) {
   const limpio = stripStringsAndComments(contenido);
   const violaciones = [];
   limpio.split("\n").forEach((linea, indice) => {
     if (TIPO_INLINE.test(linea)) {
       violaciones.push(
-        `línea ${indice + 1}: tipo inline en la firma (\`}: {\`) — definí una interfaz aparte`
+        `línea ${indice + 1}${sufijoLinea}: tipo inline en la firma (\`}: {\`) — ` +
+          "definí una interfaz aparte"
       );
     }
   });
@@ -68,10 +75,14 @@ function main() {
   const contenido = textoNuevo(toolInput);
   if (!contenido) return;
 
-  const violacionesParams = findViolations(contenido).map(
+  const sufijoLinea = sufijoDeLinea(toolInput);
+  const violacionesParams = findViolations(contenido, sufijoLinea).map(
     (v) => `${v} — usá un parámetro objeto`
   );
-  const violaciones = [...violacionesParams, ...violacionesTipoInline(contenido)];
+  const violaciones = [
+    ...violacionesParams,
+    ...violacionesTipoInline(contenido, sufijoLinea),
+  ];
   if (violaciones.length === 0) return;
 
   const detalle = violaciones.map((v) => `  ${v}`).join("\n");

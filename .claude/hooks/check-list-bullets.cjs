@@ -23,13 +23,15 @@
  * Sólo mira el texto nuevo (`content`/`new_string`/`edits[].new_string`), no el
  * archivo mergeado — a diferencia de check-scene-wizard (P8), acá no hace falta ver
  * el archivo resultante completo: un carácter prohibido en el texto que se agrega hoy
- * es una violación hoy, sin importar qué hay en el resto del archivo.
+ * es una violación hoy, sin importar qué hay en el resto del archivo. Por eso mismo el
+ * número de línea que se reporta es el del fragmento sobre un `Edit`/`MultiEdit`, y lleva
+ * el sufijo " del texto nuevo" para no hacerlo pasar por línea del archivo (ver
+ * `sufijoDeLinea` en lib/hook-utils.cjs).
  *
  * Exit 2 + stderr para bloquear (sólo PreToolUse); exit 0 en cualquier otro camino.
  */
 
-const fs = require("fs");
-const { textoNuevo } = require("./lib/hook-utils.cjs");
+const { readPayload, textoNuevo, sufijoDeLinea } = require("./lib/hook-utils.cjs");
 
 /** Caracteres de árbol y el bullet no-convencional, cada uno con su nombre para el mensaje. */
 const CARACTERES_PROHIBIDOS = [
@@ -57,7 +59,7 @@ function encontrarViolaciones(contenido) {
 }
 
 function main() {
-  const payload = JSON.parse(fs.readFileSync(0, "utf8") || "{}");
+  const payload = readPayload();
   if (!/^(Edit|Write|MultiEdit)$/.test(payload.tool_name || "")) return;
 
   const toolInput = payload.tool_input || {};
@@ -70,8 +72,9 @@ function main() {
   const violaciones = encontrarViolaciones(contenido);
   if (violaciones.length === 0) return;
 
+  const sufijoLinea = sufijoDeLinea(toolInput);
   const detalle = violaciones
-    .map((v) => `  línea ${v.linea}: carácter "${v.nombre}" no permitido`)
+    .map((v) => `  línea ${v.linea}${sufijoLinea}: carácter "${v.nombre}" no permitido`)
     .join("\n");
 
   process.stderr.write(

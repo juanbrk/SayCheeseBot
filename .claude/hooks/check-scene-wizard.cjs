@@ -102,7 +102,11 @@ function contenidoMergeado(absPath, toolInput) {
   for (const edit of edits) {
     const oldString = edit.old_string || "";
     const newString = edit.new_string || "";
-    content = oldString === "" ? newString : content.replace(oldString, newString);
+    // El reemplazo va como función, no como string: `String.replace` con un string de
+    // reemplazo expande los patrones `$$`, `$&`, `` $` ``, `$'` y `$n`. Este árbol tiene
+    // 18 `$${monto}` en 4 de las 7 scenes (montos en pesos), y cada uno se colapsaría a
+    // `${monto}` — el hook validaría un archivo distinto al que se está por escribir.
+    content = oldString === "" ? newString : content.replace(oldString, () => newString);
   }
   return content;
 }
