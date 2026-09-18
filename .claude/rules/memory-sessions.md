@@ -5,10 +5,10 @@
 ### Completado
 - Creado `.github/workflows/deploy-functions.yml` adaptado de kakebot: trigger `master`, WIF auth, 2 env vars (`TELEGRAM_TOKEN`, `TELEGRAM_ALLOWED_IDS`), sin `setWebhook` ni `NODE_ENV`
 - Fix del primer deploy fallido: `google-github-actions/auth@v2` → `@v3` (Node 24 nativo) + `--non-interactive` en el deploy
-- Fix del segundo deploy fallido: `firebase-tools` sin pin traía v15.22.2 (regresión que ignora credenciales WIF); pinado a `>=15.23.0`
+- Fix del segundo deploy fallido: `firebase-tools` no entiende credenciales WIF `external_account`; se genera access token explícito (`token_format: access_token` + `--token`) en vez de depender de `GOOGLE_APPLICATION_CREDENTIALS`
 
 ### Pendiente
-- Verificar que el deploy pase en verde con el pin de firebase-tools
+- Verificar que el deploy pase en verde con el access token explícito
 
 ## 2026-09-10 – 2026-09-18: Portar hooks de feedback de código desde kakebot-backend — completo
 
