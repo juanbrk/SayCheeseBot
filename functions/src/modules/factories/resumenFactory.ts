@@ -1,25 +1,22 @@
 import {Timestamp} from "firebase-admin/firestore";
-import {TipoResumen} from "../enums/resumen";
 import {Socias} from "../enums/socias";
 import {TipoTransaccion} from "../enums/tipoTransaccion";
 import {BalanceFirestore} from "../models/balance";
-import {ResumenFirestore} from "../models/resumen";
+import {ResumenFactoryParams, ResumenFirestore} from "../models/resumen";
 
 /**
  * Necesitamos poder generar resumenes a pedido
  *
- * @param {number} mesDelResumen
- * @param {number} añoDelResumen
- * @param {TipoResumen} tipoResumen puede ser mensual,
- * @param {BalanceFirestore} documentoBalance a partir del cual generar el resumen
+ * @param {ResumenFactoryParams} params mesDelResumen, añoDelResumen, tipoResumen (puede ser
+ *  mensual) y documentoBalance (a partir del cual generar el resumen)
  * @return {ResumenFirestore}
  */
-export const resumenFactory = (
-  mesDelResumen: number,
-  añoDelResumen: number,
-  tipoResumen: TipoResumen,
-  documentoBalance: BalanceFirestore,
-): ResumenFirestore => {
+export const resumenFactory = ({
+  mesDelResumen,
+  añoDelResumen,
+  tipoResumen,
+  documentoBalance,
+}: ResumenFactoryParams): ResumenFirestore => {
   const seGeneroAPartirDeUnCobro = documentoBalance.tipoTransaccion == TipoTransaccion.COBRO;
   const seLeDebeAFlor = documentoBalance.leCorrespondeAFer > 0;
   const transaccionRealizadaPorMarian = documentoBalance.transaccion.realizadoPor == Socias.MARIAN;

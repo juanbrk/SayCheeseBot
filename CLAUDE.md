@@ -7,6 +7,11 @@ Registra cobros a clientes y pagos, y calcula quién le debe cuánto a quién ca
 `functions/`. El idioma del dominio es español y así se mantiene: `Cobro`, `Pago`,
 `Balance`, `Resumen`, `Socias`.
 
+Las convenciones de código (los 14 invariantes de scene, las 2 reglas de firma, la regla
+de listas, y lo que deliberadamente no se impone) viven en
+`.claude/rules/convenciones-codigo.md`. Los hooks de `.claude/hooks/` que las imponen
+citan ese archivo como fuente de verdad.
+
 ---
 
 ## Ticket Tracking (TICKET.md)
@@ -147,5 +152,50 @@ repo ni su `TICKET.md`. Se puede correr las veces que haga falta.
 
 **Los hooks se leen al arrancar la sesión** — nada de esto tiene efecto hasta reiniciar
 Claude Code.
+
+---
+
+## Hooks de convención de código
+
+Tres hooks `PreToolUse` (`Edit|Write|MultiEdit`) imponen las reglas de
+`.claude/rules/convenciones-codigo.md` — ese archivo es la fuente de verdad, no este
+párrafo. Los tres arrancan en 0 violaciones contra el árbol actual, así que ninguno
+frena trabajo legítimo.
+
+| Hook | Alcance | Qué bloquea |
+|---|---|---|
+| `check-list-bullets.cjs` | Cualquier `.ts` | Caracteres de árbol (`├─`, `└─`, `│`) y `•` en el texto nuevo — no se renderizan en Telegram. La convención es `- `. |
+| `check-firmas.cjs` | `.ts` (no `.d.ts`) | Las 2 reglas de firma: 4+ parámetros posicionales, y tipo inline en la firma (`}: {`). |
+| `check-scene-wizard.cjs` | `functions/src/modules/scenes/**/*.ts` que define `new Scenes.WizardScene(...)` | Los 12 invariantes self-contenidos (R1-R8, R10-R14) de los 14 documentados en convenciones-codigo.md. |
+
+`check-list-bullets` y `check-firmas` sólo miran el texto que se está por escribir
+(`content`/`new_string`/`edits[].new_string`) — no necesitan el archivo mergeado, así
+que no leen disco ni resuelven la raíz del repo.
+
+`check-scene-wizard` es distinto: además de bloquear en `PreToolUse`, se cablea una
+segunda vez sobre `PostToolUse` (mismo archivo, rama por `payload.hook_event_name`)
+para R9 — que la scene exportada esté en el array del `Scenes.Stage` de
+`functions/src/bot.ts`. R9 depende de un archivo *distinto* al que se edita, así que
+sólo puede ser advisory: nunca bloquea, sólo agrega `additionalContext` cuando la scene
+no está registrada.
+
+No tienen test automatizado propio todavía — se verificaron a mano contra el árbol
+real (0 violaciones) al portarlos. Decisión explícita: no se implementan tests en el
+desarrollo de este repo por ahora.
+
+---
+
+## Memoria del proyecto
+
+Dos archivos bajo `.claude/rules/` llevan la historia de sesiones y decisiones
+arquitectónicas — versionados, no gitignoreados.
+
+| Archivo | Contiene |
+|---|---|
+| `.claude/rules/memory-sessions.md` | Log de sesiones: qué se hizo, cuándo, qué quedó pendiente |
+| `.claude/rules/memory-decisions.md` | Decisiones, hazards conocidos, checklist de debugging, performance |
+
+Los skills `/commit`, `/audit-pr`, `/compact-current` y `/technician-check` leen y
+escriben estos archivos. `/compact-current` los comprime al cerrar un ticket.
 
 ---

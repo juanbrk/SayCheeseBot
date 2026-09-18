@@ -65,12 +65,12 @@ const generarResumenMensual = async (
   año: number,
   documentoDelBalance: BalanceFirestore,
 ) => {
-  return resumenFactory(
-    mes,
-    año,
-    TipoResumen.MENSUAL,
-    documentoDelBalance,
-  );
+  return resumenFactory({
+    mesDelResumen: mes,
+    añoDelResumen: año,
+    tipoResumen: TipoResumen.MENSUAL,
+    documentoBalance: documentoDelBalance,
+  });
 };
 
 /**

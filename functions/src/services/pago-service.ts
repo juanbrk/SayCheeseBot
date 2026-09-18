@@ -47,7 +47,14 @@ export async function registrarPago(ctx: ExtendedContext) {
  * @param {number} year en el cual deben saldarse todos los pagos
  */
 export const saldarPagosDeMes = async (mes: number, year: number) => {
-  await saldarColeccionDeMes<PagoFirestore>(db, CollectionName.PAGO, "dateCreated", "dividieronLaPlata", mes, year);
+  await saldarColeccionDeMes<PagoFirestore>({
+    firestore: db,
+    coleccion: CollectionName.PAGO,
+    campoFecha: "dateCreated",
+    campoDividido: "dividieronLaPlata",
+    mes,
+    year,
+  });
 };
 
 /**

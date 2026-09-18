@@ -6,7 +6,7 @@
 #
 #   bash .claude/hooks/test-gate.sh
 #
-# Salida esperada: "RESULTADO: 21 pasaron, 0 fallaron" y exit 0.
+# Salida esperada: "RESULTADO: 22 pasaron, 0 fallaron" y exit 0.
 
 set -u
 HOOKS="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

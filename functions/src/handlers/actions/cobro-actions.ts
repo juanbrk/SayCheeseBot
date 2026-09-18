@@ -2,8 +2,8 @@ import {ExtendedContext} from "../../../config/context/myContext";
 import {PropiedadesCobro} from "../../modules/enums/cobro";
 import {Socias} from "../../modules/enums/socias";
 import {ClienteAsEntity} from "../../modules/models/cliente";
-import {ResumenCobro, ResumenesCobro} from "../../modules/models/cobro";
-import {MyWizardSession, Session} from "../../modules/models/session";
+import {GuardarPropiedadCobroParams, ResumenCobro, ResumenesCobro} from "../../modules/models/cobro";
+import {Session} from "../../modules/models/session";
 import {getClienteEntity} from "../../services/cliente-service";
 import {registrarCobro} from "../../services/cobro-service";
 import {MESES} from "../menus/choices";
@@ -65,7 +65,7 @@ export async function procesarRegistroCobro(ctx: ExtendedContext, valorAguardar?
       const montoEsValido = regexMontoPagado.test(ctx.message.text);
       const montoComoNumero: number = +(ctx.message.text.replace(",", "."));
       if (montoEsValido && montoComoNumero > 0) {
-        return guardarPropiedadCobro(ctx, session, PropiedadesCobro.MONTO);
+        return guardarPropiedadCobro({ctx, sessionActual: session, propiedadAGuardar: PropiedadesCobro.MONTO});
       } else {
         await ctx.reply("Si vas a registrar un cobro, asegurate de ingresar sólo números. Te acepto (como mucho) una coma.");
         await ctx.reply("Ingresa nuevamente el monto cobrado, pero hacelo bien esta vez 🙏🏾)");
@@ -74,7 +74,7 @@ export async function procesarRegistroCobro(ctx: ExtendedContext, valorAguardar?
     }
 
     if (ingresoMotivo) {
-      return guardarPropiedadCobro(ctx, session, PropiedadesCobro.MOTIVO);
+      return guardarPropiedadCobro({ctx, sessionActual: session, propiedadAGuardar: PropiedadesCobro.MOTIVO});
     }
   } else if (ctx.callbackQuery && session.datosCobro) {
     const realizoAsignacion = typeof valorAguardar === "string";
@@ -82,16 +82,16 @@ export async function procesarRegistroCobro(ctx: ExtendedContext, valorAguardar?
     const losDatosSonCorrectos = session.datosCobro.datosConfirmados;
 
     if (realizoAsignacion && valorAguardar) {
-      return guardarPropiedadCobro(ctx, session, PropiedadesCobro.ASIGNADO_A, valorAguardar);
+      return guardarPropiedadCobro({ctx, sessionActual: session, propiedadAGuardar: PropiedadesCobro.ASIGNADO_A, valorAguardar});
     }
 
     if (registraronDivision && valorAguardar) {
-      return guardarPropiedadCobro(ctx, session, PropiedadesCobro.ESTA_DIVIDIDO, valorAguardar);
+      return guardarPropiedadCobro({ctx, sessionActual: session, propiedadAGuardar: PropiedadesCobro.ESTA_DIVIDIDO, valorAguardar});
     }
 
     if (losDatosSonCorrectos) {
       await ctx.reply("Estoy registrando el cobro");
-      guardarPropiedadCobro(ctx, session, PropiedadesCobro.REGISTRADO_POR);
+      guardarPropiedadCobro({ctx, sessionActual: session, propiedadAGuardar: PropiedadesCobro.REGISTRADO_POR});
       return registrarCobro(ctx);
     }
   }
@@ -101,15 +101,13 @@ export async function procesarRegistroCobro(ctx: ExtendedContext, valorAguardar?
 /**
  * Durante el proceso del registro del cobro iremos guardando las distintas propiedades del mismo, a medida que
  * el cliente las vaya ingresando
- * @param {ExtendedContext} ctx Actualización en curso
- * @param {Session} sessionActual Sesion que contiene el cobro en curso y que actualizaremos con la nueva propiedad
- * @param {string} propiedadAGuardar es la que se agregará en la sesión
- * @param {string|boolean} valorAguardar viene unicamente si en el paso se presionó un botón.
- *    string en la asignación
- *    boolean en la division
+ * @param {GuardarPropiedadCobroParams} params ctx (actualización en curso), sessionActual (sesión que contiene
+ *  el cobro en curso y que actualizaremos con la nueva propiedad), propiedadAGuardar (la que se agregará en la
+ *  sesión) y valorAguardar (viene unicamente si en el paso se presionó un botón: string en la asignación,
+ *  boolean en la division)
  * @return {boolean}
  */
-function guardarPropiedadCobro(ctx: ExtendedContext, sessionActual: MyWizardSession, propiedadAGuardar: PropiedadesCobro, valorAguardar?: Socias | boolean) {
+function guardarPropiedadCobro({ctx, sessionActual, propiedadAGuardar, valorAguardar}: GuardarPropiedadCobroParams) {
   if (
     sessionActual.datosCobro &&
     (ctx.message && "text" in ctx.message)

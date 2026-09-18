@@ -1,8 +1,11 @@
 import {Firestore} from "firebase-admin/firestore";
 import {TipoImpresionEnConsola} from "../modules/enums/tipoImpresionEnConsola";
 import {SearchRequestDTO} from "../modules/models/DTOs/searchRequestDto";
+import {
+  ActualizarEntidadParams,
+  SaldarColeccionDeMesParams,
+} from "../modules/models/DTOs/firestoreServiceDto";
 import {imprimirEnConsola} from "../modules/utils/general";
-import {CollectionName} from "../modules/enums/collectionName";
 import {Filter} from "../modules/models/filter";
 import {QueryOperators} from "../modules/enums/QueryOperators";
 
@@ -50,18 +53,16 @@ export const buscarDocumentos = async <T>(
  * Cada vez que necesitamos actualizar un documento en firestore, le pasamos lo que queremos modificar o agregar y
  * se actualiza el documento en firestore
  *
- * @param {Firestore} firestore db
- * @param {CollectionType} tipoColeccion a la cual pertenece la entidad
- * @param {string} docUID UID del documento a actualizar
- * @param {any} cuerpo con la actualizacion del documento
+ * @param {ActualizarEntidadParams} params firestore (db), tipoColeccion (a la cual pertenece la
+ *  entidad), docUID (del documento a actualizar) y cuerpo (con la actualizacion del documento)
  * @return {Promise<void>}
  */
-export const actualizarEntidad = async <T>(
-  firestore: Firestore,
-  tipoColeccion: CollectionName,
-  docUID: string,
-  cuerpo: any
-): Promise<any> => {
+export const actualizarEntidad = async <T>({
+  firestore,
+  tipoColeccion,
+  docUID,
+  cuerpo,
+}: ActualizarEntidadParams): Promise<any> => {
   imprimirEnConsola(
     "Actualizando entidad",
     TipoImpresionEnConsola.DEBUG,
@@ -86,22 +87,18 @@ export const actualizarEntidad = async <T>(
  * `mes` viene 0-indexado (sale de `Date.getMonth()`). La cota superior es exclusiva: el 1°
  * del mes siguiente — un día 31 a mano es inválido en febrero y en los meses de 30 días.
  *
- * @param {Firestore} firestore db
- * @param {CollectionName} coleccion COBRO o PAGO
- * @param {string} campoFecha nombre del campo de fecha por el que filtrar (`fechaCobro` / `dateCreated`)
- * @param {string} campoDividido nombre del campo booleano a poner en `true` (`estaDividido` / `dividieronLaPlata`)
- * @param {number} mes 0-indexado
- * @param {number} year
+ * @param {SaldarColeccionDeMesParams} params firestore (db), coleccion (COBRO o PAGO), campoFecha,
+ *  campoDividido, mes (0-indexado) y year
  * @return {Promise<void>}
  */
-export const saldarColeccionDeMes = async <T extends {uid: string}>(
-  firestore: Firestore,
-  coleccion: CollectionName,
-  campoFecha: string,
-  campoDividido: string,
-  mes: number,
-  year: number
-): Promise<void> => {
+export const saldarColeccionDeMes = async <T extends {uid: string}>({
+  firestore,
+  coleccion,
+  campoFecha,
+  campoDividido,
+  mes,
+  year,
+}: SaldarColeccionDeMesParams): Promise<void> => {
   const fechaInicioMes = new Date(year, mes, 1);
   const fechaFinalMes = new Date(year, mes + 1, 1);
 
@@ -121,7 +118,12 @@ export const saldarColeccionDeMes = async <T extends {uid: string}>(
   await Promise.all(
     documentosASaldar.map((documento) => {
       (documento as any)[campoDividido] = true;
-      return actualizarEntidad(firestore, coleccion, documento.uid, documento);
+      return actualizarEntidad({
+        firestore,
+        tipoColeccion: coleccion,
+        docUID: documento.uid,
+        cuerpo: documento,
+      });
     })
   );
 };
