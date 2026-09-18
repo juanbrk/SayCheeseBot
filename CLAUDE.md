@@ -184,3 +184,18 @@ real (0 violaciones) al portarlos. Decisión explícita: no se implementan tests
 desarrollo de este repo por ahora.
 
 ---
+
+## Memoria del proyecto
+
+Dos archivos bajo `.claude/rules/` llevan la historia de sesiones y decisiones
+arquitectónicas — versionados, no gitignoreados.
+
+| Archivo | Contiene |
+|---|---|
+| `.claude/rules/memory-sessions.md` | Log de sesiones: qué se hizo, cuándo, qué quedó pendiente |
+| `.claude/rules/memory-decisions.md` | Decisiones, hazards conocidos, checklist de debugging, performance |
+
+Los skills `/commit`, `/audit-pr`, `/compact-current` y `/technician-check` leen y
+escriben estos archivos. `/compact-current` los comprime al cerrar un ticket.
+
+---
