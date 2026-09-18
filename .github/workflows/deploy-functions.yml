@@ -1,0 +1,46 @@
+name: Deploy Functions
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    name: Deploy to Firebase
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-node@v6
+        with:
+          node-version: "22"
+          cache: "npm"
+          cache-dependency-path: functions/package-lock.json
+
+      - name: Install Firebase CLI
+        run: npm install -g firebase-tools
+
+      - name: Install functions dependencies
+        run: npm ci --prefix functions
+
+      - name: Create .env
+        env:
+          TELEGRAM_TOKEN: ${{ secrets.TELEGRAM_TOKEN }}
+          TELEGRAM_ALLOWED_IDS: ${{ secrets.TELEGRAM_ALLOWED_IDS }}
+        run: |
+          echo "TELEGRAM_TOKEN=${TELEGRAM_TOKEN}" >> functions/.env
+          echo "TELEGRAM_ALLOWED_IDS=${TELEGRAM_ALLOWED_IDS}" >> functions/.env
+
+      - name: Authenticate to Google Cloud
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.WIF_PROVIDER }}
+          service_account: ${{ secrets.SERVICE_ACCOUNT }}
+
+      - name: Deploy Functions
+        run: npx firebase deploy --only functions --project my-first-bot-da27e
