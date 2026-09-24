@@ -54,8 +54,9 @@ creyendo que son convención:
 
 - Sufijo `Wizard` en el nombre exportado — **2/7**.
 - Prefijo `wizard` en el nombre exportado — **5/7**.
-- El primer paso es `async` — **6/7**, falla `registrarSaldoDeudaTotal.ts:18` (`primerPaso`
-  no es `async`).
+- El primer paso es `async` — era **6/7** (fallaba `registrarSaldoDeudaTotal.ts:18`); desde
+  C2 (D8, `await` en las respuestas) es 7/7 de hecho, pero no se impone: ningún hook lo
+  chequea y un primer paso síncrono sin `await` sigue siendo válido.
 - Los nombres de paso llevan un prefijo de dominio (`obtener-`, `validar-`, `confirmar-`) —
   **6/7**, falla `registrarSaldoDeudaTotal.ts`, que nombra sus pasos por ordinal
   (`primerPaso`, `segundoPaso`, `tercerPaso`...).

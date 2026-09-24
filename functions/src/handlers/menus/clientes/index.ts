@@ -10,7 +10,7 @@ export const menu = new MenuTemplate<ExtendedContext>("¿Qué deseas hacer?");
 menu.interact("Registrar nuevo cliente", "nuevo", {
   do: async (ctx) => {
     console.log(ctx);
-    ctx.answerCbQuery("Desea registrar cliente nuevo");
+    await ctx.answerCbQuery("Desea registrar cliente nuevo");
     await ctx.scene.enter("super-wizard");
     return false;
   },

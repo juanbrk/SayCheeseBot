@@ -8,7 +8,7 @@ const obtenerMonto = async (ctx: ExtendedContext) => {
   if (ctx.session.cobro) {
     ctx.scene.session.datosCobro = {...ctx.session.cobro};
   }
-  ctx.editMessageText("Ingresa el monto cobrado:");
+  await ctx.editMessageText("Ingresa el monto cobrado:");
   return avanzar(ctx);
 };
 
@@ -198,7 +198,7 @@ registrarDivision.action("cobroSinDividir", async (ctx) => {
   if (ctx.scene.session.datosCobro) {
     ctx.scene.session.datosCobro.datosConfirmados = true;
     const {datosCobro} = ctx.scene.session;
-    ctx.reply(
+    await ctx.reply(
       `Confirmá si los datos son correctos:
          - <b>Cliente</b>: ${datosCobro.cliente.nombre}
          - <b>Monto</b>: $${new Intl.NumberFormat("de-DE", {minimumFractionDigits: 2}).format(datosCobro.monto!)}
@@ -272,7 +272,7 @@ confirmarDatos.action("registrar", async (ctx) => {
     return leaveScene(ctx);
   }
   delete ctx.session.cobro;
-  solicitarIngresoMenu(ctx);
+  await solicitarIngresoMenu(ctx);
   return ctx.scene.leave();
 });
 
@@ -296,7 +296,7 @@ export const cobroWizard = new Scenes.WizardScene(
 
 const leaveScene = async (ctx: any) => {
   await ctx.reply("Cancelaste el registro de un nuevo cobro. Se borraron todos los datos.");
-  solicitarIngresoMenu(ctx);
+  await solicitarIngresoMenu(ctx);
 
   delete ctx.session.cobro;
   delete ctx.scene.session.datosCobro;

@@ -15,7 +15,7 @@ const obtenerMonto = async (ctx: ExtendedContext) => {
     registradoPor: `${ctx.callbackQuery!.from.first_name}`,
   };
 
-  ctx.editMessageText("Ingresa el monto pagado:");
+  await ctx.editMessageText("Ingresa el monto pagado:");
   return avanzar(ctx);
 };
 
@@ -259,7 +259,7 @@ validarConfirmaciónYRegistrarPago.action("registrar", async (ctx) => {
     await procesarRegistroPago(ctx, pago);
   }
   delete ctx.scene.session.datosPago;
-  solicitarIngresoMenu(ctx);
+  await solicitarIngresoMenu(ctx);
   return ctx.scene.leave();
 });
 
@@ -285,7 +285,7 @@ export const wizardNuevoPago = new Scenes.WizardScene(
 
 const leaveScene = async (ctx: any) => {
   await ctx.reply("Cancelaste el registro de un nuevo pago. Se borraron todos los datos.");
-  solicitarIngresoMenu(ctx);
+  await solicitarIngresoMenu(ctx);
 
   delete ctx.session.cobro;
   delete ctx.scene.session.datosPago;

@@ -15,7 +15,7 @@ const seleccionarTipoVisualizacion = async (ctx: ExtendedContext) => {
   if (ctx.scene.session.visualizacionCobro) {
     ctx.scene.session.visualizacionCobro = {...ctx.scene.session.visualizacionCobro};
   }
-  ctx.editMessageText(
+  await ctx.editMessageText(
     "¿Cómo querés ver los cobros? ",
     Markup.inlineKeyboard([
       Markup.button.callback("Por mes", "mensual"),
@@ -144,7 +144,7 @@ mostrarCobros.on("callback_query", async (ctx: any) => {
     const cuerpoMensajeCobros: string = armarTextoCobroMes(cobrosMesSeleccionado, +mesSeleccionado + 1, visualizacionCobro.anoSeleccionado!);
     await ctx.editMessageText(cuerpoMensajeCobros, {parse_mode: "HTML"});
     delete ctx.session.visualizacionCobro;
-    solicitarIngresoMenu(ctx);
+    await solicitarIngresoMenu(ctx);
     return ctx.scene.leave();
   }
 });
@@ -162,7 +162,7 @@ export const wizardMovimientosCobro = new Scenes.WizardScene(
 
 const leaveScene = async (ctx: any) => {
   await ctx.reply("Saliste de la visualización de los cobros");
-  solicitarIngresoMenu(ctx);
+  await solicitarIngresoMenu(ctx);
 
   delete ctx.session.cobro;
   delete ctx.scene.session.visualizacionCobro;
@@ -181,7 +181,7 @@ const volverAlInicio = async (ctx: ExtendedContext) => {
   if (ctx.session.visualizacionCobro && "socia" in ctx.session.visualizacionCobro) {
     delete ctx.session.visualizacionCobro;
   }
-  ctx.reply(
+  await ctx.reply(
     "¿Cómo querés ver los cobros? ",
     Markup.inlineKeyboard([
       Markup.button.callback("Por mes", "mensual"),

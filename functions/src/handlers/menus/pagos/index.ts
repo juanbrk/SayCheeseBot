@@ -8,9 +8,9 @@ menu.interact(
   "Registrar nuevo pago",
   "nuevo",
   {
-    do: (ctx) => {
-      ctx.answerCbQuery("Nuevo Pago");
-      ctx.scene.enter("nuevo-pago-wizard");
+    do: async (ctx) => {
+      await ctx.answerCbQuery("Nuevo Pago");
+      await ctx.scene.enter("nuevo-pago-wizard");
       return false;
     },
   });
@@ -18,8 +18,8 @@ menu.interact(
   "Visualizar movimientos",
   "movimientosPagos",
   {
-    do: (ctx) => {
-      ctx.scene.enter("visualizar-movimientos-pagos-wizard");
+    do: async (ctx) => {
+      await ctx.scene.enter("visualizar-movimientos-pagos-wizard");
       return false;
     },
   });

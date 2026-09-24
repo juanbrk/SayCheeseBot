@@ -13,6 +13,6 @@ const datosInteresantes = [
 export async function responderAInlineInteresante(ctx: ExtendedContext) {
   await ctx.editMessageText("¿Sabías que..");
   const datoInteresante = datosInteresantes[Math.floor(Math.random() * datosInteresantes.length)];
-  ctx.reply(`${datoInteresante}?`);
+  await ctx.reply(`${datoInteresante}?`);
   return ctx.telegram.answerCbQuery(ctx.callbackQuery!.id);
 }

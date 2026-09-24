@@ -10,8 +10,8 @@ menu.interact(
   "Visualizar movimientos",
   "movimientos",
   {
-    do: (ctx) => {
-      ctx.scene.enter("visualizar-movimientos-wizard");
+    do: async (ctx) => {
+      await ctx.scene.enter("visualizar-movimientos-wizard");
       return false;
     },
   });

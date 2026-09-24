@@ -15,7 +15,7 @@ import {TipoImpresionEnConsola} from "../../enums/tipoImpresionEnConsola";
 // * Mostrar mini resumen y saldo
 // * Solicitar pago
 // * Salvo en el caso de que no haya deuda
-const primerPaso = (ctx: ExtendedContext) => {
+const primerPaso = async (ctx: ExtendedContext) => {
   let resumenesSinSaldar = {} as ListadoResumenes;
   let mensajeSaldoResumenes = `RESUMENES A SALDAR: 
   ---------------
@@ -50,7 +50,7 @@ const primerPaso = (ctx: ExtendedContext) => {
     💰 ${deudora} debe $${montoDeuda.toLocaleString("es-ar")} a ${sociaAdeudada}`;
 
     mensajeSaldoResumenes += cuerpoMensaje;
-    ctx.editMessageText(
+    await ctx.editMessageText(
       mensajeSaldoResumenes,
       Markup.inlineKeyboard([
         Markup.button.callback("SALIR", "cancelar"),
@@ -63,10 +63,10 @@ const primerPaso = (ctx: ExtendedContext) => {
     cuerpoMensaje = "🎉🎉  Sus cuentas están saldadas 💃. Nadie debe nada!! 🎉🎉 ";
     mensajeSaldoResumenes += cuerpoMensaje;
 
-    ctx.reply(mensajeSaldoResumenes);
-    ctx.reply("Nos vemos cuando deban algo de plata");
+    await ctx.reply(mensajeSaldoResumenes);
+    await ctx.reply("Nos vemos cuando deban algo de plata");
 
-    solicitarIngresoMenu(ctx);
+    await solicitarIngresoMenu(ctx);
     return ctx.scene.leave();
   }
 };
@@ -119,7 +119,7 @@ tercerPaso.action("saldarParcial", async (ctx) => {
     const {montoDeudaFinal, deudora} = ctx.scene.session.datosSaldoTotalDeuda;
     const totalAdeudadoFormateado = montoDeudaFinal.toLocaleString("es-ar");
     const sociaAdeudada = deudora == Socias.MARIAN ? Socias.FLOR : Socias.MARIAN;
-    ctx.editMessageText(`¿Cuanta deuda van a saldar? (_ ${deudora} le debe $${totalAdeudadoFormateado} a ${sociaAdeudada}_)`, {parse_mode: "Markdown"});
+    await ctx.editMessageText(`¿Cuanta deuda van a saldar? (_ ${deudora} le debe $${totalAdeudadoFormateado} a ${sociaAdeudada}_)`, {parse_mode: "Markdown"});
   }
   return avanzar(ctx);
 });
@@ -133,7 +133,7 @@ tercerPaso.action("saldarTotal", async (ctx) => {
     const sociaAdeudada = deudora == Socias.MARIAN ? Socias.FLOR : Socias.MARIAN;
     ctx.scene.session.datosSaldoTotalDeuda.montoASaldar = montoDeudaFinal;
 
-    ctx.editMessageText(
+    await ctx.editMessageText(
       `💰 Van a saldar  la TOTALIDAD de la deuda entre ustedes: ${deudora} debe $<b>${totalAdeudadoFormateado}</b> a ${sociaAdeudada}.
       
       Si confirman, las cuentas vuelven a cero y nadie le debe nada a nadie.
@@ -260,7 +260,7 @@ const leaveScene = async (ctx: any, seSaldoLaDeuda = false) => {
   if (!seSaldoLaDeuda) {
     await ctx.reply("Cancelaste el saldo de la deuda. Asi nunca vamos a avanzar loco 😂😂.");
   }
-  solicitarIngresoMenu(ctx);
+  await solicitarIngresoMenu(ctx);
   delete ctx.session.datosSaldoTotal;
   delete ctx.scene.session.datosSaldoTotalDeuda;
   return ctx.scene.leave();
@@ -275,7 +275,7 @@ const leaveScene = async (ctx: any, seSaldoLaDeuda = false) => {
 const volverAlInicio = async (ctx: ExtendedContext): Promise<any> => {
   imprimirEnConsola("Volviendo al inicio", TipoImpresionEnConsola.DEBUG);
   await ctx.reply("Por favor, selecciona una de las opciones de abajo.  No entiendo si escribís.");
-  ctx.reply(
+  await ctx.reply(
     "¿Querés saldar la deuda o no? ",
     Markup.inlineKeyboard([
       Markup.button.callback("CANCELAR", "cancelar"),

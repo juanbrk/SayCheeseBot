@@ -17,7 +17,7 @@ const seleccionarSocia = async (ctx: ExtendedContext) => {
     await procesarRegistroSaldo(ctx, datosSaldo);
   }
 
-  ctx.editMessageText(
+  await ctx.editMessageText(
     "¿Quien va a pagar?",
     Markup.inlineKeyboard([
       Markup.button.callback("Marian", "adeudaFer"),
@@ -148,7 +148,7 @@ validarSeleccionYSolicitarCuantoDeseaPagar.action("saldarParcial", async (ctx) =
   if (ctx.callbackQuery && ctx.scene.session.datosSaldoDeuda) {
     // solicitar ingreso monto a saldar
     const totalAdeudadoFormateado = new Intl.NumberFormat("de-DE").format(ctx.scene.session.datosSaldoDeuda.montoAdeudado);
-    ctx.editMessageText(`¿Cuanto vas a pagarle? (_Le debes $${totalAdeudadoFormateado}_)`, {parse_mode: "Markdown"});
+    await ctx.editMessageText(`¿Cuanto vas a pagarle? (_Le debes $${totalAdeudadoFormateado}_)`, {parse_mode: "Markdown"});
   }
   return avanzar(ctx);
 });
@@ -241,7 +241,7 @@ chequearConfirmacionRegistrarSaldoYPresentarRestante.action("reingresarMonto", a
     // solicitar ingreso monto a saldar
     delete ctx.scene.session.datosSaldoDeuda.monto;
     const totalAdeudadoFormateado = new Intl.NumberFormat("de-DE").format(ctx.scene.session.datosSaldoDeuda.montoAdeudado);
-    ctx.editMessageText(`¿Cuanto vas a pagarle? (_Le debes $${totalAdeudadoFormateado}_)`, {parse_mode: "Markdown"});
+    await ctx.editMessageText(`¿Cuanto vas a pagarle? (_Le debes $${totalAdeudadoFormateado}_)`, {parse_mode: "Markdown"});
   }
   return ctx.wizard.selectStep(3);
 });
@@ -257,7 +257,7 @@ chequearConfirmacionRegistrarSaldoYPresentarRestante.action("registrarSaldo", as
   }
   delete ctx.scene.session.datosSaldoDeuda;
   delete ctx.session.datosSaldo;
-  solicitarIngresoMenu(ctx);
+  await solicitarIngresoMenu(ctx);
   return ctx.scene.leave();
 });
 
@@ -278,7 +278,7 @@ const leaveScene = async (ctx: ExtendedContext) => {
     delete ctx.session.resumenes;
     delete ctx.session.datosSaldoMensual;
   }
-  solicitarIngresoMenu(ctx);
+  await solicitarIngresoMenu(ctx);
   return ctx.scene.leave();
 };
 

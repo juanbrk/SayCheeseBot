@@ -27,14 +27,14 @@ menu.interact(
   "nuevo",
   {
     do: async (ctx) => {
-      ctx.answerCbQuery("Saldar deuda total");
+      await ctx.answerCbQuery("Saldar deuda total");
       const resumenesSinSaldar = await obtenerResumenesSinSaldar();
       const hayDeudaParaSaldar = resumenesSinSaldar.length > 0;
       if (hayDeudaParaSaldar) {
         ctx.session.datosSaldoTotal = {
           resumenesParaSaldar: resumenesSinSaldar,
         };
-        ctx.scene.enter("registrar-saldo-deuda-total-wizard");
+        await ctx.scene.enter("registrar-saldo-deuda-total-wizard");
       }
 
       return false;
