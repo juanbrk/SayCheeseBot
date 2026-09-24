@@ -1,4 +1,4 @@
-import {MenuTemplate} from "telegraf-inline-menu/dist/source";
+import {MenuTemplate} from "telegraf-inline-menu";
 import {ExtendedContext} from "../../../../config/context/myContext";
 import {TipoImpresionEnConsola} from "../../../modules/enums/tipoImpresionEnConsola";
 import {imprimirEnConsola} from "../../../modules/utils/general";

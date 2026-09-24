@@ -1,4 +1,4 @@
-import {MenuTemplate} from "telegraf-inline-menu/dist/source";
+import {MenuTemplate} from "telegraf-inline-menu";
 import {ExtendedContext} from "../../../../config/context/myContext";
 import {iniciarCobroCliente} from "../../actions/cobro-actions";
 import {obtenerListadoClientes} from "../choices";

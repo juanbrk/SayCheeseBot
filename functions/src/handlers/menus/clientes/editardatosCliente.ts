@@ -1,4 +1,4 @@
-import {MenuTemplate} from "telegraf-inline-menu/dist/source";
+import {MenuTemplate} from "telegraf-inline-menu";
 import {ExtendedContext} from "../../../../config/context/myContext";
 import {ClienteFirestore} from "../../../modules/models/cliente";
 import {Session} from "../../../modules/models/session";

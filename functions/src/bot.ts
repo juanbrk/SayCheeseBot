@@ -1,7 +1,7 @@
 import {Scenes, Telegraf} from "telegraf";
 import {ExtendedContext} from "../config/context/myContext";
 import functions = require("firebase-functions/v1");
-import {MenuMiddleware} from "telegraf-inline-menu/dist/source";
+import {MenuMiddleware} from "telegraf-inline-menu";
 import {messageHandler} from "./handlers/updates/message";
 import {soloUsuariosPermitidos} from "./handlers/middlewares";
 import {menu} from "./handlers/menus/index";
