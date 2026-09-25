@@ -2,9 +2,10 @@ import {Composer, Markup, Scenes} from "telegraf";
 import {ExtendedContext} from "../../../config/context/myContext";
 import {procesarRegistroCliente} from "../../handlers/actions/cliente-actions";
 import {avanzar, repetirPaso, solicitarIngresoMenu} from "./general";
+import {responderCallback} from "../utils/replies";
 
 const obtenerNombre = async (ctx: ExtendedContext) => {
-  ctx.editMessageText("Ok. Por favor ingresá el nombre del nuevo cliente:");
+  await ctx.editMessageText("Ok. Por favor ingresá el nombre del nuevo cliente:");
   return avanzar(ctx);
 };
 
@@ -54,7 +55,7 @@ confirmarDatos.on("message", async (ctx: ExtendedContext) => {
     }
     ctx.scene.session.datosCliente.datosConfirmados = true;
     const {datosCliente} = ctx.scene.session;
-    ctx.reply(
+    await ctx.reply(
       `Confirmá si los datos son correctos:
         - Nombre: ${datosCliente.nombre}
         - Telefono: ${datosCliente.telefono}`,
@@ -64,7 +65,7 @@ confirmarDatos.on("message", async (ctx: ExtendedContext) => {
       ]));
     return avanzar(ctx);
   } else {
-    solicitarIngresoMenu(ctx);
+    await solicitarIngresoMenu(ctx);
     return leaveScene(ctx);
   }
 });
@@ -78,12 +79,12 @@ guardarCliente.action("registrar", async (ctx) => {
     await ctx.reply("Ocurrió un error. Por favor volvé a ingresar /menu para ver las opciones");
     return ctx.scene.leave();
   }
-  solicitarIngresoMenu(ctx);
+  await solicitarIngresoMenu(ctx);
   return ctx.scene.leave();
 });
 
 guardarCliente.action("recomenzarRegistro", async (ctx: ExtendedContext) => {
-  await ctx.answerCbQuery("Recomenzar registro");
+  await responderCallback(ctx, "Recomenzar registro");
   await ctx.editMessageText("Vamos de nuevo entonces");
   delete ctx.scene.session.datosCliente;
   await ctx.reply("Por favor ingresá el nombre del nuevo cliente:");
@@ -104,7 +105,7 @@ const leaveScene = async (ctx: any) => {
 
   delete ctx.scene.session.datosCliente;
 
-  solicitarIngresoMenu(ctx);
+  await solicitarIngresoMenu(ctx);
   return ctx.scene.leave();
 };
 

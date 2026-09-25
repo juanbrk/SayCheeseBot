@@ -16,7 +16,7 @@ const seleccionarTipoVisualizacion = async (ctx: ExtendedContext) => {
   if (ctx.scene.session.visualizacionMovimientosPagos) {
     ctx.scene.session.visualizacionMovimientosPagos = {...ctx.scene.session.visualizacionMovimientosPagos};
   }
-  ctx.editMessageText(
+  await ctx.editMessageText(
     "¿Cómo querés ver los pagos? ",
     Markup.inlineKeyboard([
       Markup.button.callback("Por mes", "mensual"),
@@ -145,7 +145,7 @@ mostrarPagos.on("callback_query", async (ctx: any) => {
     const cuerpoMensajePagos: string = armarTextoPagoMes(pagosMesSeleccionado, +mesSeleccionado + 1, visualizacionMovimientosPagos.anoSeleccionado!);
     await ctx.editMessageText(cuerpoMensajePagos, {parse_mode: "HTML"});
     delete ctx.session.visualizacionMovimientosPagos;
-    solicitarIngresoMenu(ctx);
+    await solicitarIngresoMenu(ctx);
     return ctx.scene.leave();
   }
 });
@@ -163,7 +163,7 @@ export const wizardMovimientosPagos = new Scenes.WizardScene(
 
 const leaveScene = async (ctx: any) => {
   await ctx.reply("Saliste de la visualización de los pagos");
-  solicitarIngresoMenu(ctx);
+  await solicitarIngresoMenu(ctx);
 
   //   delete ctx.session.pago; // ? no lo cree todavia
   delete ctx.scene.session.visualizacionMovimientosPagos;
@@ -182,7 +182,7 @@ const volverAlInicio = async (ctx: ExtendedContext) => {
   if (ctx.session.visualizacionMovimientosPagos && "socia" in ctx.session.visualizacionMovimientosPagos) {
     delete ctx.session.visualizacionMovimientosPagos;
   }
-  ctx.reply(
+  await ctx.reply(
     "¿Cómo querés ver los pagos? ",
     Markup.inlineKeyboard([
       Markup.button.callback("Por mes", "mensual"),

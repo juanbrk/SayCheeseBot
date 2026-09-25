@@ -1,5 +1,6 @@
-import {MenuTemplate} from "telegraf-inline-menu/dist/source";
+import {MenuTemplate} from "telegraf-inline-menu";
 import {ExtendedContext} from "../../../../config/context/myContext";
+import {responderCallback} from "../../../modules/utils/replies";
 import {ClienteFirestore} from "../../../modules/models/cliente";
 import {Session} from "../../../modules/models/session";
 import {getDatosCliente} from "../../../services/cliente-service";
@@ -31,8 +32,8 @@ export const menu = new MenuTemplate<ExtendedContext>(async (ctx) => {
 
 menu.choose("campo", obtenerCamposCliente, {
   do: async (ctx, propiedadAEditar) => {
-    await ctx.answerCbQuery("Editar campo cliente");
-    editarPropiedadCliente(ctx, propiedadAEditar);
+    await responderCallback(ctx, "Editar campo cliente");
+    await editarPropiedadCliente(ctx, propiedadAEditar);
     return false;
   },
   columns: 2,

@@ -1,4 +1,5 @@
 import {WizardSession, WizardSessionData} from "telegraf/typings/scenes";
+import {Timestamp} from "firebase-admin/firestore";
 import {ClienteFirestore, ClienteSession, EdicionInformacionCliente} from "./cliente";
 import {CobroSession, VisualizacionCobroSession} from "./cobro";
 import {PagoSession, VisualizacionPagosSession} from "./pago";
@@ -25,7 +26,12 @@ export interface Session extends WizardSession<MyWizardSession> {
 	datosSaldoTotal?: DatosSaldoAnualSession;
 	visualizacionCobro?: VisualizacionCobroSession;
 	visualizacionMovimientosPagos?: VisualizacionPagosSession;
-
+	/**
+	 * Fecha de vencimiento del documento en `sessions`. La renueva
+	 * `renovarVencimientoSesion()` en cada update; la política TTL de
+	 * `firestore.indexes.json` borra el documento cuando ya pasó.
+	 */
+	expiraEn?: Timestamp;
 }
 
 /**

@@ -1,9 +1,9 @@
 import {Scenes, Telegraf} from "telegraf";
 import {ExtendedContext} from "../config/context/myContext";
 import functions = require("firebase-functions/v1");
-import {MenuMiddleware} from "telegraf-inline-menu/dist/source";
+import {MenuMiddleware} from "telegraf-inline-menu";
 import {messageHandler} from "./handlers/updates/message";
-import {soloUsuariosPermitidos} from "./handlers/middlewares";
+import {renovarVencimientoSesion, soloUsuariosPermitidos} from "./handlers/middlewares";
 import {menu} from "./handlers/menus/index";
 import {db} from "./firebase";
 import firestoreSession = require("telegraf-session-firestore");
@@ -60,6 +60,9 @@ export function crearBot(token: string): Telegraf<ExtendedContext> {
   // `sessions` y entraría a las scenes antes de que nada lo frene.
   bot.use(soloUsuariosPermitidos());
   bot.use(firestoreSession(db.collection("sessions")));
+  // Tiene que ir después de `firestoreSession`: escribe en `ctx.session`, y esa sesión
+  // recién existe (y se guarda al volver de `next()`) dentro de ese middleware.
+  bot.use(renovarVencimientoSesion());
   bot.use(stage.middleware());
 
   const menuMiddleware = new MenuMiddleware("/", menu);
@@ -71,10 +74,20 @@ export function crearBot(token: string): Telegraf<ExtendedContext> {
   bot.on("message", async (ctx) => messageHandler(ctx));
 
   // --------------------------- ERROR HANDLING -------------------------------
-  bot.catch((err: any, ctx: any) => {
+  // Nunca tiene que rechazar: si lo hace, `handleUpdate` falla, Telegram reintenta el
+  // update entero y un cobro o pago ya guardado se registra dos veces. Y el error que
+  // llega acá suele ser justamente un envío rechazado (bloqueado, 429, 400), así que el
+  // aviso al usuario puede fallar por la misma causa.
+  // Se loguea `ctx.update` y no `ctx`: el contexto entero trae `ctx.telegram.token`, y
+  // `util.format` lo imprime tal cual en Cloud Logging.
+  bot.catch(async (err: unknown, ctx: ExtendedContext) => {
     functions.logger.error("[Bot] Error", err);
-    functions.logger.error("[Bot] Error CTX", ctx);
-    return ctx.reply("Error", err);
+    functions.logger.error("[Bot] Update que falló", ctx.update);
+    try {
+      await ctx.reply("Error");
+    } catch (errorAlAvisar) {
+      functions.logger.error("[Bot] No se pudo avisar el error al usuario", errorAlAvisar);
+    }
   });
 
   // El menú de comandos de Telegram (`setMyCommands`) se registra UNA sola vez por bot,

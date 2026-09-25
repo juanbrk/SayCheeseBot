@@ -94,6 +94,21 @@ curl -X POST "https://api.telegram.org/bot<TOKEN>/setMyCommands" \
      -d '{"commands":[{"command":"start","description":"Iniciar"},{"command":"menu","description":"Menú"}]}'
 ```
 
+### Activar el vencimiento de las sesiones (TTL)
+
+Cada chat guarda su estado en `sessions`, y el bot le pone a cada documento un campo
+`expiraEn` (30 días después del último mensaje). Firestore borra solo los documentos
+vencidos, pero **sólo si la política TTL está activa**, y `firebase deploy --only
+functions` no la aplica. Se corre una vez, y de nuevo si cambia `firestore.indexes.json`:
+
+```bash
+firebase deploy --only firestore:indexes --project my-first-bot-da27e
+```
+
+La activación tarda unos minutos. Para verificarla: consola de Firebase → Firestore →
+**Time-to-live**, tiene que figurar `sessions` / `expiraEn` como activa. El borrado no
+es instantáneo: Firestore borra los vencidos en las 24 h siguientes.
+
 ### Sembrar `Choices/camposCliente`
 
 El menú de "editar cliente" lee este documento (`choices-service.ts` → `getCamposCliente`).

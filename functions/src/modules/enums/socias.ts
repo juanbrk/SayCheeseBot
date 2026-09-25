@@ -14,7 +14,8 @@
  * O sea: donde el código dice "Fer" en un nombre de campo, hay que leer MARIAN.
  * Se dejó así a propósito, para no arrastrar una migración de datos al revivir el bot.
  *
- * Renombrarlos está anotado en `roadmap.md` como **D1**.
+ * Renombrarlos se difiere a la tarjeta D7 "más de dos socias" (Trello `enmvhiJN`): D7
+ * reescribe estos mismos campos, así la migración de datos se hace una sola vez.
  *
  * El VALOR del enum sí se persiste (en `cobradoPor`, `asignadoA`, `realizadoPor`) y
  * viaja como `callback_data` de los botones de visualización, así que cambiarlo sólo
