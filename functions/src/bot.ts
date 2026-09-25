@@ -78,9 +78,11 @@ export function crearBot(token: string): Telegraf<ExtendedContext> {
   // update entero y un cobro o pago ya guardado se registra dos veces. Y el error que
   // llega acá suele ser justamente un envío rechazado (bloqueado, 429, 400), así que el
   // aviso al usuario puede fallar por la misma causa.
-  bot.catch(async (err: any, ctx: any) => {
+  // Se loguea `ctx.update` y no `ctx`: el contexto entero trae `ctx.telegram.token`, y
+  // `util.format` lo imprime tal cual en Cloud Logging.
+  bot.catch(async (err: unknown, ctx: ExtendedContext) => {
     functions.logger.error("[Bot] Error", err);
-    functions.logger.error("[Bot] Error CTX", ctx);
+    functions.logger.error("[Bot] Update que falló", ctx.update);
     try {
       await ctx.reply("Error");
     } catch (errorAlAvisar) {
