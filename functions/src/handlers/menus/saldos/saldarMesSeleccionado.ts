@@ -1,5 +1,6 @@
 import {MenuTemplate} from "telegraf-inline-menu";
 import {ExtendedContext} from "../../../../config/context/myContext";
+import {responderCallback} from "../../../modules/utils/replies";
 import {obtenerResumenesSinSaldar} from "../../../services/resumen-service";
 import {botonesVueltaAtras} from "../general";
 
@@ -27,7 +28,7 @@ menu.interact(
   "nuevo",
   {
     do: async (ctx) => {
-      await ctx.answerCbQuery("Saldar deuda total");
+      await responderCallback(ctx, "Saldar deuda total");
       const resumenesSinSaldar = await obtenerResumenesSinSaldar();
       const hayDeudaParaSaldar = resumenesSinSaldar.length > 0;
       if (hayDeudaParaSaldar) {

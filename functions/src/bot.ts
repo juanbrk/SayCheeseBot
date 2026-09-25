@@ -74,10 +74,18 @@ export function crearBot(token: string): Telegraf<ExtendedContext> {
   bot.on("message", async (ctx) => messageHandler(ctx));
 
   // --------------------------- ERROR HANDLING -------------------------------
-  bot.catch((err: any, ctx: any) => {
+  // Nunca tiene que rechazar: si lo hace, `handleUpdate` falla, Telegram reintenta el
+  // update entero y un cobro o pago ya guardado se registra dos veces. Y el error que
+  // llega acá suele ser justamente un envío rechazado (bloqueado, 429, 400), así que el
+  // aviso al usuario puede fallar por la misma causa.
+  bot.catch(async (err: any, ctx: any) => {
     functions.logger.error("[Bot] Error", err);
     functions.logger.error("[Bot] Error CTX", ctx);
-    return ctx.reply("Error", err);
+    try {
+      await ctx.reply("Error");
+    } catch (errorAlAvisar) {
+      functions.logger.error("[Bot] No se pudo avisar el error al usuario", errorAlAvisar);
+    }
   });
 
   // El menú de comandos de Telegram (`setMyCommands`) se registra UNA sola vez por bot,

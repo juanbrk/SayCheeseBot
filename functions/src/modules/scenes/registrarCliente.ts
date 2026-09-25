@@ -2,6 +2,7 @@ import {Composer, Markup, Scenes} from "telegraf";
 import {ExtendedContext} from "../../../config/context/myContext";
 import {procesarRegistroCliente} from "../../handlers/actions/cliente-actions";
 import {avanzar, repetirPaso, solicitarIngresoMenu} from "./general";
+import {responderCallback} from "../utils/replies";
 
 const obtenerNombre = async (ctx: ExtendedContext) => {
   await ctx.editMessageText("Ok. Por favor ingresá el nombre del nuevo cliente:");
@@ -83,7 +84,7 @@ guardarCliente.action("registrar", async (ctx) => {
 });
 
 guardarCliente.action("recomenzarRegistro", async (ctx: ExtendedContext) => {
-  await ctx.answerCbQuery("Recomenzar registro");
+  await responderCallback(ctx, "Recomenzar registro");
   await ctx.editMessageText("Vamos de nuevo entonces");
   delete ctx.scene.session.datosCliente;
   await ctx.reply("Por favor ingresá el nombre del nuevo cliente:");

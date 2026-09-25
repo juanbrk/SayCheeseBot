@@ -1,5 +1,6 @@
 import {MenuTemplate} from "telegraf-inline-menu";
 import {ExtendedContext} from "../../../../config/context/myContext";
+import {responderCallback} from "../../../modules/utils/replies";
 import {botonVueltaInicio} from "../general";
 
 import {menu as submenuListarClientes} from "./listarClientes";
@@ -10,7 +11,7 @@ export const menu = new MenuTemplate<ExtendedContext>("¿Qué deseas hacer?");
 menu.interact("Registrar nuevo cliente", "nuevo", {
   do: async (ctx) => {
     console.log(ctx);
-    await ctx.answerCbQuery("Desea registrar cliente nuevo");
+    await responderCallback(ctx, "Desea registrar cliente nuevo");
     await ctx.scene.enter("super-wizard");
     return false;
   },

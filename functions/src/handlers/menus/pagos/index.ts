@@ -1,5 +1,6 @@
 import {MenuTemplate} from "telegraf-inline-menu";
 import {ExtendedContext} from "../../../../config/context/myContext";
+import {responderCallback} from "../../../modules/utils/replies";
 import {botonesVueltaAtras} from "../general";
 
 export const menu = new MenuTemplate<ExtendedContext>("¿Con qué puedo ayudarte?");
@@ -9,7 +10,7 @@ menu.interact(
   "nuevo",
   {
     do: async (ctx) => {
-      await ctx.answerCbQuery("Nuevo Pago");
+      await responderCallback(ctx, "Nuevo Pago");
       await ctx.scene.enter("nuevo-pago-wizard");
       return false;
     },
