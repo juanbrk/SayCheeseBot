@@ -71,5 +71,12 @@
       ]
     }
   ],
-  "fieldOverrides": []
+  "fieldOverrides": [
+    {
+      "collectionGroup": "sessions",
+      "fieldPath": "expiraEn",
+      "ttl": true,
+      "indexes": []
+    }
+  ]
 }

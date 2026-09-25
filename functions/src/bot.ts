@@ -3,7 +3,7 @@ import {ExtendedContext} from "../config/context/myContext";
 import functions = require("firebase-functions/v1");
 import {MenuMiddleware} from "telegraf-inline-menu";
 import {messageHandler} from "./handlers/updates/message";
-import {soloUsuariosPermitidos} from "./handlers/middlewares";
+import {renovarVencimientoSesion, soloUsuariosPermitidos} from "./handlers/middlewares";
 import {menu} from "./handlers/menus/index";
 import {db} from "./firebase";
 import firestoreSession = require("telegraf-session-firestore");
@@ -60,6 +60,9 @@ export function crearBot(token: string): Telegraf<ExtendedContext> {
   // `sessions` y entraría a las scenes antes de que nada lo frene.
   bot.use(soloUsuariosPermitidos());
   bot.use(firestoreSession(db.collection("sessions")));
+  // Tiene que ir después de `firestoreSession`: escribe en `ctx.session`, y esa sesión
+  // recién existe (y se guarda al volver de `next()`) dentro de ese middleware.
+  bot.use(renovarVencimientoSesion());
   bot.use(stage.middleware());
 
   const menuMiddleware = new MenuMiddleware("/", menu);
