@@ -10,7 +10,6 @@ export const menu = new MenuTemplate<ExtendedContext>("¿Qué deseas hacer?");
 
 menu.interact("Registrar nuevo cliente", "nuevo", {
   do: async (ctx) => {
-    console.log(ctx);
     await responderCallback(ctx, "Desea registrar cliente nuevo");
     await ctx.scene.enter("super-wizard");
     return false;

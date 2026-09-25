@@ -164,8 +164,9 @@ y se descartó a propósito.
 - **Destructuring en el cuerpo de una función.** Ver arriba — 19 ocurrencias **son** la
   convención, no una violación a corregir.
 - **`check-raw-edit-message`.** Diferido. Presupone un helper `editarOResponder(ctx, ...)`
-  que no existe: `modules/utils/replies.ts` sólo exporta `replyConMarkup` (:17), que
-  siempre termina en `ctx.reply()` y nunca toca `editMessageText`. Las 45 llamadas
+  que no existe: en `modules/utils/replies.ts`, `replyConMarkup` (:19) siempre termina
+  en `ctx.reply()` y nunca toca `editMessageText`, y `responderCallback` sólo contesta
+  el callback query. Las 45 llamadas
   directas a `ctx.reply`/`ctx.editMessageText` no tienen adónde migrar sin crear antes
   esa abstracción — ticket aparte.
 - **Un hook `Stop` de fin de sesión** (`track-modified-file` + `check-session-params` de

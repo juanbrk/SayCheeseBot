@@ -33,7 +33,7 @@ export const menu = new MenuTemplate<ExtendedContext>(async (ctx) => {
 menu.choose("campo", obtenerCamposCliente, {
   do: async (ctx, propiedadAEditar) => {
     await responderCallback(ctx, "Editar campo cliente");
-    editarPropiedadCliente(ctx, propiedadAEditar);
+    await editarPropiedadCliente(ctx, propiedadAEditar);
     return false;
   },
   columns: 2,
