@@ -1,5 +1,15 @@
 # Session Log
 
+## 2026-09-29: Firestore cerrado a todo acceso directo — completo
+
+### Completado
+- El diagnóstico del ticket estaba invertido: `Cliente` ya estaba cerrada por default; el hueco era `clientes` abierta con `if true`. Se reemplazó por un deny-all global
+- Verificado en emulador (sin auth → 403, Admin SDK → OK) y en prod: reglas desplegadas, `clientes` nunca existió, el bot sigue andando
+- `/technician-check` (0 fix / 1 defer / 2 avoid) y `/audit-pr` (APPROVE, 0 findings) cerrados
+
+### Pendiente
+- Ninguno
+
 ## 2026-09-23 – 2026-09-24: Deuda técnica de la revivida — código completo, falta cerrar el audit
 
 ### Completado
