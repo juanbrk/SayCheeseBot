@@ -1,8 +1,11 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    match /clientes/{anything=**} {
-      allow read, write: if true;
+    // Sólo se accede vía Admin SDK (Cloud Functions, doctor.cjs), que saltea estas reglas.
+    // Cubre: Cliente, Cobro, Pago, Balance, Resumen, Choices, sessions.
+    // Si algún día hay acceso client-side, abrir acá colección por colección.
+    match /{document=**} {
+      allow read, write: if false;
     }
   }
 }

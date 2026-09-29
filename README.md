@@ -302,8 +302,6 @@ Colecciones: `Cliente`, `Cobro`, `Pago`, `Balance`, `Resumen`, `Choices`, `sessi
   `totalCobradoPorFer` y `leCorrespondeAFer` refieren a **Marian**: se renombró el enum
   pero no los campos, para no arrastrar una migración. Está explicado en
   `modules/enums/socias.ts` y anotado como **D1** en `roadmap.md`.
-- **`firestore.rules` protege `clientes`, una colección que no existe** (la real es
-  `Cliente`). Hoy es inocuo porque el Admin SDK saltea las reglas. Anotado como **D4**.
 - **Sobre el lint:** `npm run build` es `tsc` a secas y `predeploy` ya no corre lint. El
   stack viejo (`eslint@7` + `@typescript-eslint@3` + `eslint-config-google`) no parsea
   TypeScript moderno y bloqueaba el deploy, así que `.eslintrc.js`, `.eslintignore` y
